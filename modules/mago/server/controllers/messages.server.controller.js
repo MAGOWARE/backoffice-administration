@@ -20,12 +20,12 @@ function save_messages(obj, messagein, ttl, action, callback){
         company_id: req.token.company_id //save record for this company
     }).then(function(result) {
         if (!result) {
-            winston.error('Fail to create data')
+            winston.error("Failed to create messages");
         } else {
             winston.info('Messages saved')
         }
     }).catch(function(err) {
-        winston.error("Saving message failed with error: ", err);
+        winston.error("Saving messages failed with error: ", err);
     });
 
 }

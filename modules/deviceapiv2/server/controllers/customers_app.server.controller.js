@@ -144,7 +144,7 @@ exports.update_user_data = function(req, res) {
                         html: '<b>'+email_body+'</b>' // html body
                     };
                     smtpTransport.sendMail(mailOptions, function(error, info){
-                        if(error) winston.error(error);
+                        if(error) winston.error("Error sending email at customers_app, error: ", error);
                     });
                 }
                 response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
@@ -266,7 +266,7 @@ exports.reset_pin = function(req, res) {
                 html: '<b>'+email_body+'</b>' // html body
             };
             smtpTransport.sendMail(mailOptions, function(error, info){
-                if(error) winston.error(error);
+                if(error) winston.error("Error sending email at customers_app reset pin, error: ", error);
             });
             response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
         }).catch(function(error){

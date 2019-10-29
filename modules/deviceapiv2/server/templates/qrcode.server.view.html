@@ -4,6 +4,9 @@
     <title>Login</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <style>
         .login-page {
@@ -88,39 +91,36 @@
 <div class="login-page" ng-app="myApp" ng-controller="myCtrl">
     <div class="form">
         <form class="login-form">
-            <input type="text" placeholder="username" id="username"/>
+            <input type="text" autocapitalize="none" placeholder="username" id="username"/>
             <input type="password" placeholder="password" id="password"/>
-            <input type="hidden" id="googleid" name="googleid" value="{{googleid}}"/>
             <button ng-click="myFunc()">login</button>
         </form>
     </div>
 </div>
 
 <script>
-    var app = angular.module('myApp', []);
-    app.controller('myCtrl', function($scope, $http) {
+  var app = angular.module('myApp', []);
+  app.controller('myCtrl', function($scope, $http) {
 
-        $scope.myFunc = function() {
+    $scope.myFunc = function() {
 
-            var username = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
-            var googleid = document.getElementById('googleid').value;
-            var domain = window.location.protocol+'//'+window.location.hostname;
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+      var googleid = "{{googleid}}";
+      var siteUrl = "{{serverUrl}}";
 
-            var data = {'username': username,'password': password,'googleid': googleid};
 
-            $http.post(domain+"/apiv2/remotedevicelogin", data).then(function (response,data, status, headers, config,file) {
+      var data = {username: username,password: password,googleid: googleid };
 
-                if (response.status === 200) {
-                    document.getElementById('alerti').style.display = "block";
-                }
-
-            },function (data, status, headers, config) {
-                console.log(status);
-            });
-
-        };
-    });
+      $http.post(siteUrl + "/apiv2/remotedevicelogin", data).then(function (response) {
+        if (response.status === 200) {
+          document.getElementById('alerti').style.display = "block";
+        }
+      }, function (data, status) {
+        console.log(status);
+      });
+    };
+  });
 </script>
 
 

@@ -18,6 +18,7 @@ exports.create = function(req, res) {
     req.body.company_id = req.token.company_id; //save record for this company
     DBModel.create(req.body, {logging: console.log}).then(function(result) {
         if (!result) {
+            winston.error("Failed creating vod_menu");
             return res.status(400).send({message: 'fail create data'});
         } else {
             logHandler.add_log(req.token.id, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body), req.token.company_id);
@@ -25,7 +26,7 @@ exports.create = function(req, res) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Failed creating vod_menu, error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -52,7 +53,7 @@ exports.update = function(req, res) {
             res.json(result);
             return null;
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error at updating vod menu carousel attributes, error: ",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -75,13 +76,13 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Failed deleting vod menu carousel, error: ", err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
                 });
             }
-            else{
+            else {
                 return res.status(400).send({message: 'Unable to find the Data'});
             }
         } else {
@@ -91,7 +92,7 @@ exports.delete = function(req, res) {
         }
         return false;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at vod menu carousel, error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -133,7 +134,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error listing vod menu carousel, error: ",err);
         res.jsonp(err);
     });
 };
@@ -165,7 +166,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error fetching dataById at vod menu carousel, error: ", err);
         return next(err);
     });
 

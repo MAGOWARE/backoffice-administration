@@ -26,7 +26,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at creating tv episode subtitles, error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -61,7 +61,7 @@ exports.update = function(req, res) {
             }
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error at updating  tv episode subtitles, error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -84,7 +84,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error at deleting tv episode subtitles, error: ", err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
@@ -101,7 +101,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at deleting tv_episode subtitles, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -146,7 +146,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at listing tv episode subtitles, error: ", err);
         res.jsonp(err);
     });
 };
@@ -178,7 +178,7 @@ exports.dataByID = function(req, res, next, id) {
             return null
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at fetching dataById, error: ", err);
         return next(err);
     });
 

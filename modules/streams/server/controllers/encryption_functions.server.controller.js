@@ -30,7 +30,7 @@ function mysha1( data ) {
 
 
 exports.free_default_key = function(req,res) {
-    var keyStr = "31313131313131313131313131313131";
+    var keyStr = "";
 
     var keyBuffer = [];
     res.writeHead(200, {"Content-Type": "binary/octet-stream", "Pragma": "no-cache"});

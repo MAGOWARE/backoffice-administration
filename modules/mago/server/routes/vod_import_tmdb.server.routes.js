@@ -9,7 +9,6 @@ var path = require('path'),
     policy = require('../policies/mago.server.policy'),
     tmdbVod = require(path.resolve('./modules/mago/server/controllers/vod_import_tmdb.server.controller'));
 
-
 module.exports = function(app) {
 
     /* ===== vods ===== */
@@ -19,14 +18,10 @@ module.exports = function(app) {
 
     app.route('/api/tmdbvods/:tmdbId')
         .all(policy.Authenticate)
-        //.all(policy.isAllowed)
         .get(tmdbVod.read);
-        //.put(tmdbVod.create);
 
     app.route('/api/tmdbvods/*')
         .all(policy.Authenticate)
-    //.all(policy.isAllowed)
         .put(tmdbVod.create);
 
-    app.param('tmdbId', tmdbVod.dataByID);
 };

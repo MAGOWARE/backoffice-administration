@@ -19,6 +19,11 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
+        language: {
+          type: DataTypes.STRING(50),
+          allowNull: false,
+          defaultValue: 'en'
+        },
         title: {
             type: DataTypes.STRING(128),
             allowNull: false

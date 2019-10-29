@@ -24,7 +24,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error creating vod menu carousel, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -51,7 +51,7 @@ exports.update = function(req, res) {
             res.json(result);
             return null;
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error updating vod menu, error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -74,7 +74,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error at deleting vod menu server, error: ",err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });

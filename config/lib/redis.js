@@ -35,6 +35,7 @@ module.exports.startServer = function(callback) {
         const filename = 'redis-server' + ext;
     
         download(downloadUrl).then((data) => {
+            // noinspection JSAnnotator
             fs.writeFileSync('./redis/' + filename, data, {mode: 0775});
             if (ext == '') {
                 start();
@@ -83,6 +84,7 @@ module.exports.startServer = function(callback) {
         } else {
             let version = process.platform == 'darwin' ? 'redis-darwin': 'redis-linux';
             fs.copySync(source + version, dir + '/' + binName);
+            // noinspection JSAnnotator
             fs.chmodSync(dir + '/' + binName, 0775);
 
             start();
@@ -111,7 +113,7 @@ module.exports.createClient = function() {
     this.client = redis.createClient({port: 6379})
     
     this.client.on('error', function(error){
-        winston.error(error);
+        winston.error("Redis error: " + error);
     });
 }
 

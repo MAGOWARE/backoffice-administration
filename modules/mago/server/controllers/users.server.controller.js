@@ -21,9 +21,7 @@ exports.create = function(req, res) {
 
   user.salt = user.makeSalt();
 
-    if(req.token.role !== 'superadmin'){
-        user.company_id = req.token.company_id; //Make sure that only superadmins can choose the company freely. Other users can create accounts only for their company
-    }
+    user.company_id = req.token.company_id;
 
     var admin_id = 0;
     var superadmin_id = 0;
@@ -288,17 +286,14 @@ exports.list = function(req, res) {
     if(query.group_id) qwhere.group_id = query.group_id;
     if(query.company_id) qwhere.company_id = query.company_id;
 
-    if(req.token.role !== 'superadmin') {
-      final_where.where.company_id = req.token.company_id;
-      final_where.include = [
-        {
-          model: db.groups,
-          required: true,
-          attributes: ['code'],
-          where: {code: {$notIn: ['superadmin', 'admin']}}
-        }
-      ] //return only records for this company
-    }
+    final_where.where.company_id = req.token.company_id;
+    final_where.include = [
+      {
+        model: db.groups,
+        required: true,
+        attributes: ['code'],
+      }
+    ] 
       
 
   DBModel.findAndCountAll(

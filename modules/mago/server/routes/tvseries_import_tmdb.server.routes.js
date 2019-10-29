@@ -14,16 +14,14 @@ module.exports = function(app) {
 
     /* ===== vods ===== */
     app.route('/api/tmdbseries')
+        .all(policy.Authenticate)
         .get(tmdbtvseries.list);
 
     app.route('/api/tmdbseries/:tmdbIdd')
-    //.all(policy.isAllowed)
+        .all(policy.Authenticate)
         .get(tmdbtvseries.read);
-    //.put(tmdbVod.create);
 
     app.route('/api/tmdbseries/*')
-    //.all(policy.isAllowed)
+        .all(policy.Authenticate)
         .put(tmdbtvseries.create);
-
-    app.param('tmdbIdd', tmdbtvseries.dataByID);
 };

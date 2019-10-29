@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
     var salesreport = sequelize.define('salesreport', {
         id: {
             type: DataTypes.INTEGER(11),
@@ -23,10 +23,10 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
-        on_behalf_id : {
+        on_behalf_id: {
             type: DataTypes.INTEGER(11),
             allowNull: true
-            },
+        },
         combo_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
@@ -63,10 +63,20 @@ module.exports = function(sequelize, DataTypes) {
         cancelation_reason: {
             type: DataTypes.STRING(128),
             allowNull: true
+
+        },
+        value: {
+            type: DataTypes.DOUBLE,
+            allowNull: true
+
+        },
+        duration: {
+            type: DataTypes.INTEGER(20),
+            allowNull: true
         }
     }, {
         tableName: 'salesreport',
-        associate: function(models) {
+        associate: function (models) {
             salesreport.belongsTo(models.combo, {foreignKey: 'combo_id'});
             salesreport.belongsTo(models.users, {foreignKey: 'user_id'});
             salesreport.belongsTo(models.login_data, {foreignKey: 'login_data_id'});

@@ -22,7 +22,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error creating tv episode stream, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -48,7 +48,8 @@ exports.update = function(req, res) {
         updateData.updateAttributes(req.body).then(function(result) {
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error updating tv episode stream, error: ",err);
+
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -71,7 +72,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error deleting tv episode stream, error: ",err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
@@ -88,7 +89,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at delete tv epside stream, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -124,7 +125,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error listing tv episode stream, error: ",err);
         res.jsonp(err);
     });
 };
@@ -154,7 +155,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error tv episode stream at dataById, error: ",err);
         return next(err);
     });
 

@@ -1,4 +1,6 @@
 import edit_button from '../edit_button.html';
+import modalImage from '../../templates/modalTemplate.html'
+import modalImageUpload from '../../templates/modalImageUpload.html'
 
 export default function (nga, admin) {
     var Series = admin.getEntity('Series');
@@ -47,7 +49,7 @@ export default function (nga, admin) {
                     return { 'package_id[]': package_id };
                 }).label('Packages'),
             nga.field('icon_url', 'file')
-                .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+                .template(modalImage)
                 .cssClasses('hidden-xs')
                 .label('Icon'),
             nga.field('is_available', 'boolean')
@@ -129,13 +131,27 @@ export default function (nga, admin) {
             nga.field('tv_series_categories','reference_many')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .targetField(nga.field('name'))
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function (search) {
+                        return {q: search};
+                    }
+                })
                 .label('Genres')
                 .attributes({ placeholder: 'Select genre' })
                 .singleApiCall(function (category_id) {
                     return { 'category_id[]': category_id };
                 }),
-            nga.field('tv_series_packages','reference_many')
+            nga.field('tv_series_packages', 'reference_many')
                 .targetEntity(admin.getEntity('Packages'))
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function (search) {
+                        return {q: search};
+                    }
+                })
                 .permanentFilters({ package_type_id: [3,4] })
                 .targetField(nga.field('package_name'))
                 .label('Packages')
@@ -180,11 +196,7 @@ export default function (nga, admin) {
                 .label('Trailer url'),
             nga.field('icon_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>')
+                .template(modalImageUpload)
                 .validation({
                     validator: function(value) {
                         if (value == null) {

@@ -3,11 +3,11 @@ body{
     font-family: 'Lato', sans-serif;
 }
 .img_div {
-    margin-top: 10%;
+    /*margin-top: 10%;*/
     margin-left: -25px;
 }
 .login_form {
-    margin-top: 34%;
+    /*margin-top: 34%;*/
 }
 #username,#password,#company_name,#telephone_number,#email_address {
     background: #fff;

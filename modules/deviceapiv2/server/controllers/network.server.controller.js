@@ -68,7 +68,7 @@ exports.gcm = function(req, res) {
 	if(req.auth_obj.boxid == undefined){
 		var auth_obj = querystring.parse(req.body.auth,";","=");
 
-		models.devices.upsert({
+		upsertDevice({
 			googleappid           : decodeURIComponent(req.body.google_app_id),
 			device_id             : auth_obj.boxid,
 			device_ip             : req.ip.replace('::ffff:', ''),
@@ -95,7 +95,7 @@ exports.gcm = function(req, res) {
 
 	}
 	else {
-		models.devices.upsert({
+		upsertDevice({
 			googleappid           : decodeURIComponent(req.body.google_app_id),
 			device_id             : req.auth_obj.boxid,
 			device_ip             : req.ip.replace('::ffff:', ''),
@@ -152,3 +152,32 @@ exports.command_response = function(req,res) {
 	});
 
 };
+
+function upsertDevice(device) {
+	return new Promise(function(resolve, reject) {
+		models.devices.findOne({
+			where: {device_id: device.device_id}
+		}).then(function(result) {
+			if (!result) {
+				return models.devices.create(device)
+					.then(function() {
+						resolve();
+					})
+					.catch(function(err) {
+						reject(err);
+					});
+			}
+			else {
+				return result.update(device)
+					.then(function() {
+						resolve();
+					})
+					.catch(function(err) {
+						reject(err);
+					});
+			}
+		}).catch(function(err) {
+			reject(err);
+		});
+	});
+}

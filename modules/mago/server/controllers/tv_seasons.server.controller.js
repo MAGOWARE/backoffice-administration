@@ -31,7 +31,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error creating tv season, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -75,7 +75,7 @@ exports.update = function(req, res) {
             }
             return res.jsonp(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error updating attributes at tv season, error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -98,8 +98,8 @@ exports.delete = function(req, res) {
     }).then(function (result) {
         return res.json(result);
     }).catch(function (err) {
-        winston.error(err);
-        return res.status(400).send({message: 'Deleting this tv season item failed : ' + error});
+        winston.error("Error at deleting tv season item, error: ",err);
+        return res.status(400).send({message: 'Deleting this tv season item failed : ' + err});
     });
 };
 
@@ -153,7 +153,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error finding tv season, error:",err);
         res.jsonp(err);
     });
 
@@ -185,7 +185,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("",err);
         return next(err);
     });
 
@@ -253,7 +253,7 @@ exports.update_film = function(req, res) {
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
-                        winston.error(error);
+                        winston.error("A error occurred while updating a tv season movie, error: ",error);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -266,7 +266,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
-        winston.error(error);
+        winston.error("Error at searching a movie at tv seasons, error: ",error);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });

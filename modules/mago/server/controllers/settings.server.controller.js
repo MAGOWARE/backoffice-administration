@@ -11,6 +11,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     merge = require('merge'),
     DBModel = db.settings,
+    sequelize = require('sequelize'),
     config = require(path.resolve('./config/config')),
     redis = require(path.resolve('./config/lib/redis')),
     companyFunctions = require(path.resolve('./custom_functions/company')),
@@ -74,52 +75,18 @@ exports.create = function (req, res) {
     expire_date.setDate(expire_date.getDate() + free_trial_days);
     req.body.expire_date = expire_date;
 
-    return sequelize_t.sequelize.transaction(function (t) {
-        // chain all your queries here. make sure you return them.
-        return db.settings.create(req.body, { transaction: t }).then(function (new_company) {
+    req.body.telephone = req.body.telephone ? req.body.telephone : ' ';
 
-            if (!new_company) return res.status(400).send({ message: 'fail create data' });
-            else {
-                req.app.locals.backendsettings[new_company.id] = new_company;
-                req.body.id = new_company.id;
-                var channel_stream_sources = { company_id: req.body.id, stream_source: 'Live primary source - ' + req.body.company_name };
-                var vod_stream_sources = { company_id: req.body.id, description: 'VOD primary source - ' + req.body.company_name };
-                //prepare object for device_menu
-                var device_menus = require(path.resolve("./config/defaultvalues/device_menu.json"));
-                device_menus.forEach(function (element) { delete element.id });
-                device_menus.forEach(function (element) { element.company_id = req.body.id });
-                //prepare object for advanced settings
-                var advanced_settings = require(path.resolve("./config/defaultvalues/advanced_settings.json"));
-                advanced_settings.forEach(function (element) { delete element.id });
-                advanced_settings.forEach(function (element) { element.company_id = req.body.id });
-                //prepare object for email templates
-                var email_templates = require(path.resolve("./config/defaultvalues/email_templates.json"));
-                email_templates.forEach(function (element) { delete element.id });
-                email_templates.forEach(function (element) { element.company_id = req.body.id });
-
-                req.body.asset_limitations = {
-                    "client_limit": req.body.asset_limitations.client_limit,
-                    "channel_limit": req.body.asset_limitations.channel_limit,
-                    "vod_limit": req.body.asset_limitations.vod_limit
-                };
-                return db.channel_stream_source.create(channel_stream_sources, { transaction: t }).then(function (new_company) {
-                    return db.vod_stream_source.create(vod_stream_sources, { transaction: t }).then(function (vod_source) {
-                        return db.device_menu.bulkCreate(device_menus, { transaction: t }).then(function (device_menu) {
-                            return db.advanced_settings.bulkCreate(advanced_settings, { transaction: t }).then(function (advanced_settings) {
-                                return db.email_templates.bulkCreate(email_templates, { transaction: t })//.then(function(email_templates){});
-                            });
-                        });
-                    });
-                });
-            }
+    companyFunctions.createCompany(req)
+        .then(function(result) {
+            userFunctions.sendInvite(req, result.owner, true).then(function() {
+                res.status(200).send({ status: true, message: "Company created successfully! An invite was sent to admin." });
+            }).catch(function(err) {
+                res.status(500).send({status: false, message: 'Company created but failed to send invitation'})
+            })
+        }).catch(function(result) {
+            res.status(result.error.code).send({status: false, message: result.error.message});
         });
-    }).then(function (result) {
-        redis.client.hmset(req.body.id + ':company_settings', req.app.locals.backendsettings[req.body.id])
-        res.jsonp(req.app.locals.backendsettings[req.body.id]);
-    }).catch(function (err) {
-        winston.error("Creating new company failed with error: ", err);
-        res.status(400).send({ message: errorHandler.getErrorMessage(err) });
-    });
 };
 
 exports.createByEmail = function(req, res) {
@@ -127,17 +94,17 @@ exports.createByEmail = function(req, res) {
     let expire_date = new Date(Date.now());
     expire_date.setDate(expire_date.getDate() + 30);
     req.body.expire_date = expire_date.toString();
-   
     companyFunctions.createCompany(req)
-    .then(function(result) {
-        userFunctions.sendInvite(req, result.owner, true).then(function() {
-            res.send({status: true, message: 'Company created successfully! Check your email'});
-        }).catch(function(err) {
-            res.status(500).send({status: false, message: 'Company created but failded to send invitation'})
-        })
-    }).catch(function(result) {
-        res.status(result.error.code).send({status: false, message: result.error.message});
-    });
+        .then(function(result) {
+            userFunctions.sendInvite(req, result.owner, true).then(function() {
+                res.status(200).send({ message: "Invitation sent, check your mail" });
+                res.redirect('/admin/#/login');
+            }).catch(function(err) {
+                res.status(500).send({status: false, message: 'Company created but failed to send invitation'})
+            })
+        }).catch(function(result) {
+            res.status(result.error.code).send({status: false, message: result.error.message});
+        });
 }
 
 /**
@@ -181,14 +148,14 @@ exports.update = function (req, res) {
         "channel_limit": req.body.asset_limitations.channel_limit,
         "vod_limit": req.body.asset_limitations.vod_limit
     };
-    
+
     req.settings.updateAttributes(new_settings).then(function (result) {
         //refresh company settings in app memory
         delete req.app.locals.backendsettings[result.id];
         result.already_updated = true;
         req.app.locals.backendsettings[result.id] = result;
 
-        redis.client.hmset(req.token.company_id + ':company_settings', new_settings, function () {
+        redis.client.set(req.token.company_id + ':company_settings', JSON.stringify(new_settings), function () {
             redis.client.publish('event:company_settings_updated', req.token.company_id)
         });
 
@@ -270,9 +237,351 @@ exports.list = function (req, res) {
         }
     }).catch(function (err) {
         winston.error("Getting setting list failed with error: ", err);
-        res.jsonp(err);
+        res.jsonp({ message: err });
     });
 };
+
+exports.listCompanySettingsData = function(req, res) {
+    var listAccounts = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(u.id) as total_accounts, u.company_id as id " +
+            "from users u inner join settings s on s.id = u.company_id " +
+            "group by u.company_id)as b " +
+            "UNION ALL " +
+            "select * from (SELECT s.company_name, 0 , s.id " +
+            "FROM settings s LEFT OUTER JOIN users u ON s.id = u.company_id " +
+            "WHERE u.company_id IS NULL )a " +
+            " order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("Not found");
+                } else {
+                    resolve(results);
+                }
+            }).catch(function (err) {
+                winston.error("Listing company settings failed", err);
+                reject("Listing company settings failed" + err);
+            });
+    });
+
+    var listChannels = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(ch.id) as total_channels, ch.company_id as id " +
+            "from channels ch " +
+            "inner join settings s on s.id = ch.company_id group by ch.company_id)as b " +
+            "UNION ALL select * from (SELECT s.company_name, 0, s.id FROM settings s " +
+            "LEFT OUTER JOIN channels ch ON s.id = ch.company_id " +
+            "WHERE ch.company_id IS NULL)  a " +
+            "order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+                winston.error("Listing channels failed", err);
+                reject("Listing channels failed" + err);
+            });
+    });
+
+    var listVod = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(v.id) as total_vod, v.company_id as id " +
+            "from vod v inner join settings s on s.id = v.company_id " +
+            "group by v.company_id)as b UNION ALL select * from (SELECT s.company_name, 0, s.id FROM " +
+            "settings s LEFT OUTER JOIN vod v ON s.id = v.company_id " +
+            "WHERE v.company_id IS NULL) a order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+                winston.error("Listing vod failed", err);
+                reject('Listing vod failed' + err);
+            });
+    });
+
+    var listAssets = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(am.id) as total_assets, am.company_id as id "+
+            "from assets_master am inner join settings s on s.id = am.company_id "+
+            "group by am.company_id)as b "+
+            " UNION ALL select * from (SELECT s.company_name, 0, s.id "+
+            "FROM settings s LEFT OUTER JOIN assets_master am ON s.id = am.company_id "+
+            "WHERE am.company_id IS NULL)a "+
+            "order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+                winston.error("Listing assets failed", err);
+                reject("Listing assets failed" + err);
+            });
+    });
+
+    Promise.all([listAccounts, listChannels, listVod, listAssets]).then(function(data) {
+        let totalArr = data[0];
+
+        for (let i = 0; i < data[1].length; i++) {
+            if(data[1][i].id === data[0][i].id)
+            {
+                totalArr[i] = Object.assign(totalArr[i], { total_channels: data[1][i].total_channels });
+            }
+            else  {
+                totalArr[i] = Object.assign(totalArr[i], { total_channels: 0 });
+            }
+        }
+
+        for (let i = 0; i < data[1].length; i++) {
+            if(data[2][i].id === data[0][i].id)
+            {
+                totalArr[i] = Object.assign(totalArr[i], { total_vod: data[2][i].total_vod });
+            }
+            else {
+                totalArr[i] = Object.assign(totalArr[i], { total_vod: 0 });
+            }
+        }
+
+        for (let i = 0; i < data[1].length; i++) {
+            if(data[3][i].id === data[0][i].id)
+            {
+                totalArr[i] = Object.assign(totalArr[i], { total_assets: data[3][i].total_assets });
+            } else {
+                totalArr[i] = Object.assign(totalArr[i], {total_assets: 0});
+            }
+        }
+
+        res.status(200).send(totalArr)
+    }).catch(err => {
+        winston.error("Error at listing assets ", err);
+    });
+};
+
+exports.listCompanySettingsDataById = function(req, res) {
+    const id = req.params.id;
+    var listAccounts = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(u.id) as total_accounts, u.company_id as id " +
+            "from users u inner join settings s on s.id = u.company_id " +
+            "group by u.company_id)as b " +
+            "UNION ALL " +
+            "select * from (SELECT s.company_name, 0 , s.id " +
+            "FROM settings s LEFT OUTER JOIN users u ON s.id = u.company_id " +
+            "WHERE u.company_id IS NULL )a " +
+            " order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("Not found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+                winston.error("Failed listing company settings ", err);
+                reject("Not found");
+            });
+    });
+
+    var listChannels = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(ch.id) as total_channels, ch.company_id as id " +
+            "from channels ch " +
+            "inner join settings s on s.id = ch.company_id group by ch.company_id)as b " +
+            "UNION ALL select * from (SELECT s.company_name, 0, s.id FROM settings s " +
+            "LEFT OUTER JOIN channels ch ON s.id = ch.company_id " +
+            "WHERE ch.company_id IS NULL)  a " +
+            "order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+            winston.error("Failed listing channels promise", err);
+            reject("No data found")
+        });
+    });
+
+    var listVod = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(v.id) as total_vod, v.company_id as id " +
+            "from vod v inner join settings s on s.id = v.company_id " +
+            "group by v.company_id)as b UNION ALL select * from (SELECT s.company_name, 0, s.id FROM " +
+            "settings s LEFT OUTER JOIN vod v ON s.id = v.company_id " +
+            "WHERE v.company_id IS NULL) a order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+                winston.error("Failed listing vod promise", err);
+                reject(err)
+            });
+    });
+
+    var listAssets = new Promise(function(resolve, reject) {
+        sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(am.id) as total_assets, am.company_id as id "+
+            "from assets_master am inner join settings s on s.id = am.company_id "+
+            "group by am.company_id)as b "+
+            " UNION ALL select * from (SELECT s.company_name, 0, s.id "+
+            "FROM settings s LEFT OUTER JOIN assets_master am ON s.id = am.company_id "+
+            "WHERE am.company_id IS NULL)a "+
+            "order by company_name",
+            {type: sequelize_t.sequelize.QueryTypes.SELECT})
+            .then(function (results) {
+                if (!results) {
+                    reject("No data found")
+                } else {
+                    resolve(results)
+                }
+            }).catch(function (err) {
+            reject("No data found")
+        });
+    });
+
+    Promise.all([listAccounts, listChannels, listVod, listAssets]).then(function(data) {
+        const ob1 = data[0].find(x => x.id == id);
+        const ob2 = data[1].find(x => x.id == id);
+        const ob3 = data[2].find(x => x.id == id);
+        const ob4 = data[3].find(x => x.id == id);
+        const company_name = ob1.company_name;
+
+        const ob = {  id, company_name, total_accounts: ob1.total_accounts, total_channels: ob2.total_channels, total_vod: ob3.total_vod, total_assets: ob4.total_assets };
+
+        res.status(200).send(ob)
+    }).catch(err => {
+        winston.error("Failed getting all assets list data", err);
+    });
+};
+
+exports.listAccounts = function (req, res) {
+    const id = req.params.company1Id;
+    var finalData = [];
+
+    sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(u.id) as total_accounts, u.company_id as id " +
+        "from users u inner join settings s on s.id = u.company_id " +
+        "group by u.company_id)as b " +
+        "UNION ALL " +
+        "select * from (SELECT s.company_name, 0 , s.id " +
+        "FROM settings s LEFT OUTER JOIN users u ON s.id = u.company_id " +
+        "WHERE u.company_id IS NULL )a " +
+        " order by company_name",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                finalData = results;
+                res.json(results);
+            }
+        }).catch(function (err) {
+        winston.error("Getting data failed with error: ", err);
+        res.jsonp(err);
+    });
+
+    return finalData
+};
+
+
+
+exports.listChannels = function (req, res) {
+    const id = req.params.channelId;
+    var finalData = [];
+
+    sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(ch.id) as total_channels, ch.company_id as id " +
+        "from channels ch " +
+        "inner join settings s on s.id = ch.company_id group by ch.company_id)as b " +
+        "UNION ALL select * from (SELECT s.company_name, 0, s.id FROM settings s " +
+        "LEFT OUTER JOIN channels ch ON s.id = ch.company_id " +
+        "WHERE ch.company_id IS NULL)  a " +
+        "order by company_name",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                finalData = results;
+                res.json(results);
+            }
+        }).catch(function (err) {
+        winston.error("Getting channels list failed with error: ", err);
+        res.jsonp(err);
+    });
+
+    return finalData
+};
+
+
+exports.listVod = function (req, res) {
+    const id = req.params.vodId;
+    var finalData = [];
+    //console.log(id);
+    sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(v.id) as total_vod, v.company_id as id " +
+        "from vod v inner join settings s on s.id = v.company_id " +
+        "group by v.company_id)as b UNION ALL select * from (SELECT s.company_name, 0, s.id FROM " +
+        "settings s LEFT OUTER JOIN vod v ON s.id = v.company_id " +
+        "WHERE v.company_id IS NULL) a order by company_name",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                finalData = results;
+                res.json(results);
+            }
+        }).catch(function (err) {
+        winston.error("Getting vod list failed with error: ", err);
+        res.jsonp(err);
+    });
+
+    return finalData;
+};
+
+exports.listAssets = function (req, res) {
+    const id = req.params.assetsId;
+    var finalData = [];
+    sequelize_t.sequelize.query("select * from (select s.company_name, COUNT(am.id) as total_assets, am.company_id as id "+
+        "from assets_master am inner join settings s on s.id = am.company_id "+
+        "group by am.company_id)as b "+
+        " UNION ALL select * from (SELECT s.company_name, 0, s.id "+
+        "FROM settings s LEFT OUTER JOIN assets_master am ON s.id = am.company_id "+
+        "WHERE am.company_id IS NULL)a "+
+        "order by company_name",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                finalData = results;
+                res.json(results);
+            }
+        }).catch(function (err) {
+            winston.error("Getting assets list failed with error: ", err);
+            res.jsonp(err);
+    });
+
+    return finalData;
+};
+
+
+
+
 
 /**
  * middleware
@@ -306,3 +615,139 @@ exports.dataByID = function (req, res, next, id) {
     });
 
 };
+
+
+exports.companyDataByID = function (req, res, next, id) {
+//"+req.token.company_id+"
+    const company_id = req.params.company1Id;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
+    }
+
+    sequelize_t.sequelize.query("select * from (select * from (select s.company_name, COUNT(u.id) as total_accounts, u.company_id as id " +
+        "from users u inner join settings s on s.id = u.company_id " +
+        "group by u.company_id)as b " +
+        "UNION ALL " +
+        "select * from (SELECT s.company_name, 0 , s.id " +
+        "FROM settings s LEFT OUTER JOIN users u ON s.id = u.company_id " +
+        "WHERE u.company_id IS NULL )a " +
+        " order by company_name)d where id = "+company_id+" ",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                res.json(results[0]);
+
+            }
+        }).catch(function (err) {
+        winston.error("Getting data failed with error: ", err);
+        res.jsonp(err);
+    });
+
+};
+
+
+
+exports.channelDataByID = function (req, res, next, id) {
+//"+req.token.company_id+"
+    const channel_id = req.params.companyId;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
+    }
+
+    sequelize_t.sequelize.query("select * from (select * from (select s.company_name, COUNT(ch.id) as total_channels, ch.company_id as id " +
+        "from channels ch " +
+        "inner join settings s on s.id = ch.company_id group by ch.company_id)as b " +
+        "UNION ALL select * from (SELECT s.company_name, 0, s.id FROM settings s " +
+        "LEFT OUTER JOIN channels ch ON s.id = ch.company_id " +
+        "WHERE ch.company_id IS NULL)  a " +
+        "order by company_name)d where id = "+channel_id+" ",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                res.json(results[0]);
+            }
+        }).catch(function (err) {
+        winston.error("Getting data failed with error: ", err);
+        res.jsonp(err);
+    });
+
+};
+
+exports.vodDataByID = function (req, res, next, id) {
+    const vod_id = req.params.vodId;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
+    }
+
+    sequelize_t.sequelize.query("select * from (select * from (select s.company_name, COUNT(v.id) as total_vod, v.company_id as id " +
+        "from vod v inner join settings s on s.id = v.company_id " +
+        "group by v.company_id)as b UNION ALL select * from (SELECT s.company_name, 0, s.id FROM " +
+        "settings s LEFT OUTER JOIN vod v ON s.id = v.company_id " +
+        "WHERE v.company_id IS NULL) a order by company_name)d where id = "+vod_id+" ",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                res.json(results[0]);
+            }
+        }).catch(function (err) {
+        winston.error("Getting data failed with error: ", err);
+        res.jsonp(err);
+    });
+
+};
+
+
+exports.assetsDataByID = function (req, res, next, id) {
+//"+req.token.company_id+"
+    const assets_id = req.params.assetsId;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
+    }
+
+    sequelize_t.sequelize.query("select * from (select * from (select s.company_name, COUNT(am.id) as total_assets, am.company_id as id "+
+        "from assets_master am inner join settings s on s.id = am.company_id "+
+        "group by am.company_id)as b "+
+        " UNION ALL select * from (SELECT s.company_name, 0, s.id "+
+        "FROM settings s LEFT OUTER JOIN assets_master am ON s.id = am.company_id "+
+        "WHERE am.company_id IS NULL)a "+
+        "order by company_name)d where id = "+assets_id+" ",
+        {type: sequelize_t.sequelize.QueryTypes.SELECT})
+        .then(function (results) {
+            if (!results) {
+                return res.status(404).send({
+                    message: 'No data found'
+                });
+            } else {
+                res.json(results[0]);
+            }
+        }).catch(function (err) {
+        winston.error("Getting data failed with error: ", err);
+        res.jsonp(err);
+    });
+
+};
+
+
+
+
+

@@ -8,7 +8,8 @@ export default function (nga, admin) {
         {value: {"iso_639_1":"en","name":"English"}, label: 'English'},
         {value: {"iso_639_1":"sp","name":"Spanish"}, label: 'Spanish'},
         {value: {"iso_639_1":"gr","name":"German"}, label: 'German'},
-        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'}
+        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'},
+        {value: {"iso_639_1":"pt","name":"Portuguese"}, label: 'Portuguese'}
     ];
 
     tmdbvods.listView()
@@ -20,6 +21,9 @@ export default function (nga, admin) {
                 .label('ID'),
             nga.field('title')
                 .label('Title'),
+            nga.field('backdrop_path')
+                .template('<img src="https://image.tmdb.org/t/p/w500{{ entry.values.poster_path }}" height="150" width="100" /></div>')
+                .label('Icon'),
             nga.field('vote_count')
                 .label('Vote Count'),
             nga.field('release_date')

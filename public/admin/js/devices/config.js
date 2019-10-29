@@ -11,6 +11,8 @@ export default function (nga, admin) {
         ])
 		.actions(['batch', 'export', 'filter'])
 		.fields([
+			nga.field('id')
+				.label('ID'),
 			nga.field('username')
 				.label('Username'),	
 			nga.field('device_ip', 'string')
@@ -19,7 +21,8 @@ export default function (nga, admin) {
                             return '';
                       	}
                             return value.length > 14 ? value.substr(0, 14) + '...' : value;
-                      	})
+						  })
+				.template((entry) => `<a target="_blank" href="https://tools.keycdn.com/geo?host=${entry.values.device_ip}">{{entry.values.device_ip}}</a>`)
 				.label('IP'),
 			nga.field('device_mac_address', 'string')
 				.label('Ethernet'),

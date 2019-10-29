@@ -3,8 +3,8 @@
 var paymenttokens = {
 
     "STRIPE":  {
-        "API_KEY":        "sk_test_Z4OH3P3t6XXwInfSUAnk2t0y",
-        "ENDPOIN_REFUND": "whsec_3j1DXYo5wvw5DsCDnTZZKQqOWhTd4Koi"
+        "API_KEY":        "STRIPE_API_KEY_HERE",
+        "ENDPOIN_REFUND": "STRIPE_API_KEY_HERE"
     }
 }
 

@@ -48,10 +48,20 @@ export default function (nga, admin) {
             nga.field('auto_timezone', 'boolean')
                 .cssClasses('hidden-xs')
                 .label('Auto Timezone'),
+            nga.field('customer_datum.email', 'email')
+                .cssClasses('hidden-xs')
+                .label('Email'),
         ])
         .filters([
             nga.field('username', 'string')
                 .label('Search for client account'),
+            nga.field('customer_datum.email', 'email')
+                .label('Search for client email'),
+            nga.field('customer_datum.firstname')
+                .map(function (value, entry) {
+                        return entry['customer_datum.firstname'] + ' ' + entry['customer_datum.lastname'];
+                })
+                .label('Search for client name'),
             nga.field('q')
                 .label('')
                 .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
@@ -68,9 +78,21 @@ export default function (nga, admin) {
         }])
         .fields([
             //Customer Data Fields
+            nga.field('username', 'string')
+                .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
+                .label('Username')
+                .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
+            nga.field('password', 'password')
+                .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
+                .label('Password')
+                .validation({ required: true, pattern: '.{4,}' }),
             nga.field('group_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerGroups'))
                 .targetField(nga.field('description'))
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    searchQuery: function(search) { return { q: search }; }
+                })
                 .attributes({ placeholder: ' Select from the dropdown list one of the groups you created' })
                 .label('Group')
                 .perPage(-1)
@@ -300,14 +322,7 @@ export default function (nga, admin) {
                 .label('Telephone'),
 
             //Login Data Fields
-            nga.field('username', 'string')
-                .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
-                .label('Username')
-                .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
-            nga.field('password', 'password')
-                .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
-                .label('Password')
-                .validation({ required: true, pattern: '.{4,}' }),
+
             nga.field('mac_address', 'string')
                 .attributes({maxlength: 12})
                 .label('Sale mac address'),
@@ -436,6 +451,14 @@ export default function (nga, admin) {
         .actions(['list'])
         .fields([
             //Customer Data Fields
+           nga.field('username', 'string')
+                .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters', readOnly: true})
+                .label('Username')
+                .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
+           nga.field('password', 'password')
+                .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
+                .label('Password')
+                .validation({ required: true, pattern: '.{4,}' }),
             nga.field('customer_datum.group_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerGroups'))
                 .targetField(nga.field('description'))
@@ -668,14 +691,7 @@ export default function (nga, admin) {
                 .label('Telephone'),
 
             //Login Data Fields
-            nga.field('username', 'string')
-                .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters', readOnly: true})
-                .label('Username')
-                .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
-            nga.field('password', 'password')
-                .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
-                .label('Password')
-                .validation({ required: true, pattern: '.{4,}' }),
+
             nga.field('mac_address', 'string')
                 .attributes({maxlength: 12})
                 .label('Sale mac address'),

@@ -13,36 +13,21 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false,
             defaultValue: 1,
-            unique: 'parameter_id'
+            unique: true
         },
-        parameter_id: {
-            type: DataTypes.STRING(100),
-            allowNull: false,
-            unique: 'parameter_id'
-        },
-        parameter_value: {
-            type: DataTypes.STRING(100),
-            allowNull: false
-        },
-        parameter1_value: {
-            type: DataTypes.STRING(100),
-            allowNull: true
-        },
-        parameter2_value: {
-            type: DataTypes.STRING(100),
-            allowNull: true
-        },
-        parameter3_value: {
-            type: DataTypes.STRING(100),
-            allowNull: true
-        },
-        duration: {
-            type: DataTypes.INTEGER(50),
-            allowNull: true
-        },
-        description: {
-            type: DataTypes.STRING(500),
-            allowNull: true
+        data: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            get: function () {
+                try {
+                    return JSON.parse(this.getDataValue('data'));
+                } catch (e) {
+                    return null;
+                }
+            },
+            set: function (value) {
+                return this.setDataValue('data', JSON.stringify(value));
+            }
         }
     }, {
         tableName: 'advanced_settings',

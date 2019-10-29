@@ -11,12 +11,12 @@ var winston = winston = require(path.resolve('./config/lib/winston'));
 
 function schedule_program(event_time, firebase_key, event_id, login_data_id, channel_number, program_id){
     try{
-        scheduled_tasks[event_id] = setTimeout(function(){
+        scheduled_tasks[event_id] = setTimeout(function() {
             send_notification(event_time, firebase_key, login_data_id, channel_number, program_id)
         }, event_time);
     }
     catch(e){
-        winston.error(e);
+        winston.error("Error at scheduling program, error: ", e);
     }
 }
 
@@ -37,10 +37,10 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
         else{
             models.epg_data.findOne({
                 attributes: ['id', 'channel_number', 'program_start', 'title', 'long_description'],
-                where: {id: program_id, company_id: req.thisuser.company_id}
+                where: {id: program_id}
             }).then(function (epg_program) {
                 if(!epg_program || epg_program.length<0){
-                    winston.info("no epg records found")
+                    winston.info("No EPG records found at schedule.")
                 }
                 else{
                     var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');

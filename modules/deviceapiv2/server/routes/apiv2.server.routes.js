@@ -44,14 +44,13 @@ module.exports = function(app) {
     app.route('/apiv2/credentials/login')
         .all(authpolicy.plainAuth)
         .all(authpolicy.isAllowed)
-        .post(thisrequestController.read_company_advanced_settings)
         .post(credentialsController.loginv2);
 
     /* ===== login data credentials===== */
     app.route('/apiv2/credentials/login_account_kit')
         .all(authpolicy_v3.plainAuth)
         .all(authpolicy_v3.isAllowed)
-        .post(credentialsController.login);
+        .post(credentialsController.loginv2);
 
     app.route('/apiv2/credentials/logout')
         .all(authpolicy.isAllowed)
@@ -82,6 +81,10 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .get(deviceepgController.get_event)
         .post(deviceepgController.event);
+
+    app.route('/apiv2/channels/event/:channelId')
+      .all(authpolicy.isAllowed)
+      .get(deviceepgController.event_get);
 
     app.route('/apiv2/channels/daily_epg')
         .all(authpolicy.isAllowed)
@@ -239,11 +242,11 @@ module.exports = function(app) {
     app.route('/apiv2/sites_web/registration')
         .all(authpolicy.plainAuth)
         .all(authpolicy.emptyCredentials)
-        .post(sitesController.createaccount);
+        .post(sitesController.createAccountV2);
     app.route('/apiv2/sites/registration')
         .all(authpolicy.plainAuth)
         .all(authpolicy.emptyCredentials)
-        .post(sitesController.createaccount);
+        .post(sitesController.createAccountV2);
 
 
     app.route('/apiv2/sites/confirm-account/:token')

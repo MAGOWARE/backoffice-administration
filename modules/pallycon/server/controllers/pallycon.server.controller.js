@@ -10,7 +10,6 @@ var responses = require(path.resolve("./config/responses.js"));
 const crypto = require("crypto");
 
 exports.handleCIDIssue = function(req, res) {
-    console.log('req data: ' + req.body.data);
     res.send(issueCID.makeRes(req.body.data));
 };
 
@@ -37,9 +36,9 @@ exports.TokenIssue = function(req, res) {
 
     const AES_IV = "0123456789abcdef";
     const siteInfo = {
-        siteId: "KMDK",
-        siteKey: "WxoXbCibLa6ZAuwIxlfG8ZaX3JzX68uZ",
-        accessKey: "Ma6VRgtv0C40NAQfNShhRRLFljiHunAJ"
+        siteId: "ID",
+        siteKey: "PALYCON_SITE_KEY_HERE",
+        accessKey: "PALYCON_ACCESS_KEY_HERE"
     };
 
     let licenseInfo = {

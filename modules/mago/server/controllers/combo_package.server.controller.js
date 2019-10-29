@@ -46,7 +46,7 @@ exports.update = function(req, res) {
         updateData.updateAttributes(req.body).then(function(result) {
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Cannot update attributes at combo_package, error: ",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -150,7 +150,7 @@ exports.dataByID = function(req, res, next, id) {
       next();
     }
   }).catch(function(err) {
-      winston.error(err);
+      winston.error("Error at finding combo_package by id, error: ", err);
     return next(err);
   });
 

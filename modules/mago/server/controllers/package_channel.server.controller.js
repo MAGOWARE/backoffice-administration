@@ -106,7 +106,7 @@ exports.update = function(req, res) {
         updateData.updateAttributes(req.body).then(function(result) {
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error on updaing package channel at package channel, error: ",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -145,7 +145,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at deleting package channel, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -209,7 +209,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at finding dataById at package channel, error: ",err);
         return next(err);
     });
 

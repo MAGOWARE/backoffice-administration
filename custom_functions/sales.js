@@ -56,17 +56,17 @@ function add_subscription(req, res, login_id, combo_id, username){
                         var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
                         res.send(clear_response);
                     }).catch(function(error){
-                        winston.error(error);
+                        winston.error("Error at creating sale report, error: ",error);
                     });
                     return null;
                 }).catch(function(error){
-                    winston.error(error);
+                    winston.error("Error at upserting subscription, error: ",error);
                 });
                 return null;
             }
         }
     }).catch(function(error){
-        winston.error(error);
+        winston.error("Error finding combo, error: ",error);
     });
 }
 
@@ -170,7 +170,9 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                             user_username: loginData.id,
                             saledate: Date.now(),
                             active:sale_or_refund,
-                            company_id: req.token.company_id
+                            company_id: req.token.company_id,
+                            value: combo.value,
+                            duration:combo.duration
                         };
 
                         if(sale_or_refund == 1) {
@@ -220,21 +222,22 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
 //saves movie in list of movies bought by this client
 exports.buy_movie = function(req, res, username, vod_id, transaction_id) {
 
-    var movie_purchase_data = []; //the records saved will be stored here
+    let movie_purchase_data = []; //the records saved will be stored here
+    const company_id = req.body.company_id;
 
     // search for the combo for transactional vod. if available, proceed
     return db.combo.findOne({
         attributes: ['id', 'duration'],
-        where: {product_id: 'transactional_vod', isavailable: true}
+        where: {product_id: 'transactional_vod', isavailable: true, company_id: company_id}
     }).then(function(t_vod_combo) {
-        if(typeof req.app.locals.backendsettings[req.thisuser.company_id].t_vod_duration !== "number"){
+        if(typeof req.app.locals.backendsettings[company_id].t_vod_duration !== "number"){
             return {status: false, message:'buying movie failed. transactional vod not available', sale_data: []}; //the feature of transactional vod is not active
         }
         else{
             // find the id of the client. if successful, proceed saving the sale records
             return db.login_data.findOne({
                 attributes: ['id'],
-                where: {username: username}
+                where: {username: username, company_id: company_id}
             }).then(function (client) {
                 if (!client) return {status: false, message: 'unable to find this client', sale_data: []}; //client not found
 
@@ -245,7 +248,7 @@ exports.buy_movie = function(req, res, username, vod_id, transaction_id) {
                         start_time: Date.now(),
                         end_time: moment().add(t_vod_combo.duration, 'day'),
                         transaction_id: transaction_id,
-                        company_id: req.token.company_id
+                        company_id: company_id
                     };
                     var salesreport_data = {
                         transaction_id: transaction_id,
@@ -255,7 +258,7 @@ exports.buy_movie = function(req, res, username, vod_id, transaction_id) {
                         user_username: username,
                         distributorname: '',
                         saledate: Date.now(),
-                        company_id: req.token.company_id
+                        company_id: company_id
                     };
                     movie_purchase_data.push(db.t_vod_sales.create(t_vod_sales_data, {transaction: t})); //insert subscription data in the final response
                     movie_purchase_data.push(db.salesreport.create(salesreport_data, {transaction: t})); //insert sale data in the final response

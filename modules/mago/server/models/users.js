@@ -37,7 +37,7 @@ module.exports = function(sequelize, DataTypes) {
                             return next();
                         })
                         .catch(function(err) {
-                            winston.error(err);
+                            winston.error("Error finding user, error: ",err);
                             return next(err);
                         });
                 }
@@ -135,7 +135,7 @@ module.exports = function(sequelize, DataTypes) {
             },
             encryptPassword: function(hashedpassword, salt) {
                 if (!hashedpassword || !salt || hashedpassword.length < 1 || salt.length < 1) return false;
-                salt = new Buffer(salt, 'base64');
+                salt = Buffer.from(salt, 'base64');
                 return crypto.pbkdf2Sync(hashedpassword, salt, 10000, 64,'sha1').toString('base64');
             }
         },

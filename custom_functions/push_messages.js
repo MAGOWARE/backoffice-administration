@@ -82,9 +82,9 @@ function save_message(user, googleappid, message, action, title, company_id){
         title: title,
         company_id: company_id
     }).then(function(result) {
-        winston.info('Push notifications saved')
+        winston.info('Push notifications saved');
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at creating push notification, error: ", err);
     });
 
 }

@@ -144,7 +144,7 @@ function handleAuthSuccess(req, res, access_token) {
                 res.send(responseMsg);
             }
         }).catch(function(error){
-            winston.error(error);
+            winston.error("Error finding login data at account kit controlller, error: ", error);
         })
     });
 }

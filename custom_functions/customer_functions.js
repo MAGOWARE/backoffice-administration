@@ -91,7 +91,7 @@ exports.create_login_data = function(req, res, login_data_username) {
 
 
 exports.create_customer_with_login = function(req, res) {
-
+    const COMPANY_ID = req.body.company_id || 1;
     return db.customer_data.findOne({
                 where: {email: req.body.email.toLowerCase()}
             }).then(function (customer_response) {
@@ -101,7 +101,7 @@ exports.create_customer_with_login = function(req, res) {
                 else{
                     //search if username exists
                     return db.login_data.findOne({
-                            where: {username: req.body.username.toLowerCase(), company_id: req.token.company_id}
+                            where: {username: req.body.username.toLowerCase(), company_id: COMPANY_ID}
                         }).then(function (login_data) {
                             if (login_data) {
                                 return {status: false, login_data: true, message: "Username already exists"} //return if username found
@@ -181,7 +181,7 @@ exports.find_or_create_customer_and_login = function(req, res) {
                 where: {username: req.body.username.toLowerCase()}
             }).then(function (login_data) {
                 if (login_data) {
-                    return {status: false, login_data: true, message: "Username already exists"} //return if username found
+                    return {status: true, login_data: true, message: "Username already exists"} //return if username found
                 }
                 else {
                     //begin data customer creation transaction

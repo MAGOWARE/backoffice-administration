@@ -10,17 +10,16 @@ var path = require('path'),
 
 exports.handleIPN = function(req, res) {
     let ipnEvent = req.body;
-    console.log(ipnEvent);
-
     if (req.method !== "POST") {
         res.status(405).send("Method Not Allowed");
+        return;
     } else {
         // Return empty 200 response to acknowledge IPN post success.
-        res.status(200);
+        res.status(200).end();
     }
 
     if (!ipnEvent.custom) {
-        winston.error("payment metadata is not here");
+        winston.error("IPN message is missing custom");
         return;
     }
 
@@ -82,7 +81,7 @@ exports.handleIPN = function(req, res) {
                                         }
                                         else
                                         {
-                                            winston.info(result)
+                                            winston.error(result)
                                         }
                                     })
                                 }
@@ -131,12 +130,12 @@ exports.handleIPN = function(req, res) {
                         if (metadata.length == 1) {
                             subscriptionFunctions.add_subscription_transaction(req, res, -1, ipnEvent.parent_txn_id)
                             .then((result) => {
-                                if (result.status) {
-                                    res.send(result);
+                                if(result.status) {
+                                    winston.info(result)
                                 }
                                 else
                                 {
-                                    res.send(result);
+                                    winston.error(result)
                                 }
                             });
                         }
@@ -144,7 +143,7 @@ exports.handleIPN = function(req, res) {
                 });
             }
             else {
-                res.status({status: false, message: "Transaction not found"});
+                winston.info({status: false, message: "Transaction not found"});
             }
         });
     }

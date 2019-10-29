@@ -25,8 +25,8 @@ function trackobject(object_data,req, cb) {
     object_data.rec = 1; //matomo required
     //object_data.send_image=0;
 
-    object_data.token_auth = 'd6b6d00e799635c1eea5443ce13cecad'; //matomo required for extra data, todo: implemnt on backend.
-    //object_data.token_auth = '5b06eebdcbaacb6cb613adc7832e0276'; //matomo required for extra data, todo: implemnt on backend.
+    object_data.token_auth = ''; //matomo required for extra data, todo: implemnt on backend.
+    //object_data.token_auth = ''; //matomo required for extra data, todo: implemnt on backend.
 
     object_data.uid = req.auth_obj.username;        //user ID
     object_data.ua  = req.headers["user-agent"];    //user agent

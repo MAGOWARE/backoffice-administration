@@ -11,13 +11,17 @@ var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     winston = require('winston'),
+    sequelize = require('sequelize'),
     async = require('async'),
     crypto = require('crypto'),
     nodemailer = require('nodemailer'),
     config = require(path.resolve('./config/config')),
-    DBModel = db.users;
-var authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js'));
+    dbAdmin = require(path.resolve('./config/lib/sequelize')),
+    DBModel = db.users,
+    sendEmail = require(path.resolve('./custom_functions/sendEmail'));
+
 var async = require('async');
+
 
 /**
  * @api {post} /api/auth/login /api/auth/login
@@ -40,76 +44,128 @@ exports.authenticate = function (req, res) {
     DBModel.findOne(
         {
             where: {
-                username: authBody.username
+                username: authBody.username,
+                isavailable: true
             },
-            include: [{ model: db.groups, required: true }]
+            include: [{model: db.groups, required: true}]
         }
     ).then(function (result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'UserName or Password does not match'
-            });
-        } else {
-
-            if (!result.authenticate(authBody.password)) {
-                return res.status(401).send({
+            if (!result) {
+                return res.status(404).send({
                     message: 'UserName or Password does not match'
                 });
-
-            }
-            if (result.group.code != 'superadmin' && req.app.locals.backendsettings[result.company_id].expire_date.getTime() < Date.now()) {
-                res.status(402).send({ message: 'Company disabled due to payment' });
-                return;
-            }
-            var group = {};
-            if (result.group) {
-                group = result.group.code;
             } else {
-                group = "guest"; // Defaulting to GUEST group
+
+                if (!result.authenticate(authBody.password)) {
+                    return res.status(401).send({
+                        message: 'UserName or Password does not match'
+                    });
+
+                }
+                if (result.group.code !== 'superadmin' && req.app.locals.backendsettings[result.company_id].expire_date.getTime() < Date.now()) {
+                    res.status(402).send({ message: 'Company disabled due to payment' });
+                    return;
+                }
+                var group = {};
+                if (result.group) {
+                    group = result.group.code;
+                } else {
+                    group = "guest"; // Defaulting to GUEST group
+                }
+                    var token = jwt.sign(
+                    {
+                        id: result.id,
+                        company_id: result.company_id,
+                        iss: jwtIssuer,
+                        sub: result.username,
+                        username: result.username,
+                        uid: result.id,
+                        role: group
+                    }, jwtSecret, {
+                        expiresIn: "4h"
+                    });
+
+                req.token = jwt.verify(token, jwtSecret);
+
+                if (req.token.role !== 'superadmin') {
+                    db.users.findAll({
+                        include : [{model : db.groups, attributes: ['code'], where : {code : 'admin'}}],
+                        where: {company_id: req.token.company_id, isavailable: true}
+                    }).then(function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            const userData = {
+                                email: data[i].email
+
+                            };
+
+                            const smtpConfig = {
+                                host: (req.app.locals.backendsettings[req.token.company_id].smtp_host) ? req.app.locals.backendsettings[req.token.company_id].smtp_host.split(':')[0] : 'smtp.gmail.com',
+                                port: (req.app.locals.backendsettings[req.token.company_id].smtp_host) ? Number(req.app.locals.backendsettings[req.token.company_id].smtp_host.split(':')[req.token.company_id]) : 465,
+                                secure: (req.app.locals.backendsettings[req.token.company_id].smtp_secure === false) ? req.app.locals.backendsettings[req.token.company_id].smtp_secure : true,
+                                auth: {
+                                    user: req.app.locals.backendsettings[req.token.company_id].email_username,
+                                    pass: req.app.locals.backendsettings[req.token.company_id].email_password
+                                }
+                            };
+
+                            // var ip = req.ip.replace('::ffff:', '');
+
+                            const htmlBody = `User: ${req.body.username} has logged in. <br> Browser Info: ${req.headers['user-agent']} <br> Time: ${new Date().toISOString()}  <br> City: ${req.geoip.city} <br> Country: ${req.geoip.country} <br> IP Address: ${ip}`;
+                            const mailOptions = {
+                                to: userData.email,
+                                from: req.app.locals.backendsettings[req.token.company_id].email_address,
+                                subject: 'Someone just logged in!',
+                                html: htmlBody
+                            };
+
+
+                            sendEmail(smtpConfig, mailOptions, ({status, message, error}) => {
+                                if (error) {
+                                    // res.send({status, message});
+                                } else {
+                                    //res.send({status, message});
+                                }
+                            });
+                        }
+                        ;
+
+                    })
+                }
+
+                else {
+                    console.log('User is Admin');
+                }
+
+
+                let ip = req.ip.replace('::ffff:', '');
+                return db.users.update({last_login_ip: ip }, {where: {id: result.id}})
+                    .then(function () {
+                        //Wait for the user's menu object to be prepared. Once finished, return the object or the error (respectively)
+                        return prepare_menu_for_role(result.group.id, result.group.code).then(function (menu_object) {
+                            res.json({ token: token, menujson: menu_object }); //Preparing the menu object was successful. Return the response
+                        }).catch(function (error) {
+                            winston.error("Could not get menu for this user :", error);
+                            res.jsonp(error); //Preparing the menu object was a failure. Return the error
+                        });
+                    }).catch(function(err) {
+                        winston.error("Update of last login ip failed  ", err)
+                        //Wait for the user's menu object to be prepared. Once finished, return the object or the error (respectively)
+                        return prepare_menu_for_role(result.group.id, result.group.code).then(function(menu_object){
+                            res.json({token:token, menujson:menu_object}); //Preparing the menu object was successful. Return the response
+                        }).catch(function(error){
+                            winston.error("Could not get menu for this user :", error);
+                            res.jsonp(error); //Preparing the menu object was a failure. Return the error
+                        });
+                    });
             }
-
-            var token = jwt.sign(
-                {
-                    id: result.id,
-                    company_id: result.company_id,
-                    iss: jwtIssuer,
-                    sub: result.username,
-                    username: result.username,
-                    uid: result.id,
-                    role: group
-                }, jwtSecret, {
-                    expiresIn: "4h"
-                });
-
-            let ip = req.ip.replace('::ffff:', '');
-            return db.users.update({last_login_ip: ip }, {where: {id: result.id}})
-                .then(function () {
-                    //Wait for the user's menu object to be prepared. Once finished, return the object or the error (respectively)
-                    return prepare_menu_for_role(result.group.id, result.group.code).then(function (menu_object) {
-                        res.json({ token: token, menujson: menu_object }); //Preparing the menu object was successful. Return the response
-                    }).catch(function (error) {
-                        winston.error("Could not get menu for this user :", error);
-                        res.jsonp(error); //Preparing the menu object was a failure. Return the error
-                    });
-                }).catch(function(err) {
-                    winston.error("Update of last login ip failed  ", err)
-                    //Wait for the user's menu object to be prepared. Once finished, return the object or the error (respectively)
-                    return prepare_menu_for_role(result.group.id, result.group.code).then(function(menu_object){
-                        res.json({token:token, menujson:menu_object}); //Preparing the menu object was successful. Return the response
-                    }).catch(function(error){
-                        winston.error("Could not get menu for this user :", error);
-                        res.jsonp(error); //Preparing the menu object was a failure. Return the error
-                    });
-                })
         }
-    }).catch(function (err) {
+    ).catch(function (err) {
         winston.error("Finding the user failed with error: ", err);
         res.jsonp(err);
     });
 };
 
 exports.logingmail = function (req, res) {
-    console.log('token')
 
     let aHeader = req.get("Authorization");
 
@@ -131,7 +187,7 @@ exports.logingmail = function (req, res) {
             where: {
                 id: req.token.id
             },
-            include: [{ model: db.groups, required: true }]
+            include: [{model: db.groups, required: true}]
         }
     ).then(function (result) {
         if (!result) {
@@ -164,7 +220,7 @@ exports.logingmail = function (req, res) {
                     res.jsonp(error); //Preparing the menu object was a failure. Return the error
                 });
             })
-            
+
         }
     }).catch(function (err) {
         winston.error("Finding the user failed with error: ", err);
@@ -214,7 +270,7 @@ exports.get_personal_details = function (req, res) {
 exports.update_personal_details = function (req, res) {
 
     DBModel.findOne({
-        where: { username: req.token.sub }
+        where: {username: req.token.sub}
     }).then(function (result) {
 
         if (result) {
@@ -252,8 +308,7 @@ exports.changepassword1 = function (req, res, next) {
                     if (user.company_id === req.token.company_id) {
                         if (user.authenticate(passwordDetails.currentPassword)) {
                             if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-                                user.hashedpassword = passwordDetails.newPassword;
-                                user.save()
+                                user.update({hashedpassword: passwordDetails.newPassword})
                                     .then(function () {
                                         res.send({
                                             message: 'Password changed successfully'
@@ -277,7 +332,7 @@ exports.changepassword1 = function (req, res, next) {
                         }
                     }
                     else {
-                        res.status(404).send({ message: 'User not authorized to access these data' });
+                        res.status(404).send({message: 'User not authorized to access these data'});
                     }
                 } else {
                     res.status(400).send({
@@ -307,28 +362,28 @@ exports.forgot = function (req, res, next) {
     async.waterfall([
         function (done) { // Lookup user by username or email
             if (!req.body.username && !req.body.email) {
-                return res.status(400).send({ message: 'Username field must not be blank' });
+                return res.status(400).send({message: 'Username field must not be blank'});
             }
             else {
                 var user_data;
-                if (req.body.username) user_data = { username: req.body.username.toLowerCase() };
-                else if (req.body.email) user_data = { email: req.body.email.toLowerCase() };
+                if (req.body.username) user_data = {username: req.body.username.toLowerCase()};
+                else if (req.body.email) user_data = {email: req.body.email.toLowerCase()};
                 DBModel.find({
                     where: user_data
                 }).then(function (user) {
                     //the user was not found. Either the username or email was incorrect
-                    if (!user && req.body.username) return res.status(400).send({ message: 'No account with that username has been found' });
-                    if (!user && req.body.email) return res.status(400).send({ message: 'No account linked to this email has been found' });
+                    if (!user && req.body.username) return res.status(400).send({message: 'No account with that username has been found'});
+                    if (!user && req.body.email) return res.status(400).send({message: 'No account linked to this email has been found'});
                     //the user was found. Go to next step
                     else done(null, user);
                     return null;
-                }).catch(function (err) {
+                }).catch(function(err) {
                     winston.error("Finding the user failed with error: ", err);
-                    return res.status(400).send({ message: 'An error occurred while searching for this user' });
+                    return res.status(400).send({message: 'An error occurred while searching for this user'});
                 });
             }
         },
-        function (user, done) {
+        function(user, done){
             //initialize SMTP object
             var smtpConfig = {
                 host: (req.app.locals.backendsettings[user.company_id].smtp_host) ? req.app.locals.backendsettings[user.company_id].smtp_host.split(':')[0] : 'smtp.gmail.com',
@@ -370,10 +425,10 @@ exports.forgot = function (req, res, next) {
             };
             smtpTransport.sendMail(mailOptions, function (err) {
                 if (!err) {
-                    res.status(200).send({ message: "An email has been sent to the user's email address with further instructions." });
+                    res.status(200).send({message: "An email has been sent to the user's email address with further instructions."});
                 } else {
                     winston.error("Resetting user password failed with error: ", err);
-                    return res.status(400).send({ message: 'Failure sending email' });
+                    return res.status(400).send({message: 'Failure sending email'});
                 }
                 done(err);
             });
@@ -388,28 +443,25 @@ exports.forgot = function (req, res, next) {
 exports.renderPasswordForm = function (req, res) {
     DBModel.findOne({
         attributes: ['id'],
-        where: { resetpasswordtoken: req.params.token, resetpasswordexpires: { $gte: Date.now() } } //token is the identifier for this action, expired tokens are invalid identifiers
+        where: {resetpasswordtoken: req.params.token, resetpasswordexpires: {$gte: Date.now()}} //token is the identifier for this action, expired tokens are invalid identifiers
     }).then(function (found_user) {
         if (found_user) {
-            res.render(path.resolve('modules/mago/server/templates/reset-password-enter-password'), { token: req.params.token }, function (err, html) {
+            res.render(path.resolve('modules/mago/server/templates/reset-password-enter-password'), {token: req.params.token}, function (err, html) {
                 res.send(html);
             });
             return null;
         }
         else {
-            res.send({ message: "The link to reset your password is not valid. Please re-make the request for a reset link" });
+            res.send({message: "The link to reset your password is not valid. Please re-make the request for a reset link"});
         }
-    }).catch(function (error) {
-        winston.error(error);
-        res.send({ message: "Unable to redirect to the reset password page. Please contact your administrator for further instructions." });
+    }).catch(function(error){
+        winston.error("Cannot find password form, error: ", error);
+        res.send({message: "Unable to redirect to the reset password page. Please contact your administrator for further instructions."});
     });
 
 };
 
 exports.resetPassword = function (req, res) {
-
-    var salt = authentication.makesalt();
-    var hashed_password = authentication.encryptPassword(req.body.password, salt);
 
     DBModel.findOne({
         attributes: ['id', 'invite_pending'], where: { resetpasswordtoken: req.params.token, resetpasswordexpires: { $gte: Date.now() } } //token is the identifier for this action, expired tokens are invalid identifiers
@@ -418,15 +470,14 @@ exports.resetPassword = function (req, res) {
             res.send({ message: "The link to reset your password is not valid. Please re-make the request for a reset link" });
         }
         else {
-            let updateObj = { hashedpassword: hashed_password, salt: salt, resetpasswordexpires: 0 };
+            let updateObj = { hashedpassword: req.body.password, resetpasswordexpires: 0 };
 
             if (found_user.invite_pending == true) {
                 updateObj.invite_pending = false;
             }
 
-            DBModel.update(
+            found_user.update(
                 updateObj, //set value to 0. Indicates that the password was reset and the link should no longer work
-                { where: { id: found_user.id } }
             ).then(function (user_updated) {
                 if (user_updated) res.redirect('/admin');
                 else res.send({ message: "Unable to redirect to the reset password page. Please contact your administrator for further instructions." });
@@ -437,7 +488,7 @@ exports.resetPassword = function (req, res) {
             return null;
         }
     }).catch(function (error) {
-        winston.error(error);
+        winston.error("Resetting the user's password failed with error: ", error);
         res.send({ message: "Unable to redirect to the reset password page. Please contact your administrator for further instructions." });
     });
 }
@@ -465,12 +516,22 @@ function prepare_menu_for_role(role_id, role_name) {
                     else {
                         //Verify if the label for this group of menu's has been added. If no, add it and set the flag to true
                         if (label_added === false) {
-                            var temp_label_object = { "template": label.template, "group_roles": [role_name], "children": [] };
+                            var temp_label_object = {
+                                "template": label.template,
+                                "group_roles": [role_name],
+                                "children": []
+                            };
                             custom_menu_object.push(temp_label_object);
                             label_added = true; //the label for this list of menu's was added. Set flag to true, to avoid repeating this label
-                        };
+                        }
+                        ;
                         //Prepare the a temporary object for current menu. Iterate through the children property to add the group role for each child (sub-menu)
-                        var temp_menu_level_one_object = { "title": menu_level_one.description, "icon": menu_level_one.icon, "group_roles": [role_name], "children": menu_level_one.children };
+                        var temp_menu_level_one_object = {
+                            "title": menu_level_one.description,
+                            "icon": menu_level_one.icon,
+                            "group_roles": [role_name],
+                            "children": menu_level_one.children
+                        };
                         if (menu_level_one.link) temp_menu_level_one_object.link = menu_level_one.link; //Menu is clickable. Add link
                         async.forEach(temp_menu_level_one_object.children, function (menu_level_two, callback) {
                             menu_level_two.group_roles = [role_name];
@@ -481,7 +542,7 @@ function prepare_menu_for_role(role_id, role_name) {
                                 callback(null); //Go to next menu
                             }
                             else {
-                                winston.error(error);
+                                winston.error("The group role could not be added into each sub-menu at authentication, error: ",error);
                                 callback(error); //The group role could not be added into each sub-menu. Return error
                             }
                         });
@@ -491,7 +552,7 @@ function prepare_menu_for_role(role_id, role_name) {
                         callback(null); //The current label, menus and children were added in custom_menu_object
                     }
                     else {
-                        winston.error(error);
+                        winston.error("The current label, menus and children could not be added in custom_menu_object at authentication, error: ",error);
                         callback(error); //The current label, menus and children could not be added in custom_menu_object. Return the error
                     }
 
@@ -499,7 +560,7 @@ function prepare_menu_for_role(role_id, role_name) {
             }, function (error) {
                 if (!error) return success(custom_menu_object); //The complete menu object was iterated and the user's menu was prepared successfully. Return it to the controller
                 else {
-                    winston.error(error);
+                    winston.error("Preparing the user's menu failed at authentication, error: ",error);
                     return failure(error); // Preparing the user's menu failed. Return the error
                 }
             });
@@ -508,7 +569,7 @@ function prepare_menu_for_role(role_id, role_name) {
 
         //Find the group rights
         db.grouprights.findAll({
-            attributes: ['api_group_id'], where: { group_id: user_group_id, allow: true }, logging: winston.info
+            attributes: ['api_group_id'], where: {group_id: user_group_id, allow: true}, logging: winston.info
         }).then(function (api_group_list) {
             if ((!api_group_list) && (api_group_list.length < 1)) {
                 return failure("This user does not have permission over any menu currently"); //The user's permission list is empty. Return a warning
@@ -534,12 +595,22 @@ function prepare_menu_for_role(role_id, role_name) {
 
                             //Verify if the label for this group of menu's has been added. If no, add it and set the flag to true
                             if (label_added === false) {
-                                var temp_label_object = { "template": label.template, "group_roles": [role_name], "children": [] };
+                                var temp_label_object = {
+                                    "template": label.template,
+                                    "group_roles": [role_name],
+                                    "children": []
+                                };
                                 custom_menu_object.push(temp_label_object);
                                 label_added = true; //the label for this list of menu's was added. Set flag to true, to avoid repeating this label
-                            };
+                            }
+                            ;
                             //Prepare the a temporary object for current menu. Iterate through the children property to add the group role for each child (sub-menu)
-                            var temp_menu_level_one_object = { "title": menu_level_one.description, "icon": menu_level_one.icon, "group_roles": [role_name], "children": menu_level_one.children };
+                            var temp_menu_level_one_object = {
+                                "title": menu_level_one.description,
+                                "icon": menu_level_one.icon,
+                                "group_roles": [role_name],
+                                "children": menu_level_one.children
+                            };
                             if (menu_level_one.link) temp_menu_level_one_object.link = menu_level_one.link; //Menu is clickable. Add link
                             async.forEach(temp_menu_level_one_object.children, function (menu_level_two, callback) {
                                 menu_level_two.group_roles = [role_name];
@@ -550,7 +621,7 @@ function prepare_menu_for_role(role_id, role_name) {
                                     callback(null); //Go to next menu
                                 }
                                 else {
-                                    winston.error(error);
+                                    winston.error("The group role could not be added into each sub-menu at authentication, error: ",error);
                                     callback(error); //The group role could not be added into each sub-menu. Return error
                                 }
                             });
@@ -564,7 +635,7 @@ function prepare_menu_for_role(role_id, role_name) {
                             callback(null); //The current label, menus and children were added in custom_menu_object
                         }
                         else {
-                            winston.error(error);
+                            winston.error("The current label, menus and children could not be added in custom_menu_object at authentication, error: ",error);
                             callback(error); //The current label, menus and children could not be added in custom_menu_object. Return the error
                         }
 
@@ -572,16 +643,18 @@ function prepare_menu_for_role(role_id, role_name) {
                 }, function (error) {
                     if (!error) return success(custom_menu_object); //The complete menu object was iterated and the user's menu was prepared successfully. Return it to the controller
                     else {
-                        winston.error(error);
+                        winston.error("Preparing the user's menu failed at authentication, error: ",error);
                         return failure(error); // Preparing the user's menu failed. Return the error
                     }
                 });
             }
 
         }).catch(function (error) {
-            winston.error(error);
+            winston.error("The user's permissions could not be verified, therefore preparing the user's menu failed at authentication, error: ",error);
             return failure(error); // The user's permissions could not be verified, therefore preparing the user's menu failed. Return the error
         });
     });
 }
+
+
 

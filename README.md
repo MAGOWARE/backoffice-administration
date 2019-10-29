@@ -1,3 +1,4 @@
+![alt tag](https://www.magoware.tv/wp-content/uploads/2016/06/logo.png)
 
 MAGOWARE is an IPTV/OTT solution for Pay Tv Businesses. The administration portal is build on Sequelize, Express, ng-admin, and Node.js
 
@@ -5,61 +6,168 @@ MAGOWARE is an IPTV/OTT solution for Pay Tv Businesses. The administration porta
 
 ### Before you start, make sure you have these prerequisites installed:
 
+ * PostgreSQL 9.4 or MySQL, MariaDB, SQLite and MSSQL *(Depending on your project but SEAN.JS defaults to PostgreSQL 9.4)*
+ * Redis Server
  * Node.js
  * NPM
 
-### Follow these steps to install Magoware  Management System
+### Running in Production mode
+To run your application with *production* environment configuration, execute grunt as follows:
 
-Download and install NODE JS from the following link:
-
-https://nodejs.org/en/download/
-
-We recommend versions 7.x.x or 8.x.x installed for nodejs
-
-Download MAGOWARE Backoffice application from Github
-
-https://github.com/MAGOWARE/backoffice-administration.git
-
-Run the following command within the root folder to install application libriaries:
+```bash
+$ grunt prod
 ```
-sudo npm install (in linux)
-npm install (in windows)
-```
-Create a database on MySQL server.
 
-Make sure that the collation and charset of your schema supports the languages that you intend to use.
+* explore `config/env/production.js` for production environment configuration options
 
-After all libraries are installed, run the following command to start the server:
-```
-sudo node server.js (in linux)
-node server.js (in windows)
-```
-When application runs for the first time, it will automatically create database structures and populate necessary tables with default values.
+### Running with TLS (SSL)
+Application will start by default with secure configuration (SSL mode) turned on and listen on port 8443.
+To run your application in a secure manner you'll need to use OpenSSL and generate a set of self-signed certificates. Unix-based users can use the following command:
 
+```bash
+$ sh ./scripts/generate-ssl-certs.sh
+```
+
+---
+
+
+```bash
+```
+
+[![Documentation Status](https://readthedocs.org/projects/seanjs/badge/?version=latest)](http://seanjs.readthedocs.org/en/latest/?badge=latest)
+[![Join the chat at https://gitter.im/seanjs-stack/seanjs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/seanjs-stack/seanjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/seanjs-stack/seanjs.svg?branch=master)](https://travis-ci.org/seanjs-stack/seanjs)
+[![Dependencies Status](https://david-dm.org/seanjs-stack/seanjs.svg)](https://david-dm.org/seanjs-stack/seanjs)
+[![bitHound Overall Score](https://www.bithound.io/github/seanjs-stack/seanjs/badges/score.svg)](https://www.bithound.io/github/seanjs-stack/seanjs)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=heroku-badge)](http://seanjs.herokuapp.com)
+[![Built with Grunt](https://img.shields.io/badge/built%20with-GRUNT-orange.svg)](http://gruntjs.com/)
+
+[![NPM](https://nodei.co/npm/generator-seanjs.png?downloads=true&downloadRank=true)](https://nodei.co/npm/generator-seanjs/)
+
+**SEAN.JS** is a Full-Stack Javascript for an easy starting point with [**S**equilizeJS](http://sequelize.readthedocs.org/en/latest/), [**E**xpressJS](http://expressjs.com/), [**A**ngularJS](https://angularjs.org/) and [**N**odeJS](https://nodejs.org/en/) based applications.
+It is designed to give you a quick and organized way to start developing SEAN based web apps.
+
+## Configured with
+* [RedisStore](https://github.com/optimalbits/node_acl): Redis session store backed by node_redis, and is insanely fast!
+* [ACL](https://github.com/optimalbits/node_acl): An Access Control List module, based on Redis with Express middleware support
+* [Async](https://github.com/caolan/async): Higher-order functions and common patterns for asynchronous code
+* [Passport](https://github.com/jaredhanson/passport): Simple, unobtrusive authentication for Node.js (Facebook, Twitter, LinkedIn, Google and PayPal)
+* [Socket.io](https://github.com/socketio/socket.io): Node.js realtime framework server
+* [reCaptcha](https://www.google.com/recaptcha/intro/index.html): Tough on bots Easy on humans
+* [Nodemailer](https://github.com/andris9/Nodemailer): Send e-mails with Node.JS – easy as cake!
+* And many more...
+
+Based on **MEAN Stack**
+
+---
+
+### Live Example: [http://seanjs.herokuapp.com](http://seanjs.herokuapp.com)
+
+---
+### For quick development and deployment:
+
+**Install:**
+* [Docker](https://docs.docker.com/installation/#installation)
+* [Docker Compose](https://docs.docker.com/compose/install/)
+
+
+Using Docker, you don't have to install any prerequisites on your machine.
+Just install [Docker](https://docs.docker.com/installation/#installation), run `docker-compose up` and you are up and running!
+
+You will have these containers created for you:
+
+* Nodejs (4.2.3)
+* PostgreSQL (Latest)
+* Redis (Latest)
+
+
+Local development and testing with compose:
+```bash
+$ docker-compose up
+```
+
+> Note: You might need to try this command `eval "$(docker-machine env default)"` in the project directory root to activate Docker
+
+---
+
+### Installation
+
+### Before you start, make sure you have these prerequisites installed:
+
+ * PostgreSQL 9.4 or MySQL, MariaDB, SQLite and MSSQL *(Depending on your project but SEAN.JS defaults to PostgreSQL 9.4)*
+ * Redis Server
+ * Node.js
+ * NPM
+
+---
+
+
+##### Using Command Line:
+
+> **For MySQL, MariaDB, SQLite and MSSQL**
+
+> Please replace:
+* [user.server.model.js](https://gist.github.com/Massad/3986f4b12d871de8d353#file-user-server-model-js-L6) with `/modules/users/server/models/user.server.model.js`
+* [user.authentication.server.controller.js](https://gist.github.com/Massad/f6f649d60ad3009f7b99#file-user-authentication-server-controller-js-L6) with `/modules/users/server/controllers/users/user.authentication.server.controller.js`
+
+
+> And update your database in the `config/env/`
+
+
+---
 
 ### Database migration
-If this is an upgrade, please run the following to upgrade the database with the latest changes:
+
+$ sequelize migration:create  # Generates a new migration file.
+
+
+To upgrade the database with the latest changes run the following:
 
 ```bash
 $ sequelize db:migrate
 ```
 
-Login to start creating accounts and assets
 
-go to: 
-## http://YourDomain_or_IP/admin 
-and login with username admin and password admin
+* explore `config/env/production.js` for production environment configuration options
 
-## Screenshots
+### Running with TLS (SSL)
+Application will start by default with secure configuration (SSL mode) turned on and listen on port 8443.
+To run your application in a secure manner you'll need to use OpenSSL and generate a set of self-signed certificates. Unix-based users can use the following command:
 
-![login 1](https://user-images.githubusercontent.com/27496920/35095606-51949b68-fc49-11e7-8b16-7be2c8ab11ae.png)
-![dashboard](https://user-images.githubusercontent.com/27496920/35095565-2cd728c2-fc49-11e7-8611-b84f989968a6.png)
-![ga_events-1024x489](https://user-images.githubusercontent.com/27496920/35095647-848ebca6-fc49-11e7-96ae-053a86a5f5fd.png)
+```bash
+$ sh ./scripts/generate-ssl-certs.sh
+```
 
-## Player Application
+Windows users can follow instructions found [here](http://www.websense.com/support/article/kbarticle/How-to-use-OpenSSL-and-Microsoft-Certification-Authority).
+After you've generated the key and certificate, place them in the *config/sslcerts* folder.
 
-You can download the player here: \
-https://github.com/MAGOWARE/backoffice-administration/blob/master/android_apk/magoware-2.8.15.apk
+Finally, execute grunt's prod task `grunt prod`
+* enable/disable SSL mode in production environment change the `secure` option in `config/env/production.js`
+
+
+## Delete GIT History
+
+Step 1: remove all history
+
+rm -rf .git
+Step 2: reconstruct the Git repo with only the current content
+
+git init
+git add .
+git commit -m "Initial commit"
+Step 3: push to GitHub.
+
+git remote add origin <github-uri>
+git push -u --force origin master
+
+
+---
+## API Documentation
+Run the following command to generate APIDOC folder
+```
+apidoc -i modules/deviceapiv2/server/controllers/ modules/streams/server/controllers/ -o public/apidoc/
+```
+
 
 ---
 

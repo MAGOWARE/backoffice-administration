@@ -18,11 +18,7 @@ module.exports = function(app) {
     /* ===== vods ===== */
     app.route('/api/vods')
         .all(policy.Authenticate)
-        .get(vods.list);
-
-    app.route('/api/vods')
-        .all(policy.Authenticate)
-        .all(policy.isAllowed)
+        .get(vods.list)
         .post(vods.create);
 
     app.route('/api/vods/:vodId')

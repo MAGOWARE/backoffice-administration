@@ -2,29 +2,50 @@
 <dashboard-summary></dashboard-summary>
 
 <graph>
-    <vis-timeline data="data" options="options"></vis-timeline>
+  <vis-graph2d class="custom-graph-style" data="data" options="options"></vis-graph2d>
 </graph>
 
 <div class="row dashboard-content">
-
-    <div class="container-fluid">
-        <div class="panel panel-default theme">
-            <ma-dashboard-panel collection="dashboardController.collections.login_accounts" entries="dashboardController.entries.login_accounts" datastore="dashboardController.datastore"></ma-dashboard-panel>
+  <div class="container-fluid">
+    <div ng-controller="expireGraphCtr">
+      <div class="row">
+        <div class="col-sm-12 col-md-6">
+          <h4>Expirations By Month</h4>
+          <vis-graph2d data="data" options="options"></vis-graph2d>
         </div>
-    </div>
-
-    <div class="col-lg-12">
-        <div class="panel panel-default theme">
-            <ma-dashboard-panel collection="dashboardController.collections.sales_report" entries="dashboardController.entries.sales_report" datastore="dashboardController.datastore"></ma-dashboard-panel>
+        <div class="col-sm-6">
+          <h4>All time Expirations</h4>
+          <vis-graph2d class="group0Style" data="data2" options="options2"></vis-graph2d>
         </div>
+        <div class="col-sm-12 col-md-12">
+          <h4 style="margin-top: 25px;">Sales Last 24 months</h4>
+          <vis-graph2d class="group0Style" data="data3" options="options3"></vis-graph2d>
+        </div>
+      </div>
     </div>
+    <div class="panel panel-default theme">
+      <ma-dashboard-panel
+        collection="dashboardController.collections.login_accounts"
+        entries="dashboardController.entries.login_accounts"
+        datastore="dashboardController.datastore"
+      ></ma-dashboard-panel>
+    </div>
+  </div>
 
+  <div class="col-lg-12">
+    <div class="panel panel-default theme">
+      <ma-dashboard-panel
+        collection="dashboardController.collections.sales_report"
+        entries="dashboardController.entries.sales_report"
+        datastore="dashboardController.datastore"
+      ></ma-dashboard-panel>
+    </div>
+  </div>
 
-    <div class="container-fluid">
-        <!--div class="col-xs-2 idiqagentstatus-buttonHolders pull-right">
+  <div class="container-fluid">
+    <!--div class="col-xs-2 idiqagentstatus-buttonHolders pull-right">
         <button type="button" class="btn btn-xs" ng-click="agentClicked()">Show hidden Node and change color</button>
       </div-->
-        <vis-timeline data="data" options="options"></vis-timeline>
-    </div>
 
+  </div>
 </div>

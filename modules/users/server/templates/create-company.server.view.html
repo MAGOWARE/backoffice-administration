@@ -11,63 +11,45 @@
 
     <style type="text/css">
         body {
-            background: #222D32;
+            background: rgba(0, 9, 25, 0.15);
             font-family: 'Roboto', sans-serif;
         }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            min-height: 35vw;
+            position: relative;
+        }
+
 
         .login-box {
             margin-top: 75px;
             height: auto;
-            background: #1A2226;
             text-align: center;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-        }
+        }        
 
-        .login-key {
-            height: 100px;
-            font-size: 80px;
-            line-height: 100px;
-        }
-
-        .login-title {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 30px;
-            letter-spacing: 2px;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #ECF0F5;
-        }
 
         .login-form {
-            margin-top: 25px;
+            margin-top: 50px;
             text-align: left;
+            width: 550px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         input[type=text] {
-            background-color: #1A2226;
-            border: none;
-            border-bottom: 2px solid #0DB8DE;
-            border-top: 0px;
-            border-radius: 0px;
+            background: #fff;
+            height: 50px;
+            border-radius: 25px;
+            font-size: 15px;
+            line-height: 1.2;
+            color: #333333;
             font-weight: bold;
-            outline: 0;
-            margin-bottom: 20px;
-            padding-left: 0px;
-            color: #ECF0F5;
-        }
-
-        input[type=password] {
-            background-color: #1A2226;
             border: none;
-            border-bottom: 2px solid #0DB8DE;
-            border-top: 0px;
-            border-radius: 0px;
-            font-weight: bold;
-            outline: 0;
-            padding-left: 0px;
-            margin-bottom: 20px;
-            color: #ECF0F5;
+            box-shadow: 1px 4px 5px 1px rgba(0,0,0,0.15);
         }
 
         .form-group {
@@ -76,107 +58,77 @@
         }
 
         .form-control:focus {
-            border-color: inherit;
-            -webkit-box-shadow: none;
-            box-shadow: none;
-            border-bottom: 2px solid #0DB8DE;
-            outline: 0;
-            background-color: #1A2226;
-            color: #ECF0F5;
+            background: #fff;
+            height: 50px;
+            border-radius: 25px;
+            font-size: 15px;
+            line-height: 1.2;
+            color: #333333;
+            font-weight: bold;
+            border: none;
+            box-shadow: 1px 4px 5px 1px rgba(0,0,0,0.15);
         }
 
         input:focus {
+            background: #fff;
             outline: none;
             box-shadow: 0 0 0;
         }
 
-        label {
-            margin-bottom: 0px;
-        }
-
-        .form-control-label {
-            font-size: 15px;
-            color: white;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .btn-outline-primary {
-            border-color: #0DB8DE;
-            color: #0DB8DE;
-            border-radius: 18px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: 0.3s;
-            font-size: 18px;
-        }
 
         .btn-outline-primary:hover {
-            background-color: #0DB8DE;
-            right: 0px;
-            color: white;
+            background: #00c292;
+            -webkit-transition: 0.5s;
+            -moz-transition: 0.5s;
+            -o-transition: 0.5s;
+            transition: 0.5s;
         }
         .btn-outline-primary:focus {
             outline:0 !important;
         }
 
-        .login-button {
-            margin-bottom: 25px;
-        }
-
-        .login-text {
-            text-align: left;
-            padding-left: 0px;
-            color: #A2A4A4;
-        }
-        .login-key > i{
-            color: white;
-        }
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active  {
-            -webkit-box-shadow: 0 0 0 30px #1A2226 inset !important;
+            -webkit-box-shadow: 0 0 0 30px #E9F0FE inset !important;
         }
         input:-webkit-autofill {
-            -webkit-text-fill-color: white !important;
+            -webkit-text-fill-color: #333333 !important;
         }
-
+        .btn-login {
+            height: 50px;
+            border-radius: 25px;
+            font-size: 15px;
+            line-height: 1.2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            background: rgba(0, 9, 25, 0.8);
+            -webkit-transition: 0.5s;
+            -moz-transition: 0.5s;
+            -o-transition: 0.5s;
+            transition: 0.5s;
+        }
     </style>
 
 </head>
 <body>
 
 <div class="container">
-    <div class="row">
-        <div class="col-lg-3 col-md-2"></div>
-        <div class="col-lg-6 col-md-8 login-box">
-            <div class="col-lg-12 login-form">
-                <div class="col-lg-12 login-form">
-                    <form method="POST" action="/create_company_and_user/{{email}}">
-
-                        <div class="form-group">
-                            <label class="form-control-label">Company Name</label>
-                            <input type="text" class="form-control" name="company_name" id="company_name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-control-label">Telephone number</label>
-                            <input type="text" class="form-control" name="telephone" id="telephone" required>
-                        </div>
-                        <div class="col-lg-12 loginbttm">
-                            <div class="col-lg-12 login-btm login-button">
-                                <button type="submit" class="btn btn-outline-primary btn-block">Submit</button>
-                            </div>
-                        </div>
-
-
-                    </form>
-                </div>
+    <div class="login-form">
+        <form method="POST" action="/create_company_and_user/{{email}}">
+            <div class="form-group">
+                <input type="text" placeholder="Company Name" class="form-control" name="company_name" id="company_name" required>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-2"></div>
+
+            <div class="form-group">
+                <input type="text" placeholder="Telephone Number" class="form-control" name="telephone" id="telephone" required>
+            </div>
+            <div class=" login-button">
+                <button type="submit" class="btn btn-outline-primary btn-login btn-block">Submit</button>
+            </div>
+        </form>
     </div>
 </div>
 

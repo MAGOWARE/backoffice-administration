@@ -23,7 +23,7 @@ module.exports = {
     secure: Boolean(process.env.ssl) || true
   },
   // sessionSecret should be changed for security measures and concerns
-  sessionSecret: 'NodeMysqlCRUD20160608',
+  sessionSecret: '',
   // sessionKey is set to the generic sessionId key used by PHP applications
   // for obsecurity reasons
   sessionKey: 'sessionId',

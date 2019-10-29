@@ -63,7 +63,8 @@ export default function (nga, admin) {
                     { value: 'eng', label: 'English' },
                     { value: 'fre', label: 'French' },
                     { value: 'spa', label: 'Spanish' },
-                    { value: 'sqi', label: 'Albanian' }
+                    { value: 'sqi', label: 'Albanian' },
+                    { value: 'pt', label: 'Portuguese' }
                 ])
                 .validation({ required: true })
                 .label('Language'),
@@ -108,7 +109,8 @@ export default function (nga, admin) {
                     { value: 'eng', label: 'English' },
                     { value: 'fre', label: 'French' },
                     { value: 'spa', label: 'Spanish' },
-                    { value: 'sqi', label: 'Albanian' }
+                    { value: 'sqi', label: 'Albanian' },
+                    { value: 'pt', label: 'Portuguese' }
                 ])
                 .validation({ required: true })
                 .label('Language'),

@@ -36,7 +36,6 @@
         "/api/logindata/",
         "/api/salesreports",
         "/api/subscriptions",
-
         "/api/customergroups/",
         "/api/subscriptions/",
         "/api/logindata",
@@ -146,7 +145,8 @@
         "/api/tmdbseries",
         "/api/tmdbseries/",
         "/api/import_channel",
-        "/api/import_vod"
+        "/api/import_vod",
+        "/api/subtitlesImport"
     ],
     "branding": [
         "/api/devicemenus",
@@ -242,13 +242,16 @@
         "/api/sales_by_month",
         "/api/users/",
         "/api/logindata/",
-        "/api/combos/"
+        "/api/combos/",
+        "/api/reports/expiresubscription"
     ],
     "expiration_reports": [
         "/api/sales_monthly_expiration",
         "/api/sales_by_expiration"
     ],
-    "device_reports": [],
+    "device_reports": [
+        "/api/reports/active_devices"
+    ],
     "audience_reports": [],
     "admin personal details": [
         "/api/personal-details",

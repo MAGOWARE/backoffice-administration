@@ -7,7 +7,8 @@ export default function (nga, admin) {
         {value: {"iso_639_1":"en","name":"English"}, label: 'English'},
         {value: {"iso_639_1":"sp","name":"Spanish"}, label: 'Spanish'},
         {value: {"iso_639_1":"gr","name":"German"}, label: 'German'},
-        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'}
+        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'},
+        {value: {"iso_639_1":"pt","name":"Portuguese"}, label: 'Portuguese'}
     ];
     vod.listView()
         .title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
@@ -593,13 +594,9 @@ export default function (nga, admin) {
                 .targetReferenceField('vod_id')
                 .targetFields([
                     nga.field('url')
-                        // .map(function truncate(value) {
-                        //     if (!value) {
-                        //         return '';
-                        //     }
-                        //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
-                        // })
                         .label('Vod URL'),
+                    nga.field('stream_type', 'string')
+                        .label('Stream Type'),
                 ])
                 .listActions(['edit', 'delete']),
             nga.field('ADD STREAM', 'template')

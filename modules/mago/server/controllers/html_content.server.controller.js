@@ -18,14 +18,14 @@ exports.create = function(req, res) {
     req.body.company_id = req.token.company_id; //save record for this company
     DBModel.create(req.body).then(function(result) {
         if (!result) {
-            return res.status(400).send({message: 'fail create data'});
+            return res.status(400).send({message: 'Error at creating html_content, error:'});
         } else {
             logHandler.add_log(req.token.id, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body), req.token.company_id);
             return res.jsonp(result);
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at creating html_content, error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -52,7 +52,7 @@ exports.update = function(req, res) {
             res.json(result);
             return null;
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Failed updating attributes at html_content, error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -75,7 +75,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error at deleting html content, error: ", err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
@@ -91,7 +91,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at deleting html content, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -132,7 +132,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error listing function at html content, error: ",err);
         res.jsonp(err);
     });
 };
@@ -164,7 +164,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error finding dataById function at html content, error: ",err);
         return next(err);
     });
 
@@ -195,7 +195,7 @@ exports.htmlcontent_to_app = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at html content to app, error: ", err);
         return next(err);
     });
 
@@ -227,7 +227,7 @@ exports.htmlcontent_name_to_app = function(req, res, next) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at html content name to app, error: ", err);
         return next(err);
     });
 

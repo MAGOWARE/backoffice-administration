@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "/build";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -45,7 +45,7 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	module.exports = __webpack_require__(250);
+	module.exports = __webpack_require__(259);
 
 
 /***/ }),
@@ -53,8 +53,8 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var myApp = angular.module('myApp', ['ng-admin', 'ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies', 'dndLists']);
-
+	var myApp = angular.module('myApp', ['ng-admin', 'ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies', 'dndLists', 'vcRecaptcha']);
+	
 	myApp.controller('envVariablesCtrl', ['$scope', '$http', 'notification', function ($scope, $http, notification) {
 	    var config = { method: 'GET', url: '../api/env_settings' };
 	    if (localStorage.userToken) config.headers = { 'Authorization': localStorage.userToken }; //user token should be included as a header in this request
@@ -63,28 +63,28 @@
 	        $scope.company_name = response.data.company_name;
 	        $scope.company_logo = response.data.company_logo;
 	    });
-
+	
 	    $scope.googlelogin = function () {
 	        location.replace("/api/auth/google");
 	    };
-
+	
 	    $scope.signUpFields = function () {
 	        angular.element(document.querySelector('#loginView')).removeClass('customVisible');
 	        angular.element(document.querySelector('#loginView')).addClass('customHidden');
 	        angular.element(document.querySelector('#signUpView')).removeClass('customHidden');
 	        angular.element(document.querySelector('#signUpView')).addClass('customVisible');
 	    };
-
+	
 	    $scope.loginFields = function () {
 	        angular.element(document.querySelector('#signUpView')).removeClass('customVisible');
 	        angular.element(document.querySelector('#loginView')).removeClass('customHidden');
 	        angular.element(document.querySelector('#signUpView')).addClass('customHidden');
 	        angular.element(document.querySelector('#loginView')).addClass('customVisible');
 	    };
-
+	
 	    //loginEmail
 	    $scope.loginEmail = function () {
-
+	
 	        if (!$scope.company_name) {
 	            notification.log('Company Name should not be empty', { addnCls: 'humane-flatty-info' });
 	        } else if (!$scope.phone) {
@@ -92,17 +92,17 @@
 	        } else if (!$scope.email_address) {
 	            notification.log('Email Address should not be empty', { addnCls: 'humane-flatty-info' });
 	        } else {
-
+	
 	            var postData = {
 	                "company_name": $scope.company_name,
 	                "email": $scope.email_address,
 	                "telephone": $scope.phone
 	            };
-
+	
 	            $http.post('../api/company', postData).then(function successCallback(response) {
 	                if (response.status === 200) {
 	                    notification.log(response.data.message, { addnCls: 'humane-flatty-success' });
-
+	
 	                    angular.element(document.querySelector('#signUpView')).removeClass('customVisible');
 	                    angular.element(document.querySelector('#loginView')).removeClass('customHidden');
 	                    angular.element(document.querySelector('#signUpView')).addClass('customHidden');
@@ -119,13 +119,42 @@
 	    };
 	    //./loginEmail
 	}]);
-
+	
 	myApp.controller('main', function ($scope, $rootScope, $location, notification) {
 	    $rootScope.$on('$stateChangeSuccess', function () {
 	        $scope.displayBanner = $location.$$path === '/dashboard';
 	    });
 	});
-
+	
+	myApp.controller('modalController', function ($scope, $uibModal) {
+	    $scope.openModalImage = function (imageSrc, imageDescription, _imageHeight, _imageWidth) {
+	        $uibModal.open({
+	            templateUrl: "./templates/modalImage.html",
+	            windowClass: "image-modal",
+	            resolve: {
+	                imageSrcToUse: function imageSrcToUse() {
+	                    return imageSrc;
+	                },
+	                imageDescriptionToUse: function imageDescriptionToUse() {
+	                    return imageDescription;
+	                },
+	                imageHeight: function imageHeight() {
+	                    return _imageHeight;
+	                },
+	                imageWidth: function imageWidth() {
+	                    return _imageWidth;
+	                }
+	            },
+	            controller: ["$scope", "imageSrcToUse", "imageDescriptionToUse", "imageHeight", "imageWidth", function ($scope, imageSrcToUse, imageDescriptionToUse, imageHeight, imageWidth) {
+	                $scope.ImageSrc = imageSrcToUse;
+	                $scope.imageHeight = imageHeight;
+	                $scope.imageWidth = imageWidth;
+	                return $scope.ImageDescription = imageDescriptionToUse;
+	            }]
+	        });
+	    };
+	});
+	
 	myApp.controller('checkboxController', function ($scope) {
 	    $scope.checkboxModel = {
 	        checkbox_value: $scope.entry.values.allow_guest_login //get value from read API, assign it to the checkbox
@@ -134,7 +163,7 @@
 	        $scope.entry.values.allow_guest_login = thevalue; //get checkbox value, assign it to the update API
 	    };
 	});
-
+	
 	//subscription export
 	//Takes user details
 	myApp.controller('InvoiceCtrl', ['$scope', '$http', '$stateParams', function ($scope, $http, $stateParams) {
@@ -149,12 +178,12 @@
 	    $scope.printInfo = function () {
 	        window.print();
 	    };
-
+	
 	    $scope.goBack = function () {
 	        window.history.back();
 	    };
 	}]);
-
+	
 	myApp.config(function ($stateProvider) {
 	    $stateProvider.state('invoice', {
 	        url: '/invoice/:id',
@@ -174,7 +203,7 @@
 	    };
 	}]);
 	//./subscription export
-
+	
 	//EPG LOGS
 	myApp.directive('seeLogs', ['$location', '$http', function ($location, $http) {
 	    return {
@@ -184,7 +213,7 @@
 	            post: '&'
 	        },
 	        link: function link(scope, elm, attrs) {
-
+	
 	            scope.see = function () {
 	                var currentlog = scope.post().values.epg_file;
 	                scope.filenames = currentlog;
@@ -194,7 +223,7 @@
 	        template: '<ma-submit-button class="pull-right" ng-click="see()" label="Submit"></ma-submit-button>'
 	    };
 	}]);
-
+	
 	myApp.controller("logsCtrl", ['$scope', '$http', function ($scope, $http) {
 	    $scope.ctrlFn = function (arg) {
 	        var Indata = { 'epg_file': arg };
@@ -208,9 +237,9 @@
 	    };
 	}]);
 	//./EPG LOGS
-
+	
 	//downloadInvoice
-
+	
 	myApp.directive('downloadInvoice', ['$location', '$http', function ($location, $http) {
 	    return {
 	        restrict: 'E',
@@ -230,9 +259,9 @@
 	    };
 	}]);
 	//./downloadInvoice
-
+	
 	//Drag_and_drop_package
-
+	
 	myApp.directive('seeDrag', ['$location', '$http', function ($location, $http) {
 	    return {
 	        restrict: 'E',
@@ -241,7 +270,7 @@
 	            post: '&'
 	        },
 	        link: function link(scope, elm, attrs) {
-
+	
 	            scope.see = function () {
 	                var package_name = scope.post().values.id;
 	                var package_type_id = scope.post().values.package_type_id;
@@ -251,17 +280,17 @@
 	        template: '<a type="buton" class="btn btn-default" ng-click="see()"><i class="fa fa-plus fa-lg"></i>&nbsp;&nbsp;ADD CHANNELS</a>'
 	    };
 	}]);
-
+	
 	myApp.controller('dragdropctrl', ['$scope', '$http', '$stateParams', 'notification', function ($scope, $http, $stateParams, notification) {
 	    $scope.models = [{ listName: "Available", items: [], dragging: false }, { listName: "Selected", items: [], dragging: false }];
-
+	
 	    $scope.getSelectedItemsIncluding = function (list, item) {
 	        item.selected = true;
 	        return list.items.filter(function (item) {
 	            return item.selected;
 	        });
 	    };
-
+	
 	    $scope.onDrop = function (list, items, index) {
 	        angular.forEach(items, function (item) {
 	            item.selected = false;
@@ -269,23 +298,23 @@
 	        list.items = list.items.slice(0, index).concat(items).concat(list.items.slice(index));
 	        return true;
 	    };
-
+	
 	    $scope.onMoved = function (list) {
 	        list.items = list.items.filter(function (item) {
 	            return !item.selected;
 	        });
 	    };
-
+	
 	    $http.get('../api/channels').then(function (response) {
-
+	
 	        $scope.array = response.data;
 	        var id_pakete = $stateParams.id;
-
+	
 	        for (var j = 0; j < $scope.array.length; j++) {
 	            var index = $scope.array[j].packages_channels.findIndex(function (todo, index) {
 	                return todo.package_id == id_pakete;
 	            });
-
+	
 	            if (index > -1) {
 	                var lista = $scope.models[1];
 	                lista.items.push({ label: $scope.array[j].title, id: $scope.array[j].id, nr: $scope.array[j].channel_number });
@@ -295,46 +324,173 @@
 	            }
 	        }
 	    });
-
+	
 	    $scope.ctrlFn = function (arg) {
 	        var name = arg[0];
 	        var id = arg[1];
 	        var selected = $scope.models[1].items;
 	        var channels_list = [];
-
+	
 	        for (var k = 0; k < selected.length; k++) {
 	            channels_list.push(selected[k].id);
 	        }
-
+	
 	        var data = { 'package_id': name, 'channel_id': channels_list };
 	        $http.post("../api/packagechannels", data).then(function (response, data, status, headers, config, file) {
-
+	
 	            notification.log('Channels successfully added', { addnCls: 'humane-flatty-success' });
 	        }, function (data, status, headers, config) {
 	            notification.log('Something Wrong', { addnCls: 'humane-flatty-error' });
 	        });
 	    };
 	}]);
-
+	
 	//./Drag_and_drop_package
-
+	
 	// Pagination & Sort
 	var apiFlavor = __webpack_require__(2);
 	var FileSaver = __webpack_require__(3);
 	myApp.config(['RestangularProvider', apiFlavor.requestInterceptor]);
-
+	
 	myApp.controller('username', ['$scope', '$window', function ($scope, $window) {
 	    $scope.username = $window.localStorage.userName.toUpperCase();
 	}]);
-
+	
 	var preferred_language = 'en';
-
+	
 	myApp.controller('main', function ($scope, $rootScope, $location, notification) {
 	    $rootScope.$on('$stateChangeSuccess', function () {
 	        $scope.displayBanner = $location.$$path === '/dashboard';
 	    });
 	});
-
+	
+	myApp.controller('expireGraphCtr', function ($scope, Restangular) {
+	    $scope.options = {
+	        drawPoints: {
+	            style: 'circle' // square, circle
+	        },
+	        shaded: {
+	            orientation: 'bottom' // top, bottom
+	        },
+	        dataAxis: {
+	            icons: true
+	        },
+	        orientation: 'top',
+	        start: new Date().toISOString()
+	    };
+	
+	    $scope.options2 = {
+	        drawPoints: {
+	            style: 'circle' // square, circle
+	        },
+	        shaded: {
+	            orientation: 'bottom' // top, bottom
+	        },
+	        dataAxis: {
+	            icons: true
+	        },
+	        orientation: 'top',
+	        start: new Date().toISOString(),
+	        zoomable: true
+	    };
+	
+	    Restangular.one('reports/expiresubscription').get().then(function successCallback(response) {
+	        var res = response.data ? response.data : response;
+	
+	        $scope.options = {
+	            drawPoints: {
+	                style: 'circle' // square, circle
+	            },
+	            shaded: {
+	                orientation: 'bottom' // top, bottom
+	            },
+	            dataAxis: {
+	                icons: true
+	            },
+	            orientation: 'top',
+	            start: new Date().toISOString(),
+	            end: new Date().setDate(new Date().getDate() + 31),
+	            zoomable: false
+	        };
+	        var mapData = function mapData(items) {
+	            return items.map(function (item) {
+	                return {
+	                    x: new Date(item.to_date),
+	                    y: item.total
+	                };
+	            });
+	        };
+	        $scope.data = {
+	            items: mapData(res)
+	        };
+	    });
+	
+	    Restangular.one('reports/expiresubscriptionbyday').get().then(function successCallback(response) {
+	        var res = response.data ? response.data : response;
+	
+	        $scope.options2 = {
+	            drawPoints: {
+	                style: 'circle' // square, circle
+	            },
+	            shaded: {
+	                orientation: 'bottom' // top, bottom
+	            },
+	            dataAxis: {
+	                icons: true
+	            },
+	            orientation: 'top',
+	            start: res.length !== 0 ? res[0].date : new Date().toISOString(),
+	            end: res.length !== 0 ? res[res.length - 1].date : new Date().setDate(new Date().getDate() + 31),
+	            zoomable: true
+	        };
+	
+	        var mapData = function mapData(items) {
+	            return items.map(function (item) {
+	                return {
+	                    x: item.to_date,
+	                    y: item.total
+	                };
+	            });
+	        };
+	        $scope.data2 = {
+	            items: mapData(res)
+	        };
+	    });
+	
+	    Restangular.one('reports/lasttwoyearssales').get().then(function successCallback(response) {
+	        var res = response.data ? response.data : response;
+	
+	        $scope.options3 = {
+	            drawPoints: {
+	                style: 'circle' // square, circle
+	            },
+	            shaded: {
+	                orientation: 'bottom' // top, bottom
+	            },
+	            dataAxis: {
+	                icons: true
+	            },
+	            orientation: 'top',
+	            start: res.length !== 0 ? res[0].date : new Date().toISOString(),
+	            end: res.length !== 0 ? res[res.length - 1].date : new Date().setDate(new Date().getDate() + 31),
+	            zoomable: false
+	        };
+	
+	        var mapData = function mapData(items) {
+	            return items.map(function (item) {
+	                return {
+	                    x: new Date(item.date),
+	                    y: item.total,
+	                    group: 2
+	                };
+	            });
+	        };
+	        $scope.data3 = {
+	            items: mapData(res)
+	        };
+	    });
+	});
+	
 	myApp.controller('languageCtrl', ['$translate', '$scope', '$cookies', function ($translate, $scope, $cookies) {
 	    $scope.serve_language = function (langKey) {
 	        $translate.use(langKey);
@@ -345,7 +501,7 @@
 	    }, function (translationId) {
 	        $scope.headline = translationId;
 	    });
-
+	
 	    //show the selected language from dropdown list
 	    $scope.button = $cookies.get('cookie');
 	    $scope.change = function (name) {
@@ -356,7 +512,7 @@
 	        $scope.button = name;
 	    };
 	}]);
-
+	
 	myApp.config(['$translateProvider', function ($translateProvider) {
 	    $translateProvider.useStaticFilesLoader({
 	        files: [{
@@ -370,11 +526,11 @@
 	    $translateProvider.preferredLanguage(preferred_language);
 	    $translateProvider.useCookieStorage(); //remember chosen language
 	}]);
-
+	
 	// Forgot Password Controller
-
+	
 	myApp.controller('main', ['Restangular', '$scope', '$uibModal', 'notification', function (Restangular, $scope, $uibModal, notification) {
-
+	
 	    $scope.modal = function () {
 	        var modalInstance = $uibModal.open({
 	            template: '<div class="modal-header">' + '<h5 class="modal-title">Forgot Password</h5>' + '</div>' + '<div class="container modal-body">' + '<form>' + '<div class="form-group col-xs-9">' + '<label for="exampleInputEmail1">Username</label>' + '<hr>' + '<input type="input" class="form-control" ng-model="forgot.username" value="forgot.username" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter username">' + '<hr><br>' + '<label for="exampleInputEmail1">or Email</label>' + '<hr>' + '<input type="input" class="form-control" ng-model="forgot.email" value="forgot.email" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">' + '</div>' + '</form>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary" type="button" ng-click="ok()">Submit</button>' + '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>' + '</div>',
@@ -409,36 +565,36 @@
 	        });
 	    };
 	}]);
-
+	
 	// Login Controller
-
+	
 	myApp.config(['NgAdminConfigurationProvider', 'RestangularProvider', 'ngAdminJWTAuthConfiguratorProvider', function (NgAdminConfigurationProvider, RestangularProvider, ngAdminJWTAuthConfigurator) {
-
+	
 	    var nga = NgAdminConfigurationProvider;
-
+	
 	    if (location.protocol == 'http:') {
-
+	
 	        ngAdminJWTAuthConfigurator.setJWTAuthURL('http://' + location.host + '/api/auth/login');
 	    } else {
-
+	
 	        ngAdminJWTAuthConfigurator.setJWTAuthURL('https://' + location.host + '/api/auth/login');
 	    }
-
+	
 	    ngAdminJWTAuthConfigurator.setCustomLoginTemplate('customLoginTemplate.html');
-
+	
 	    ngAdminJWTAuthConfigurator.setCustomAuthHeader({
 	        name: 'Authorization',
 	        template: '{{token}}'
 	    });
 	}]);
-
+	
 	myApp.run(['Restangular', '$location', 'notification', function (Restangular, $location, notification) {
 	    Restangular.setErrorInterceptor(function (response, deferred, responseHandler) {
 	        if (response.status > 200 && response.status !== 402) {
-
+	
 	            deferred.reject("Server not responding to [some address]. It could be down, or this could be the wrong url.");
 	            notification.log('Error: ' + ' ( ' + response.data.message + ' )', { addnCls: 'humane-flatty-error' });
-
+	
 	            return false;
 	        } else if (response.status === 402) {
 	            //if payment is required , show message then do logout (included logout trick by js)
@@ -450,45 +606,48 @@
 	        }
 	    });
 	}]);
-
+	
 	// Dashboard Directives
 	myApp.directive('dashboardSummary', __webpack_require__(4));
 	myApp.directive('resellersdashboardSummary', __webpack_require__(136));
 	myApp.directive('graph', __webpack_require__(138));
-	myApp.directive('sendpush', __webpack_require__(140));
-	myApp.directive('sale', __webpack_require__(141));
-	myApp.directive('vod', __webpack_require__(142));
-	myApp.directive('move', __webpack_require__(143));
-	myApp.directive('generate', __webpack_require__(144));
-	myApp.directive('roles', __webpack_require__(145));
-	myApp.directive('allowMenu', __webpack_require__(146));
-	myApp.directive('invite', __webpack_require__(147));
-	myApp.directive('approveInvitation', __webpack_require__(148));
-	myApp.directive('importchannelLogs', __webpack_require__(149));
-	myApp.directive('importvodLogs', __webpack_require__(150));
-
+	myApp.directive('activeDevicesChart', __webpack_require__(140));
+	myApp.directive('sendpush', __webpack_require__(142));
+	myApp.directive('sale', __webpack_require__(143));
+	myApp.directive('vod', __webpack_require__(144));
+	myApp.directive('move', __webpack_require__(145));
+	myApp.directive('generate', __webpack_require__(146));
+	myApp.directive('roles', __webpack_require__(147));
+	myApp.directive('allowMenu', __webpack_require__(148));
+	myApp.directive('invite', __webpack_require__(149));
+	myApp.directive('approveInvitation', __webpack_require__(150));
+	myApp.directive('importchannelLogs', __webpack_require__(151));
+	myApp.directive('importvodLogs', __webpack_require__(152));
+	myApp.directive('expiration_graphs', __webpack_require__(153));
+	
 	//myApp.directive('roles', require('./grouprights/radioRoles'));
-
+	
 	// personal config
-	myApp.config(['$stateProvider', __webpack_require__(151)]);
-	myApp.config(['$stateProvider', __webpack_require__(153)]);
-	myApp.config(['$stateProvider', __webpack_require__(155)]);
-	myApp.config(['$stateProvider', __webpack_require__(157)]);
-	myApp.config(['$stateProvider', __webpack_require__(159)]);
-	myApp.config(['$stateProvider', __webpack_require__(161)]);
-
+	myApp.config(['$stateProvider', __webpack_require__(154)]);
+	myApp.config(['$stateProvider', __webpack_require__(156)]);
+	myApp.config(['$stateProvider', __webpack_require__(158)]);
+	myApp.config(['$stateProvider', __webpack_require__(160)]);
+	myApp.config(['$stateProvider', __webpack_require__(162)]);
+	myApp.config(['$stateProvider', __webpack_require__(164)]);
+	myApp.config(['$stateProvider', __webpack_require__(140)]);
+	myApp.config(['$stateProvider', __webpack_require__(166)]);
+	myApp.config(['$stateProvider', __webpack_require__(167)]);
+	
 	myApp.config(['NgAdminConfigurationProvider', function (nga) {
-
-	    // App Create
-
+	
 	    if (location.protocol == 'http:') {
 	        var admin = nga.application('MAGOWARE').baseApiUrl('http://' + location.host + '/api/');
 	    } else {
 	        var admin = nga.application('MAGOWARE').baseApiUrl('https://' + location.host + '/api/');
 	    }
-
+	
 	    // Table Configuration
-
+	
 	    admin.addEntity(nga.entity('Channels'));
 	    admin.addEntity(nga.entity('ChannelStreams'));
 	    admin.addEntity(nga.entity('ChannelStreamSources'));
@@ -518,6 +677,7 @@
 	    admin.addEntity(nga.entity('sales_monthly_expiration'));
 	    admin.addEntity(nga.entity('sales_by_expiration'));
 	    admin.addEntity(nga.entity('company_settings'));
+	    admin.addEntity(nga.entity('company_settings_list_company_data'));
 	    admin.addEntity(nga.entity('Settings'));
 	    admin.addEntity(nga.entity('EmailSettings'));
 	    admin.addEntity(nga.entity('URL'));
@@ -546,7 +706,7 @@
 	    admin.addEntity(nga.entity('MySubscription'));
 	    admin.addEntity(nga.entity('MySales'));
 	    admin.addEntity(nga.entity('search_customer'));
-	    admin.addEntity(nga.entity('AdvancedSettings'));
+	    // admin.addEntity(nga.entity('AdvancedSettings'));
 	    admin.addEntity(nga.entity('Submenu'));
 	    admin.addEntity(nga.entity('VodEpisode'));
 	    admin.addEntity(nga.entity('tv_episode_subtitles'));
@@ -562,31 +722,25 @@
 	    admin.addEntity(nga.entity('tmdbseries'));
 	    admin.addEntity(nga.entity('import_channel'));
 	    admin.addEntity(nga.entity('import_vod'));
-
+	    admin.addEntity(nga.entity('subtitlesImport'));
+	    admin.addEntity(nga.entity('reports/expiresubscription'));
+	
 	    admin.addEntity(nga.entity('assetsMaster'));
 	    admin.addEntity(nga.entity('assetsCategory'));
 	    admin.addEntity(nga.entity('assetsDetails'));
-
+	
 	    //Config
-	    __webpack_require__(163)(nga, admin);
-	    __webpack_require__(165)(nga, admin);
-	    __webpack_require__(166)(nga, admin);
-	    __webpack_require__(167)(nga, admin);
-	    __webpack_require__(168)(nga, admin);
 	    __webpack_require__(169)(nga, admin);
 	    __webpack_require__(171)(nga, admin);
 	    __webpack_require__(172)(nga, admin);
 	    __webpack_require__(173)(nga, admin);
 	    __webpack_require__(174)(nga, admin);
 	    __webpack_require__(175)(nga, admin);
-	    __webpack_require__(176)(nga, admin);
 	    __webpack_require__(177)(nga, admin);
 	    __webpack_require__(178)(nga, admin);
 	    __webpack_require__(179)(nga, admin);
 	    __webpack_require__(180)(nga, admin);
 	    __webpack_require__(181)(nga, admin);
-	    __webpack_require__(182)(nga, admin);
-	    __webpack_require__(183)(nga, admin);
 	    __webpack_require__(184)(nga, admin);
 	    __webpack_require__(185)(nga, admin);
 	    __webpack_require__(186)(nga, admin);
@@ -594,6 +748,7 @@
 	    __webpack_require__(188)(nga, admin);
 	    __webpack_require__(189)(nga, admin);
 	    __webpack_require__(190)(nga, admin);
+	    // require('./AdvancedSettings/config')(nga, admin);
 	    __webpack_require__(191)(nga, admin);
 	    __webpack_require__(192)(nga, admin);
 	    __webpack_require__(193)(nga, admin);
@@ -610,18 +765,18 @@
 	    __webpack_require__(204)(nga, admin);
 	    __webpack_require__(205)(nga, admin);
 	    __webpack_require__(206)(nga, admin);
+	    __webpack_require__(207)(nga, admin);
 	    __webpack_require__(208)(nga, admin);
 	    __webpack_require__(209)(nga, admin);
 	    __webpack_require__(210)(nga, admin);
 	    __webpack_require__(211)(nga, admin);
+	    __webpack_require__(212)(nga, admin);
+	    __webpack_require__(213)(nga, admin);
 	    __webpack_require__(214)(nga, admin);
-	    __webpack_require__(215)(nga, admin);
 	    __webpack_require__(216)(nga, admin);
 	    __webpack_require__(217)(nga, admin);
 	    __webpack_require__(218)(nga, admin);
 	    __webpack_require__(219)(nga, admin);
-	    __webpack_require__(220)(nga, admin);
-	    __webpack_require__(221)(nga, admin);
 	    __webpack_require__(222)(nga, admin);
 	    __webpack_require__(223)(nga, admin);
 	    __webpack_require__(224)(nga, admin);
@@ -643,29 +798,38 @@
 	    __webpack_require__(240)(nga, admin);
 	    __webpack_require__(241)(nga, admin);
 	    __webpack_require__(242)(nga, admin);
-
+	    __webpack_require__(243)(nga, admin);
+	    __webpack_require__(244)(nga, admin);
+	    __webpack_require__(245)(nga, admin);
+	    __webpack_require__(246)(nga, admin);
+	    __webpack_require__(247)(nga, admin);
+	    __webpack_require__(248)(nga, admin);
+	    __webpack_require__(249)(nga, admin);
+	    __webpack_require__(250)(nga, admin);
+	    __webpack_require__(251)(nga, admin);
+	
 	    // Menu / Header / Dashboard / Layout
-
+	
 	    if (localStorage.userRole === 'resellers') {
-	        admin.dashboard(__webpack_require__(243)(nga, admin));
+	        admin.dashboard(__webpack_require__(252)(nga, admin));
 	    } else {
-	        admin.dashboard(__webpack_require__(245)(nga, admin));
+	        admin.dashboard(__webpack_require__(254)(nga, admin));
 	    }
-
-	    admin.header(__webpack_require__(247));
-
+	
+	    admin.header(__webpack_require__(256));
+	
 	    var menu = localStorage.getItem("menuObject");
-
+	
 	    if (!menu) {
-	        var menujson = __webpack_require__(248);
+	        var menujson = __webpack_require__(257);
 	    } else {
 	        var obj = JSON.parse(menu);
 	        menujson = obj;
 	    }
-
+	
 	    // var menujson = require('./menuobject.js');
-	    admin.menu(__webpack_require__(249)(nga, admin, menujson));
-
+	    admin.menu(__webpack_require__(258)(nga, admin, menujson));
+	
 	    nga.configure(admin);
 	}]);
 
@@ -674,21 +838,21 @@
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function requestInterceptor(RestangularProvider) {
-
+	
 	    RestangularProvider.addFullRequestInterceptor(function (element, operation, what, url, headers, params) {
-
+	
 	        if (operation == "getList") {
-
+	
 	            params._start = (params._page - 1) * params._perPage;
 	            params._end = params._page * params._perPage;
 	            delete params._page;
 	            delete params._perPage;
-
+	
 	            // custom sort params
 	            if (params._sortField) {
 	                params._orderBy = params._sortField;
@@ -696,7 +860,7 @@
 	                delete params._sortField;
 	                delete params._sortDir;
 	            }
-
+	
 	            // custom filters
 	            if (params._filters) {
 	                for (var filter in params._filters) {
@@ -704,7 +868,7 @@
 	                }
 	                delete params._filters;
 	            }
-
+	
 	            //defautl values parameters
 	            var hash = location.hash;
 	            if (hash.includes('defaultValues=')) {
@@ -716,11 +880,11 @@
 	                params[key0] = defaultValues[key0];
 	            }
 	        } else {}
-
+	
 	        return { params: params };
 	    });
 	}
-
+	
 	exports['default'] = { requestInterceptor: requestInterceptor };
 	module.exports = exports['default'];
 
@@ -731,7 +895,7 @@
 	/**
 	 * Created by user on 6/5/2018.
 	 */
-
+	
 	/* FileSaver.js
 	 * A saveAs() FileSaver implementation.
 	 * 1.3.8
@@ -741,14 +905,14 @@
 	 * License: MIT
 	 *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
 	 */
-
+	
 	/*global self */
 	/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
-
+	
 	/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/src/FileSaver.js */
-
+	
 	"use strict";
-
+	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -759,7 +923,7 @@
 	        return;
 	    }
 	    var doc = view.document,
-
+	
 	    // only get URL when necessary in case Blob.js hasn't overridden it yet
 	    get_URL = function get_URL() {
 	        return view.URL || view.webkitURL || view;
@@ -779,7 +943,7 @@
 	        }, 0);
 	    },
 	        force_saveable_type = "application/octet-stream",
-
+	
 	    // the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
 	    arbitrary_revoke_timeout = 1000 * 40,
 	        // in ms
@@ -829,7 +993,7 @@
 	            dispatch_all = function dispatch_all() {
 	            dispatch(filesaver, "writestart progress write writeend".split(" "));
 	        },
-
+	
 	        // on any filesys errors revert to saving with object URLs
 	        fs_error = function fs_error() {
 	            if ((is_chrome_ios || force && is_safari) && view.FileReader) {
@@ -865,7 +1029,7 @@
 	            revoke(object_url);
 	        };
 	        filesaver.readyState = filesaver.INIT;
-
+	
 	        if (can_use_save_link) {
 	            object_url = get_URL().createObjectURL(blob);
 	            setImmediate(function () {
@@ -878,36 +1042,36 @@
 	            }, 0);
 	            return;
 	        }
-
+	
 	        fs_error();
 	    },
 	        FS_proto = FileSaver.prototype,
 	        saveAs = function saveAs(blob, name, no_auto_bom) {
 	        return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
 	    };
-
+	
 	    // IE 10+ (native saveAs)
 	    if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 	        return function (blob, name, no_auto_bom) {
 	            name = name || blob.name || "download";
-
+	
 	            if (!no_auto_bom) {
 	                blob = auto_bom(blob);
 	            }
 	            return navigator.msSaveOrOpenBlob(blob, name);
 	        };
 	    }
-
+	
 	    // todo: detect chrome extensions & packaged apps
 	    //save_link.target = "_blank";
-
+	
 	    FS_proto.abort = function () {};
 	    FS_proto.readyState = FS_proto.INIT = 0;
 	    FS_proto.WRITING = 1;
 	    FS_proto.DONE = 2;
-
+	
 	    FS_proto.error = FS_proto.onwritestart = FS_proto.onprogress = FS_proto.onwrite = FS_proto.onabort = FS_proto.onerror = FS_proto.onwriteend = null;
-
+	
 	    return saveAs;
 	})(typeof self !== "undefined" && self || typeof window !== "undefined" && window || undefined);
 	exports.saveAs = saveAs;
@@ -917,28 +1081,28 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
+	
 	var _moment = __webpack_require__(5);
-
+	
 	var _moment2 = _interopRequireDefault(_moment);
-
+	
 	var _dashboardSummaryHtml = __webpack_require__(135);
-
+	
 	var _dashboardSummaryHtml2 = _interopRequireDefault(_dashboardSummaryHtml);
-
+	
 	var oneMonthAgo = (0, _moment2['default'])().subtract(1, 'months').toDate();
-
+	
 	var has_seen_alert = false;
-
+	
 	function dashboardSummary(Restangular) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {},
@@ -952,7 +1116,7 @@
 	            Restangular.all('loginData').getList({ _page: 1, _perPage: 10 }).then(function (logindata) {
 	                $scope.stats.logindata = logindata.headers('x-total-count');
 	            });
-
+	
 	            Restangular.all('channels').getList({ _page: 1, _perPage: 10 }).then(function (channels) {
 	                $scope.stats.channels = channels.headers('x-total-count');
 	            });
@@ -966,9 +1130,9 @@
 	        template: _dashboardSummaryHtml2['default']
 	    };
 	}
-
+	
 	dashboardSummary.$inject = ['Restangular'];
-
+	
 	exports['default'] = dashboardSummary;
 	module.exports = exports['default'];
 
@@ -977,35 +1141,35 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	var require;/* WEBPACK VAR INJECTION */(function(module) {//! moment.js
-
+	
 	;(function (global, factory) {
 	     true ? module.exports = factory() :
 	    typeof define === 'function' && define.amd ? define(factory) :
 	    global.moment = factory()
 	}(this, (function () { 'use strict';
-
+	
 	    var hookCallback;
-
+	
 	    function hooks () {
 	        return hookCallback.apply(null, arguments);
 	    }
-
+	
 	    // This is done to register the method called with moment()
 	    // without creating circular dependencies.
 	    function setHookCallback (callback) {
 	        hookCallback = callback;
 	    }
-
+	
 	    function isArray(input) {
 	        return input instanceof Array || Object.prototype.toString.call(input) === '[object Array]';
 	    }
-
+	
 	    function isObject(input) {
 	        // IE8 will treat undefined and null as object if it wasn't for
 	        // input != null
 	        return input != null && Object.prototype.toString.call(input) === '[object Object]';
 	    }
-
+	
 	    function isObjectEmpty(obj) {
 	        if (Object.getOwnPropertyNames) {
 	            return (Object.getOwnPropertyNames(obj).length === 0);
@@ -1019,19 +1183,19 @@
 	            return true;
 	        }
 	    }
-
+	
 	    function isUndefined(input) {
 	        return input === void 0;
 	    }
-
+	
 	    function isNumber(input) {
 	        return typeof input === 'number' || Object.prototype.toString.call(input) === '[object Number]';
 	    }
-
+	
 	    function isDate(input) {
 	        return input instanceof Date || Object.prototype.toString.call(input) === '[object Date]';
 	    }
-
+	
 	    function map(arr, fn) {
 	        var res = [], i;
 	        for (i = 0; i < arr.length; ++i) {
@@ -1039,33 +1203,33 @@
 	        }
 	        return res;
 	    }
-
+	
 	    function hasOwnProp(a, b) {
 	        return Object.prototype.hasOwnProperty.call(a, b);
 	    }
-
+	
 	    function extend(a, b) {
 	        for (var i in b) {
 	            if (hasOwnProp(b, i)) {
 	                a[i] = b[i];
 	            }
 	        }
-
+	
 	        if (hasOwnProp(b, 'toString')) {
 	            a.toString = b.toString;
 	        }
-
+	
 	        if (hasOwnProp(b, 'valueOf')) {
 	            a.valueOf = b.valueOf;
 	        }
-
+	
 	        return a;
 	    }
-
+	
 	    function createUTC (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, true).utc();
 	    }
-
+	
 	    function defaultParsingFlags() {
 	        // We need to deep clone this object.
 	        return {
@@ -1085,14 +1249,14 @@
 	            weekdayMismatch : false
 	        };
 	    }
-
+	
 	    function getParsingFlags(m) {
 	        if (m._pf == null) {
 	            m._pf = defaultParsingFlags();
 	        }
 	        return m._pf;
 	    }
-
+	
 	    var some;
 	    if (Array.prototype.some) {
 	        some = Array.prototype.some;
@@ -1100,17 +1264,17 @@
 	        some = function (fun) {
 	            var t = Object(this);
 	            var len = t.length >>> 0;
-
+	
 	            for (var i = 0; i < len; i++) {
 	                if (i in t && fun.call(this, t[i], i, t)) {
 	                    return true;
 	                }
 	            }
-
+	
 	            return false;
 	        };
 	    }
-
+	
 	    function isValid(m) {
 	        if (m._isValid == null) {
 	            var flags = getParsingFlags(m);
@@ -1127,14 +1291,14 @@
 	                !flags.invalidFormat &&
 	                !flags.userInvalidated &&
 	                (!flags.meridiem || (flags.meridiem && parsedParts));
-
+	
 	            if (m._strict) {
 	                isNowValid = isNowValid &&
 	                    flags.charsLeftOver === 0 &&
 	                    flags.unusedTokens.length === 0 &&
 	                    flags.bigHour === undefined;
 	            }
-
+	
 	            if (Object.isFrozen == null || !Object.isFrozen(m)) {
 	                m._isValid = isNowValid;
 	            }
@@ -1144,7 +1308,7 @@
 	        }
 	        return m._isValid;
 	    }
-
+	
 	    function createInvalid (flags) {
 	        var m = createUTC(NaN);
 	        if (flags != null) {
@@ -1153,17 +1317,17 @@
 	        else {
 	            getParsingFlags(m).userInvalidated = true;
 	        }
-
+	
 	        return m;
 	    }
-
+	
 	    // Plugins that add properties should also add the key here (null value),
 	    // so we can properly clone ourselves.
 	    var momentProperties = hooks.momentProperties = [];
-
+	
 	    function copyConfig(to, from) {
 	        var i, prop, val;
-
+	
 	        if (!isUndefined(from._isAMomentObject)) {
 	            to._isAMomentObject = from._isAMomentObject;
 	        }
@@ -1194,7 +1358,7 @@
 	        if (!isUndefined(from._locale)) {
 	            to._locale = from._locale;
 	        }
-
+	
 	        if (momentProperties.length > 0) {
 	            for (i = 0; i < momentProperties.length; i++) {
 	                prop = momentProperties[i];
@@ -1204,12 +1368,12 @@
 	                }
 	            }
 	        }
-
+	
 	        return to;
 	    }
-
+	
 	    var updateInProgress = false;
-
+	
 	    // Moment prototype object
 	    function Moment(config) {
 	        copyConfig(this, config);
@@ -1225,11 +1389,11 @@
 	            updateInProgress = false;
 	        }
 	    }
-
+	
 	    function isMoment (obj) {
 	        return obj instanceof Moment || (obj != null && obj._isAMomentObject != null);
 	    }
-
+	
 	    function absFloor (number) {
 	        if (number < 0) {
 	            // -0 -> 0
@@ -1238,18 +1402,18 @@
 	            return Math.floor(number);
 	        }
 	    }
-
+	
 	    function toInt(argumentForCoercion) {
 	        var coercedNumber = +argumentForCoercion,
 	            value = 0;
-
+	
 	        if (coercedNumber !== 0 && isFinite(coercedNumber)) {
 	            value = absFloor(coercedNumber);
 	        }
-
+	
 	        return value;
 	    }
-
+	
 	    // compare two arrays, return the number of differences
 	    function compareArrays(array1, array2, dontConvert) {
 	        var len = Math.min(array1.length, array2.length),
@@ -1264,17 +1428,17 @@
 	        }
 	        return diffs + lengthDiff;
 	    }
-
+	
 	    function warn(msg) {
 	        if (hooks.suppressDeprecationWarnings === false &&
 	                (typeof console !==  'undefined') && console.warn) {
 	            console.warn('Deprecation warning: ' + msg);
 	        }
 	    }
-
+	
 	    function deprecate(msg, fn) {
 	        var firstTime = true;
-
+	
 	        return extend(function () {
 	            if (hooks.deprecationHandler != null) {
 	                hooks.deprecationHandler(null, msg);
@@ -1301,9 +1465,9 @@
 	            return fn.apply(this, arguments);
 	        }, fn);
 	    }
-
+	
 	    var deprecations = {};
-
+	
 	    function deprecateSimple(name, msg) {
 	        if (hooks.deprecationHandler != null) {
 	            hooks.deprecationHandler(name, msg);
@@ -1313,14 +1477,14 @@
 	            deprecations[name] = true;
 	        }
 	    }
-
+	
 	    hooks.suppressDeprecationWarnings = false;
 	    hooks.deprecationHandler = null;
-
+	
 	    function isFunction(input) {
 	        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
 	    }
-
+	
 	    function set (config) {
 	        var prop, i;
 	        for (i in config) {
@@ -1339,7 +1503,7 @@
 	            (this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) +
 	                '|' + (/\d{1,2}/).source);
 	    }
-
+	
 	    function mergeConfigs(parentConfig, childConfig) {
 	        var res = extend({}, parentConfig), prop;
 	        for (prop in childConfig) {
@@ -1365,15 +1529,15 @@
 	        }
 	        return res;
 	    }
-
+	
 	    function Locale(config) {
 	        if (config != null) {
 	            this.set(config);
 	        }
 	    }
-
+	
 	    var keys;
-
+	
 	    if (Object.keys) {
 	        keys = Object.keys;
 	    } else {
@@ -1387,7 +1551,7 @@
 	            return res;
 	        };
 	    }
-
+	
 	    var defaultCalendar = {
 	        sameDay : '[Today at] LT',
 	        nextDay : '[Tomorrow at] LT',
@@ -1396,12 +1560,12 @@
 	        lastWeek : '[Last] dddd [at] LT',
 	        sameElse : 'L'
 	    };
-
+	
 	    function calendar (key, mom, now) {
 	        var output = this._calendar[key] || this._calendar['sameElse'];
 	        return isFunction(output) ? output.call(mom, now) : output;
 	    }
-
+	
 	    var defaultLongDateFormat = {
 	        LTS  : 'h:mm:ss A',
 	        LT   : 'h:mm A',
@@ -1410,35 +1574,35 @@
 	        LLL  : 'MMMM D, YYYY h:mm A',
 	        LLLL : 'dddd, MMMM D, YYYY h:mm A'
 	    };
-
+	
 	    function longDateFormat (key) {
 	        var format = this._longDateFormat[key],
 	            formatUpper = this._longDateFormat[key.toUpperCase()];
-
+	
 	        if (format || !formatUpper) {
 	            return format;
 	        }
-
+	
 	        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
 	            return val.slice(1);
 	        });
-
+	
 	        return this._longDateFormat[key];
 	    }
-
+	
 	    var defaultInvalidDate = 'Invalid date';
-
+	
 	    function invalidDate () {
 	        return this._invalidDate;
 	    }
-
+	
 	    var defaultOrdinal = '%d';
 	    var defaultDayOfMonthOrdinalParse = /\d{1,2}/;
-
+	
 	    function ordinal (number) {
 	        return this._ordinal.replace('%d', number);
 	    }
-
+	
 	    var defaultRelativeTime = {
 	        future : 'in %s',
 	        past   : '%s ago',
@@ -1455,35 +1619,35 @@
 	        y  : 'a year',
 	        yy : '%d years'
 	    };
-
+	
 	    function relativeTime (number, withoutSuffix, string, isFuture) {
 	        var output = this._relativeTime[string];
 	        return (isFunction(output)) ?
 	            output(number, withoutSuffix, string, isFuture) :
 	            output.replace(/%d/i, number);
 	    }
-
+	
 	    function pastFuture (diff, output) {
 	        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
 	        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
 	    }
-
+	
 	    var aliases = {};
-
+	
 	    function addUnitAlias (unit, shorthand) {
 	        var lowerCase = unit.toLowerCase();
 	        aliases[lowerCase] = aliases[lowerCase + 's'] = aliases[shorthand] = unit;
 	    }
-
+	
 	    function normalizeUnits(units) {
 	        return typeof units === 'string' ? aliases[units] || aliases[units.toLowerCase()] : undefined;
 	    }
-
+	
 	    function normalizeObjectUnits(inputObject) {
 	        var normalizedInput = {},
 	            normalizedProp,
 	            prop;
-
+	
 	        for (prop in inputObject) {
 	            if (hasOwnProp(inputObject, prop)) {
 	                normalizedProp = normalizeUnits(prop);
@@ -1492,16 +1656,16 @@
 	                }
 	            }
 	        }
-
+	
 	        return normalizedInput;
 	    }
-
+	
 	    var priorities = {};
-
+	
 	    function addUnitPriority(unit, priority) {
 	        priorities[unit] = priority;
 	    }
-
+	
 	    function getPrioritizedUnits(unitsObj) {
 	        var units = [];
 	        for (var u in unitsObj) {
@@ -1512,7 +1676,7 @@
 	        });
 	        return units;
 	    }
-
+	
 	    function zeroFill(number, targetLength, forceSign) {
 	        var absNumber = '' + Math.abs(number),
 	            zerosToFill = targetLength - absNumber.length,
@@ -1520,15 +1684,15 @@
 	        return (sign ? (forceSign ? '+' : '') : '-') +
 	            Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
 	    }
-
+	
 	    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
-
+	
 	    var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
-
+	
 	    var formatFunctions = {};
-
+	
 	    var formatTokenFunctions = {};
-
+	
 	    // token:    'M'
 	    // padded:   ['MM', 2]
 	    // ordinal:  'Mo'
@@ -1554,17 +1718,17 @@
 	            };
 	        }
 	    }
-
+	
 	    function removeFormattingTokens(input) {
 	        if (input.match(/\[[\s\S]/)) {
 	            return input.replace(/^\[|\]$/g, '');
 	        }
 	        return input.replace(/\\/g, '');
 	    }
-
+	
 	    function makeFormatFunction(format) {
 	        var array = format.match(formattingTokens), i, length;
-
+	
 	        for (i = 0, length = array.length; i < length; i++) {
 	            if (formatTokenFunctions[array[i]]) {
 	                array[i] = formatTokenFunctions[array[i]];
@@ -1572,7 +1736,7 @@
 	                array[i] = removeFormattingTokens(array[i]);
 	            }
 	        }
-
+	
 	        return function (mom) {
 	            var output = '', i;
 	            for (i = 0; i < length; i++) {
@@ -1581,36 +1745,36 @@
 	            return output;
 	        };
 	    }
-
+	
 	    // format date using native date object
 	    function formatMoment(m, format) {
 	        if (!m.isValid()) {
 	            return m.localeData().invalidDate();
 	        }
-
+	
 	        format = expandFormat(format, m.localeData());
 	        formatFunctions[format] = formatFunctions[format] || makeFormatFunction(format);
-
+	
 	        return formatFunctions[format](m);
 	    }
-
+	
 	    function expandFormat(format, locale) {
 	        var i = 5;
-
+	
 	        function replaceLongDateFormatTokens(input) {
 	            return locale.longDateFormat(input) || input;
 	        }
-
+	
 	        localFormattingTokens.lastIndex = 0;
 	        while (i >= 0 && localFormattingTokens.test(format)) {
 	            format = format.replace(localFormattingTokens, replaceLongDateFormatTokens);
 	            localFormattingTokens.lastIndex = 0;
 	            i -= 1;
 	        }
-
+	
 	        return format;
 	    }
-
+	
 	    var match1         = /\d/;            //       0 - 9
 	    var match2         = /\d\d/;          //      00 - 99
 	    var match3         = /\d{3}/;         //     000 - 999
@@ -1622,48 +1786,48 @@
 	    var match1to3      = /\d{1,3}/;       //       0 - 999
 	    var match1to4      = /\d{1,4}/;       //       0 - 9999
 	    var match1to6      = /[+-]?\d{1,6}/;  // -999999 - 999999
-
+	
 	    var matchUnsigned  = /\d+/;           //       0 - inf
 	    var matchSigned    = /[+-]?\d+/;      //    -inf - inf
-
+	
 	    var matchOffset    = /Z|[+-]\d\d:?\d\d/gi; // +00:00 -00:00 +0000 -0000 or Z
 	    var matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi; // +00 -00 +00:00 -00:00 +0000 -0000 or Z
-
+	
 	    var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
-
+	
 	    // any word (or two) characters or numbers including two/three word month in arabic.
 	    // includes scottish gaelic two word and hyphenated months
 	    var matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i;
-
+	
 	    var regexes = {};
-
+	
 	    function addRegexToken (token, regex, strictRegex) {
 	        regexes[token] = isFunction(regex) ? regex : function (isStrict, localeData) {
 	            return (isStrict && strictRegex) ? strictRegex : regex;
 	        };
 	    }
-
+	
 	    function getParseRegexForToken (token, config) {
 	        if (!hasOwnProp(regexes, token)) {
 	            return new RegExp(unescapeFormat(token));
 	        }
-
+	
 	        return regexes[token](config._strict, config._locale);
 	    }
-
+	
 	    // Code from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
 	    function unescapeFormat(s) {
 	        return regexEscape(s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (matched, p1, p2, p3, p4) {
 	            return p1 || p2 || p3 || p4;
 	        }));
 	    }
-
+	
 	    function regexEscape(s) {
 	        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	    }
-
+	
 	    var tokens = {};
-
+	
 	    function addParseToken (token, callback) {
 	        var i, func = callback;
 	        if (typeof token === 'string') {
@@ -1678,20 +1842,20 @@
 	            tokens[token[i]] = func;
 	        }
 	    }
-
+	
 	    function addWeekParseToken (token, callback) {
 	        addParseToken(token, function (input, array, config, token) {
 	            config._w = config._w || {};
 	            callback(input, config._w, config, token);
 	        });
 	    }
-
+	
 	    function addTimeToArrayFromToken(token, input, config) {
 	        if (input != null && hasOwnProp(tokens, token)) {
 	            tokens[token](input, config._a, config, token);
 	        }
 	    }
-
+	
 	    var YEAR = 0;
 	    var MONTH = 1;
 	    var DATE = 2;
@@ -1701,38 +1865,38 @@
 	    var MILLISECOND = 6;
 	    var WEEK = 7;
 	    var WEEKDAY = 8;
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('Y', 0, 0, function () {
 	        var y = this.year();
 	        return y <= 9999 ? '' + y : '+' + y;
 	    });
-
+	
 	    addFormatToken(0, ['YY', 2], 0, function () {
 	        return this.year() % 100;
 	    });
-
+	
 	    addFormatToken(0, ['YYYY',   4],       0, 'year');
 	    addFormatToken(0, ['YYYYY',  5],       0, 'year');
 	    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('year', 'y');
-
+	
 	    // PRIORITIES
-
+	
 	    addUnitPriority('year', 1);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('Y',      matchSigned);
 	    addRegexToken('YY',     match1to2, match2);
 	    addRegexToken('YYYY',   match1to4, match4);
 	    addRegexToken('YYYYY',  match1to6, match6);
 	    addRegexToken('YYYYYY', match1to6, match6);
-
+	
 	    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
 	    addParseToken('YYYY', function (input, array) {
 	        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
@@ -1743,31 +1907,31 @@
 	    addParseToken('Y', function (input, array) {
 	        array[YEAR] = parseInt(input, 10);
 	    });
-
+	
 	    // HELPERS
-
+	
 	    function daysInYear(year) {
 	        return isLeapYear(year) ? 366 : 365;
 	    }
-
+	
 	    function isLeapYear(year) {
 	        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 	    }
-
+	
 	    // HOOKS
-
+	
 	    hooks.parseTwoDigitYear = function (input) {
 	        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
 	    };
-
+	
 	    // MOMENTS
-
+	
 	    var getSetYear = makeGetSet('FullYear', true);
-
+	
 	    function getIsLeapYear () {
 	        return isLeapYear(this.year());
 	    }
-
+	
 	    function makeGetSet (unit, keepTime) {
 	        return function (value) {
 	            if (value != null) {
@@ -1779,12 +1943,12 @@
 	            }
 	        };
 	    }
-
+	
 	    function get (mom, unit) {
 	        return mom.isValid() ?
 	            mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
 	    }
-
+	
 	    function set$1 (mom, unit, value) {
 	        if (mom.isValid() && !isNaN(value)) {
 	            if (unit === 'FullYear' && isLeapYear(mom.year()) && mom.month() === 1 && mom.date() === 29) {
@@ -1795,9 +1959,9 @@
 	            }
 	        }
 	    }
-
+	
 	    // MOMENTS
-
+	
 	    function stringGet (units) {
 	        units = normalizeUnits(units);
 	        if (isFunction(this[units])) {
@@ -1805,8 +1969,8 @@
 	        }
 	        return this;
 	    }
-
-
+	
+	
 	    function stringSet (units, value) {
 	        if (typeof units === 'object') {
 	            units = normalizeObjectUnits(units);
@@ -1822,13 +1986,13 @@
 	        }
 	        return this;
 	    }
-
+	
 	    function mod(n, x) {
 	        return ((n % x) + x) % x;
 	    }
-
+	
 	    var indexOf;
-
+	
 	    if (Array.prototype.indexOf) {
 	        indexOf = Array.prototype.indexOf;
 	    } else {
@@ -1843,7 +2007,7 @@
 	            return -1;
 	        };
 	    }
-
+	
 	    function daysInMonth(year, month) {
 	        if (isNaN(year) || isNaN(month)) {
 	            return NaN;
@@ -1852,31 +2016,31 @@
 	        year += (month - modMonth) / 12;
 	        return modMonth === 1 ? (isLeapYear(year) ? 29 : 28) : (31 - modMonth % 7 % 2);
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('M', ['MM', 2], 'Mo', function () {
 	        return this.month() + 1;
 	    });
-
+	
 	    addFormatToken('MMM', 0, 0, function (format) {
 	        return this.localeData().monthsShort(this, format);
 	    });
-
+	
 	    addFormatToken('MMMM', 0, 0, function (format) {
 	        return this.localeData().months(this, format);
 	    });
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('month', 'M');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('month', 8);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('M',    match1to2);
 	    addRegexToken('MM',   match1to2, match2);
 	    addRegexToken('MMM',  function (isStrict, locale) {
@@ -1885,11 +2049,11 @@
 	    addRegexToken('MMMM', function (isStrict, locale) {
 	        return locale.monthsRegex(isStrict);
 	    });
-
+	
 	    addParseToken(['M', 'MM'], function (input, array) {
 	        array[MONTH] = toInt(input) - 1;
 	    });
-
+	
 	    addParseToken(['MMM', 'MMMM'], function (input, array, config, token) {
 	        var month = config._locale.monthsParse(input, token, config._strict);
 	        // if we didn't find a month name, mark the date as invalid.
@@ -1899,9 +2063,9 @@
 	            getParsingFlags(config).invalidMonth = input;
 	        }
 	    });
-
+	
 	    // LOCALES
-
+	
 	    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/;
 	    var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
 	    function localeMonths (m, format) {
@@ -1912,7 +2076,7 @@
 	        return isArray(this._months) ? this._months[m.month()] :
 	            this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? 'format' : 'standalone'][m.month()];
 	    }
-
+	
 	    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
 	    function localeMonthsShort (m, format) {
 	        if (!m) {
@@ -1922,7 +2086,7 @@
 	        return isArray(this._monthsShort) ? this._monthsShort[m.month()] :
 	            this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
 	    }
-
+	
 	    function handleStrictParse(monthName, format, strict) {
 	        var i, ii, mom, llc = monthName.toLocaleLowerCase();
 	        if (!this._monthsParse) {
@@ -1936,7 +2100,7 @@
 	                this._longMonthsParse[i] = this.months(mom, '').toLocaleLowerCase();
 	            }
 	        }
-
+	
 	        if (strict) {
 	            if (format === 'MMM') {
 	                ii = indexOf.call(this._shortMonthsParse, llc);
@@ -1963,20 +2127,20 @@
 	            }
 	        }
 	    }
-
+	
 	    function localeMonthsParse (monthName, format, strict) {
 	        var i, mom, regex;
-
+	
 	        if (this._monthsParseExact) {
 	            return handleStrictParse.call(this, monthName, format, strict);
 	        }
-
+	
 	        if (!this._monthsParse) {
 	            this._monthsParse = [];
 	            this._longMonthsParse = [];
 	            this._shortMonthsParse = [];
 	        }
-
+	
 	        // TODO: add sorting
 	        // Sorting makes sure if one month (or abbr) is a prefix of another
 	        // see sorting in computeMonthsParse
@@ -2001,17 +2165,17 @@
 	            }
 	        }
 	    }
-
+	
 	    // MOMENTS
-
+	
 	    function setMonth (mom, value) {
 	        var dayOfMonth;
-
+	
 	        if (!mom.isValid()) {
 	            // No op
 	            return mom;
 	        }
-
+	
 	        if (typeof value === 'string') {
 	            if (/^\d+$/.test(value)) {
 	                value = toInt(value);
@@ -2023,12 +2187,12 @@
 	                }
 	            }
 	        }
-
+	
 	        dayOfMonth = Math.min(mom.date(), daysInMonth(mom.year(), value));
 	        mom._d['set' + (mom._isUTC ? 'UTC' : '') + 'Month'](value, dayOfMonth);
 	        return mom;
 	    }
-
+	
 	    function getSetMonth (value) {
 	        if (value != null) {
 	            setMonth(this, value);
@@ -2038,11 +2202,11 @@
 	            return get(this, 'Month');
 	        }
 	    }
-
+	
 	    function getDaysInMonth () {
 	        return daysInMonth(this.year(), this.month());
 	    }
-
+	
 	    var defaultMonthsShortRegex = matchWord;
 	    function monthsShortRegex (isStrict) {
 	        if (this._monthsParseExact) {
@@ -2062,7 +2226,7 @@
 	                this._monthsShortStrictRegex : this._monthsShortRegex;
 	        }
 	    }
-
+	
 	    var defaultMonthsRegex = matchWord;
 	    function monthsRegex (isStrict) {
 	        if (this._monthsParseExact) {
@@ -2082,12 +2246,12 @@
 	                this._monthsStrictRegex : this._monthsRegex;
 	        }
 	    }
-
+	
 	    function computeMonthsParse () {
 	        function cmpLenRev(a, b) {
 	            return b.length - a.length;
 	        }
-
+	
 	        var shortPieces = [], longPieces = [], mixedPieces = [],
 	            i, mom;
 	        for (i = 0; i < 12; i++) {
@@ -2110,13 +2274,13 @@
 	        for (i = 0; i < 24; i++) {
 	            mixedPieces[i] = regexEscape(mixedPieces[i]);
 	        }
-
+	
 	        this._monthsRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
 	        this._monthsShortRegex = this._monthsRegex;
 	        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
 	        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
 	    }
-
+	
 	    function createDate (y, m, d, h, M, s, ms) {
 	        // can't just apply() to create a date:
 	        // https://stackoverflow.com/q/181348
@@ -2131,10 +2295,10 @@
 	        } else {
 	            date = new Date(y, m, d, h, M, s, ms);
 	        }
-
+	
 	        return date;
 	    }
-
+	
 	    function createUTCDate (y) {
 	        var date;
 	        // the Date.UTC function remaps years 0-99 to 1900-1999
@@ -2149,27 +2313,27 @@
 	        } else {
 	            date = new Date(Date.UTC.apply(null, arguments));
 	        }
-
+	
 	        return date;
 	    }
-
+	
 	    // start-of-first-week - start-of-year
 	    function firstWeekOffset(year, dow, doy) {
 	        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
 	            fwd = 7 + dow - doy,
 	            // first-week day local weekday -- which local weekday is fwd
 	            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
-
+	
 	        return -fwdlw + fwd - 1;
 	    }
-
+	
 	    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
 	    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
 	        var localWeekday = (7 + weekday - dow) % 7,
 	            weekOffset = firstWeekOffset(year, dow, doy),
 	            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
 	            resYear, resDayOfYear;
-
+	
 	        if (dayOfYear <= 0) {
 	            resYear = year - 1;
 	            resDayOfYear = daysInYear(resYear) + dayOfYear;
@@ -2180,18 +2344,18 @@
 	            resYear = year;
 	            resDayOfYear = dayOfYear;
 	        }
-
+	
 	        return {
 	            year: resYear,
 	            dayOfYear: resDayOfYear
 	        };
 	    }
-
+	
 	    function weekOfYear(mom, dow, doy) {
 	        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
 	            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
 	            resWeek, resYear;
-
+	
 	        if (week < 1) {
 	            resYear = mom.year() - 1;
 	            resWeek = week + weeksInYear(resYear, dow, doy);
@@ -2202,110 +2366,110 @@
 	            resYear = mom.year();
 	            resWeek = week;
 	        }
-
+	
 	        return {
 	            week: resWeek,
 	            year: resYear
 	        };
 	    }
-
+	
 	    function weeksInYear(year, dow, doy) {
 	        var weekOffset = firstWeekOffset(year, dow, doy),
 	            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
 	        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('w', ['ww', 2], 'wo', 'week');
 	    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('week', 'w');
 	    addUnitAlias('isoWeek', 'W');
-
+	
 	    // PRIORITIES
-
+	
 	    addUnitPriority('week', 5);
 	    addUnitPriority('isoWeek', 5);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('w',  match1to2);
 	    addRegexToken('ww', match1to2, match2);
 	    addRegexToken('W',  match1to2);
 	    addRegexToken('WW', match1to2, match2);
-
+	
 	    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
 	        week[token.substr(0, 1)] = toInt(input);
 	    });
-
+	
 	    // HELPERS
-
+	
 	    // LOCALES
-
+	
 	    function localeWeek (mom) {
 	        return weekOfYear(mom, this._week.dow, this._week.doy).week;
 	    }
-
+	
 	    var defaultLocaleWeek = {
 	        dow : 0, // Sunday is the first day of the week.
 	        doy : 6  // The week that contains Jan 6th is the first week of the year.
 	    };
-
+	
 	    function localeFirstDayOfWeek () {
 	        return this._week.dow;
 	    }
-
+	
 	    function localeFirstDayOfYear () {
 	        return this._week.doy;
 	    }
-
+	
 	    // MOMENTS
-
+	
 	    function getSetWeek (input) {
 	        var week = this.localeData().week(this);
 	        return input == null ? week : this.add((input - week) * 7, 'd');
 	    }
-
+	
 	    function getSetISOWeek (input) {
 	        var week = weekOfYear(this, 1, 4).week;
 	        return input == null ? week : this.add((input - week) * 7, 'd');
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('d', 0, 'do', 'day');
-
+	
 	    addFormatToken('dd', 0, 0, function (format) {
 	        return this.localeData().weekdaysMin(this, format);
 	    });
-
+	
 	    addFormatToken('ddd', 0, 0, function (format) {
 	        return this.localeData().weekdaysShort(this, format);
 	    });
-
+	
 	    addFormatToken('dddd', 0, 0, function (format) {
 	        return this.localeData().weekdays(this, format);
 	    });
-
+	
 	    addFormatToken('e', 0, 0, 'weekday');
 	    addFormatToken('E', 0, 0, 'isoWeekday');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('day', 'd');
 	    addUnitAlias('weekday', 'e');
 	    addUnitAlias('isoWeekday', 'E');
-
+	
 	    // PRIORITY
 	    addUnitPriority('day', 11);
 	    addUnitPriority('weekday', 11);
 	    addUnitPriority('isoWeekday', 11);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('d',    match1to2);
 	    addRegexToken('e',    match1to2);
 	    addRegexToken('E',    match1to2);
@@ -2318,7 +2482,7 @@
 	    addRegexToken('dddd',   function (isStrict, locale) {
 	        return locale.weekdaysRegex(isStrict);
 	    });
-
+	
 	    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
 	        var weekday = config._locale.weekdaysParse(input, token, config._strict);
 	        // if we didn't get a weekday name, mark the date as invalid
@@ -2328,42 +2492,42 @@
 	            getParsingFlags(config).invalidWeekday = input;
 	        }
 	    });
-
+	
 	    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
 	        week[token] = toInt(input);
 	    });
-
+	
 	    // HELPERS
-
+	
 	    function parseWeekday(input, locale) {
 	        if (typeof input !== 'string') {
 	            return input;
 	        }
-
+	
 	        if (!isNaN(input)) {
 	            return parseInt(input, 10);
 	        }
-
+	
 	        input = locale.weekdaysParse(input);
 	        if (typeof input === 'number') {
 	            return input;
 	        }
-
+	
 	        return null;
 	    }
-
+	
 	    function parseIsoWeekday(input, locale) {
 	        if (typeof input === 'string') {
 	            return locale.weekdaysParse(input) % 7 || 7;
 	        }
 	        return isNaN(input) ? null : input;
 	    }
-
+	
 	    // LOCALES
 	    function shiftWeekdays (ws, n) {
 	        return ws.slice(n, 7).concat(ws.slice(0, n));
 	    }
-
+	
 	    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
 	    function localeWeekdays (m, format) {
 	        var weekdays = isArray(this._weekdays) ? this._weekdays :
@@ -2371,26 +2535,26 @@
 	        return (m === true) ? shiftWeekdays(weekdays, this._week.dow)
 	            : (m) ? weekdays[m.day()] : weekdays;
 	    }
-
+	
 	    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
 	    function localeWeekdaysShort (m) {
 	        return (m === true) ? shiftWeekdays(this._weekdaysShort, this._week.dow)
 	            : (m) ? this._weekdaysShort[m.day()] : this._weekdaysShort;
 	    }
-
+	
 	    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
 	    function localeWeekdaysMin (m) {
 	        return (m === true) ? shiftWeekdays(this._weekdaysMin, this._week.dow)
 	            : (m) ? this._weekdaysMin[m.day()] : this._weekdaysMin;
 	    }
-
+	
 	    function handleStrictParse$1(weekdayName, format, strict) {
 	        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
 	        if (!this._weekdaysParse) {
 	            this._weekdaysParse = [];
 	            this._shortWeekdaysParse = [];
 	            this._minWeekdaysParse = [];
-
+	
 	            for (i = 0; i < 7; ++i) {
 	                mom = createUTC([2000, 1]).day(i);
 	                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
@@ -2398,7 +2562,7 @@
 	                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
 	            }
 	        }
-
+	
 	        if (strict) {
 	            if (format === 'dddd') {
 	                ii = indexOf.call(this._weekdaysParse, llc);
@@ -2447,24 +2611,24 @@
 	            }
 	        }
 	    }
-
+	
 	    function localeWeekdaysParse (weekdayName, format, strict) {
 	        var i, mom, regex;
-
+	
 	        if (this._weekdaysParseExact) {
 	            return handleStrictParse$1.call(this, weekdayName, format, strict);
 	        }
-
+	
 	        if (!this._weekdaysParse) {
 	            this._weekdaysParse = [];
 	            this._minWeekdaysParse = [];
 	            this._shortWeekdaysParse = [];
 	            this._fullWeekdaysParse = [];
 	        }
-
+	
 	        for (i = 0; i < 7; i++) {
 	            // make the regex if we don't have it already
-
+	
 	            mom = createUTC([2000, 1]).day(i);
 	            if (strict && !this._fullWeekdaysParse[i]) {
 	                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\\.?') + '$', 'i');
@@ -2487,9 +2651,9 @@
 	            }
 	        }
 	    }
-
+	
 	    // MOMENTS
-
+	
 	    function getSetDayOfWeek (input) {
 	        if (!this.isValid()) {
 	            return input != null ? this : NaN;
@@ -2502,7 +2666,7 @@
 	            return day;
 	        }
 	    }
-
+	
 	    function getSetLocaleDayOfWeek (input) {
 	        if (!this.isValid()) {
 	            return input != null ? this : NaN;
@@ -2510,16 +2674,16 @@
 	        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
 	        return input == null ? weekday : this.add(input - weekday, 'd');
 	    }
-
+	
 	    function getSetISODayOfWeek (input) {
 	        if (!this.isValid()) {
 	            return input != null ? this : NaN;
 	        }
-
+	
 	        // behaves the same as moment#day except
 	        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
 	        // as a setter, sunday should belong to the previous week.
-
+	
 	        if (input != null) {
 	            var weekday = parseIsoWeekday(input, this.localeData());
 	            return this.day(this.day() % 7 ? weekday : weekday - 7);
@@ -2527,7 +2691,7 @@
 	            return this.day() || 7;
 	        }
 	    }
-
+	
 	    var defaultWeekdaysRegex = matchWord;
 	    function weekdaysRegex (isStrict) {
 	        if (this._weekdaysParseExact) {
@@ -2547,7 +2711,7 @@
 	                this._weekdaysStrictRegex : this._weekdaysRegex;
 	        }
 	    }
-
+	
 	    var defaultWeekdaysShortRegex = matchWord;
 	    function weekdaysShortRegex (isStrict) {
 	        if (this._weekdaysParseExact) {
@@ -2567,7 +2731,7 @@
 	                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
 	        }
 	    }
-
+	
 	    var defaultWeekdaysMinRegex = matchWord;
 	    function weekdaysMinRegex (isStrict) {
 	        if (this._weekdaysParseExact) {
@@ -2587,13 +2751,13 @@
 	                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
 	        }
 	    }
-
-
+	
+	
 	    function computeWeekdaysParse () {
 	        function cmpLenRev(a, b) {
 	            return b.length - a.length;
 	        }
-
+	
 	        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
 	            i, mom, minp, shortp, longp;
 	        for (i = 0; i < 7; i++) {
@@ -2620,70 +2784,70 @@
 	            longPieces[i] = regexEscape(longPieces[i]);
 	            mixedPieces[i] = regexEscape(mixedPieces[i]);
 	        }
-
+	
 	        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
 	        this._weekdaysShortRegex = this._weekdaysRegex;
 	        this._weekdaysMinRegex = this._weekdaysRegex;
-
+	
 	        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
 	        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
 	        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    function hFormat() {
 	        return this.hours() % 12 || 12;
 	    }
-
+	
 	    function kFormat() {
 	        return this.hours() || 24;
 	    }
-
+	
 	    addFormatToken('H', ['HH', 2], 0, 'hour');
 	    addFormatToken('h', ['hh', 2], 0, hFormat);
 	    addFormatToken('k', ['kk', 2], 0, kFormat);
-
+	
 	    addFormatToken('hmm', 0, 0, function () {
 	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
 	    });
-
+	
 	    addFormatToken('hmmss', 0, 0, function () {
 	        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
 	            zeroFill(this.seconds(), 2);
 	    });
-
+	
 	    addFormatToken('Hmm', 0, 0, function () {
 	        return '' + this.hours() + zeroFill(this.minutes(), 2);
 	    });
-
+	
 	    addFormatToken('Hmmss', 0, 0, function () {
 	        return '' + this.hours() + zeroFill(this.minutes(), 2) +
 	            zeroFill(this.seconds(), 2);
 	    });
-
+	
 	    function meridiem (token, lowercase) {
 	        addFormatToken(token, 0, 0, function () {
 	            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
 	        });
 	    }
-
+	
 	    meridiem('a', true);
 	    meridiem('A', false);
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('hour', 'h');
-
+	
 	    // PRIORITY
 	    addUnitPriority('hour', 13);
-
+	
 	    // PARSING
-
+	
 	    function matchMeridiem (isStrict, locale) {
 	        return locale._meridiemParse;
 	    }
-
+	
 	    addRegexToken('a',  matchMeridiem);
 	    addRegexToken('A',  matchMeridiem);
 	    addRegexToken('H',  match1to2);
@@ -2692,12 +2856,12 @@
 	    addRegexToken('HH', match1to2, match2);
 	    addRegexToken('hh', match1to2, match2);
 	    addRegexToken('kk', match1to2, match2);
-
+	
 	    addRegexToken('hmm', match3to4);
 	    addRegexToken('hmmss', match5to6);
 	    addRegexToken('Hmm', match3to4);
 	    addRegexToken('Hmmss', match5to6);
-
+	
 	    addParseToken(['H', 'HH'], HOUR);
 	    addParseToken(['k', 'kk'], function (input, array, config) {
 	        var kInput = toInt(input);
@@ -2737,15 +2901,15 @@
 	        array[MINUTE] = toInt(input.substr(pos1, 2));
 	        array[SECOND] = toInt(input.substr(pos2));
 	    });
-
+	
 	    // LOCALES
-
+	
 	    function localeIsPM (input) {
 	        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
 	        // Using charAt should be more compatible.
 	        return ((input + '').toLowerCase().charAt(0) === 'p');
 	    }
-
+	
 	    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
 	    function localeMeridiem (hours, minutes, isLower) {
 	        if (hours > 11) {
@@ -2754,16 +2918,16 @@
 	            return isLower ? 'am' : 'AM';
 	        }
 	    }
-
-
+	
+	
 	    // MOMENTS
-
+	
 	    // Setting the hour should keep the time, because the user explicitly
 	    // specified which hour they want. So trying to maintain the same hour (in
 	    // a new timezone) makes sense. Adding/subtracting hours does not follow
 	    // this rule.
 	    var getSetHour = makeGetSet('Hours', true);
-
+	
 	    var baseConfig = {
 	        calendar: defaultCalendar,
 	        longDateFormat: defaultLongDateFormat,
@@ -2771,34 +2935,34 @@
 	        ordinal: defaultOrdinal,
 	        dayOfMonthOrdinalParse: defaultDayOfMonthOrdinalParse,
 	        relativeTime: defaultRelativeTime,
-
+	
 	        months: defaultLocaleMonths,
 	        monthsShort: defaultLocaleMonthsShort,
-
+	
 	        week: defaultLocaleWeek,
-
+	
 	        weekdays: defaultLocaleWeekdays,
 	        weekdaysMin: defaultLocaleWeekdaysMin,
 	        weekdaysShort: defaultLocaleWeekdaysShort,
-
+	
 	        meridiemParse: defaultLocaleMeridiemParse
 	    };
-
+	
 	    // internal storage for locale config files
 	    var locales = {};
 	    var localeFamilies = {};
 	    var globalLocale;
-
+	
 	    function normalizeLocale(key) {
 	        return key ? key.toLowerCase().replace('_', '-') : key;
 	    }
-
+	
 	    // pick the locale from the array
 	    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
 	    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
 	    function chooseLocale(names) {
 	        var i = 0, j, next, locale, split;
-
+	
 	        while (i < names.length) {
 	            split = normalizeLocale(names[i]).split('-');
 	            j = split.length;
@@ -2819,7 +2983,7 @@
 	        }
 	        return globalLocale;
 	    }
-
+	
 	    function loadLocale(name) {
 	        var oldLocale = null;
 	        // TODO: Find a better way to register and load all the locales in Node
@@ -2834,7 +2998,7 @@
 	        }
 	        return locales[name];
 	    }
-
+	
 	    // This function will load locale and then set the global locale.  If
 	    // no arguments are passed in, it will simply return the current global
 	    // locale key.
@@ -2847,7 +3011,7 @@
 	            else {
 	                data = defineLocale(key, values);
 	            }
-
+	
 	            if (data) {
 	                // moment.duration._locale = moment._locale = data;
 	                globalLocale = data;
@@ -2859,10 +3023,10 @@
 	                }
 	            }
 	        }
-
+	
 	        return globalLocale._abbr;
 	    }
-
+	
 	    function defineLocale (name, config) {
 	        if (config !== null) {
 	            var locale, parentConfig = baseConfig;
@@ -2894,19 +3058,19 @@
 	                }
 	            }
 	            locales[name] = new Locale(mergeConfigs(parentConfig, config));
-
+	
 	            if (localeFamilies[name]) {
 	                localeFamilies[name].forEach(function (x) {
 	                    defineLocale(x.name, x.config);
 	                });
 	            }
-
+	
 	            // backwards compat for now: also set the locale
 	            // make sure we set the locale AFTER all child locales have been
 	            // created, so we won't end up with the child locale set.
 	            getSetGlobalLocale(name);
-
-
+	
+	
 	            return locales[name];
 	        } else {
 	            // useful for testing
@@ -2914,7 +3078,7 @@
 	            return null;
 	        }
 	    }
-
+	
 	    function updateLocale(name, config) {
 	        if (config != null) {
 	            var locale, tmpLocale, parentConfig = baseConfig;
@@ -2927,7 +3091,7 @@
 	            locale = new Locale(config);
 	            locale.parentLocale = locales[name];
 	            locales[name] = locale;
-
+	
 	            // backwards compat for now: also set the locale
 	            getSetGlobalLocale(name);
 	        } else {
@@ -2942,19 +3106,19 @@
 	        }
 	        return locales[name];
 	    }
-
+	
 	    // returns locale data
 	    function getLocale (key) {
 	        var locale;
-
+	
 	        if (key && key._locale && key._locale._abbr) {
 	            key = key._locale._abbr;
 	        }
-
+	
 	        if (!key) {
 	            return globalLocale;
 	        }
-
+	
 	        if (!isArray(key)) {
 	            //short-circuit everything else
 	            locale = loadLocale(key);
@@ -2963,18 +3127,18 @@
 	            }
 	            key = [key];
 	        }
-
+	
 	        return chooseLocale(key);
 	    }
-
+	
 	    function listLocales() {
 	        return keys(locales);
 	    }
-
+	
 	    function checkOverflow (m) {
 	        var overflow;
 	        var a = m._a;
-
+	
 	        if (a && getParsingFlags(m).overflow === -2) {
 	            overflow =
 	                a[MONTH]       < 0 || a[MONTH]       > 11  ? MONTH :
@@ -2984,7 +3148,7 @@
 	                a[SECOND]      < 0 || a[SECOND]      > 59  ? SECOND :
 	                a[MILLISECOND] < 0 || a[MILLISECOND] > 999 ? MILLISECOND :
 	                -1;
-
+	
 	            if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
 	                overflow = DATE;
 	            }
@@ -2994,13 +3158,13 @@
 	            if (getParsingFlags(m)._overflowWeekday && overflow === -1) {
 	                overflow = WEEKDAY;
 	            }
-
+	
 	            getParsingFlags(m).overflow = overflow;
 	        }
-
+	
 	        return m;
 	    }
-
+	
 	    // Pick the first defined of two or three arguments.
 	    function defaults(a, b, c) {
 	        if (a != null) {
@@ -3011,7 +3175,7 @@
 	        }
 	        return c;
 	    }
-
+	
 	    function currentDateArray(config) {
 	        // hooks is actually the exported moment object
 	        var nowValue = new Date(hooks.now());
@@ -3020,38 +3184,38 @@
 	        }
 	        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
 	    }
-
+	
 	    // convert an array to a date.
 	    // the array should mirror the parameters below
 	    // note: all values past the year are optional and will default to the lowest possible value.
 	    // [year, month, day , hour, minute, second, millisecond]
 	    function configFromArray (config) {
 	        var i, date, input = [], currentDate, expectedWeekday, yearToUse;
-
+	
 	        if (config._d) {
 	            return;
 	        }
-
+	
 	        currentDate = currentDateArray(config);
-
+	
 	        //compute day of the year from weeks and weekdays
 	        if (config._w && config._a[DATE] == null && config._a[MONTH] == null) {
 	            dayOfYearFromWeekInfo(config);
 	        }
-
+	
 	        //if the day of the year is set, figure out what it is
 	        if (config._dayOfYear != null) {
 	            yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
-
+	
 	            if (config._dayOfYear > daysInYear(yearToUse) || config._dayOfYear === 0) {
 	                getParsingFlags(config)._overflowDayOfYear = true;
 	            }
-
+	
 	            date = createUTCDate(yearToUse, 0, config._dayOfYear);
 	            config._a[MONTH] = date.getUTCMonth();
 	            config._a[DATE] = date.getUTCDate();
 	        }
-
+	
 	        // Default to current date.
 	        // * if no year, month, day of month are given, default to today
 	        // * if day of month is given, default month and year
@@ -3060,12 +3224,12 @@
 	        for (i = 0; i < 3 && config._a[i] == null; ++i) {
 	            config._a[i] = input[i] = currentDate[i];
 	        }
-
+	
 	        // Zero out whatever was not defaulted, including time
 	        for (; i < 7; i++) {
 	            config._a[i] = input[i] = (config._a[i] == null) ? (i === 2 ? 1 : 0) : config._a[i];
 	        }
-
+	
 	        // Check for 24:00:00.000
 	        if (config._a[HOUR] === 24 &&
 	                config._a[MINUTE] === 0 &&
@@ -3074,34 +3238,34 @@
 	            config._nextDay = true;
 	            config._a[HOUR] = 0;
 	        }
-
+	
 	        config._d = (config._useUTC ? createUTCDate : createDate).apply(null, input);
 	        expectedWeekday = config._useUTC ? config._d.getUTCDay() : config._d.getDay();
-
+	
 	        // Apply timezone offset from input. The actual utcOffset can be changed
 	        // with parseZone.
 	        if (config._tzm != null) {
 	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
 	        }
-
+	
 	        if (config._nextDay) {
 	            config._a[HOUR] = 24;
 	        }
-
+	
 	        // check for mismatching day of week
 	        if (config._w && typeof config._w.d !== 'undefined' && config._w.d !== expectedWeekday) {
 	            getParsingFlags(config).weekdayMismatch = true;
 	        }
 	    }
-
+	
 	    function dayOfYearFromWeekInfo(config) {
 	        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow;
-
+	
 	        w = config._w;
 	        if (w.GG != null || w.W != null || w.E != null) {
 	            dow = 1;
 	            doy = 4;
-
+	
 	            // TODO: We need to take the current isoWeekYear, but that depends on
 	            // how we interpret now (local, utc, fixed offset). So create
 	            // a now version of current config (take local/utc/offset flags, and
@@ -3115,14 +3279,14 @@
 	        } else {
 	            dow = config._locale._week.dow;
 	            doy = config._locale._week.doy;
-
+	
 	            var curWeek = weekOfYear(createLocal(), dow, doy);
-
+	
 	            weekYear = defaults(w.gg, config._a[YEAR], curWeek.year);
-
+	
 	            // Default to current week.
 	            week = defaults(w.w, curWeek.week);
-
+	
 	            if (w.d != null) {
 	                // weekday -- low day numbers are considered next week
 	                weekday = w.d;
@@ -3150,14 +3314,14 @@
 	            config._dayOfYear = temp.dayOfYear;
 	        }
 	    }
-
+	
 	    // iso 8601 regex
 	    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
 	    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
 	    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
-
+	
 	    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
-
+	
 	    var isoDates = [
 	        ['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/],
 	        ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/],
@@ -3172,7 +3336,7 @@
 	        ['GGGG[W]WW', /\d{4}W\d{2}/, false],
 	        ['YYYYDDD', /\d{7}/]
 	    ];
-
+	
 	    // iso time formats and regexes
 	    var isoTimes = [
 	        ['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/],
@@ -3185,19 +3349,19 @@
 	        ['HHmm', /\d\d\d\d/],
 	        ['HH', /\d\d/]
 	    ];
-
+	
 	    var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
-
+	
 	    // date from iso format
 	    function configFromISO(config) {
 	        var i, l,
 	            string = config._i,
 	            match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
 	            allowTime, dateFormat, timeFormat, tzFormat;
-
+	
 	        if (match) {
 	            getParsingFlags(config).iso = true;
-
+	
 	            for (i = 0, l = isoDates.length; i < l; i++) {
 	                if (isoDates[i][1].exec(match[1])) {
 	                    dateFormat = isoDates[i][0];
@@ -3240,10 +3404,10 @@
 	            config._isValid = false;
 	        }
 	    }
-
+	
 	    // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
 	    var rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/;
-
+	
 	    function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
 	        var result = [
 	            untruncateYear(yearStr),
@@ -3252,14 +3416,14 @@
 	            parseInt(hourStr, 10),
 	            parseInt(minuteStr, 10)
 	        ];
-
+	
 	        if (secondStr) {
 	            result.push(parseInt(secondStr, 10));
 	        }
-
+	
 	        return result;
 	    }
-
+	
 	    function untruncateYear(yearStr) {
 	        var year = parseInt(yearStr, 10);
 	        if (year <= 49) {
@@ -3269,12 +3433,12 @@
 	        }
 	        return year;
 	    }
-
+	
 	    function preprocessRFC2822(s) {
 	        // Remove comments and folding whitespace and replace multiple-spaces with a single space
 	        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 	    }
-
+	
 	    function checkWeekday(weekdayStr, parsedInput, config) {
 	        if (weekdayStr) {
 	            // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
@@ -3288,7 +3452,7 @@
 	        }
 	        return true;
 	    }
-
+	
 	    var obsOffsets = {
 	        UT: 0,
 	        GMT: 0,
@@ -3301,7 +3465,7 @@
 	        PDT: -7 * 60,
 	        PST: -8 * 60
 	    };
-
+	
 	    function calculateOffset(obsOffset, militaryOffset, numOffset) {
 	        if (obsOffset) {
 	            return obsOffsets[obsOffset];
@@ -3314,7 +3478,7 @@
 	            return h * 60 + m;
 	        }
 	    }
-
+	
 	    // date and time from ref 2822 format
 	    function configFromRFC2822(config) {
 	        var match = rfc2822.exec(preprocessRFC2822(config._i));
@@ -3323,46 +3487,46 @@
 	            if (!checkWeekday(match[1], parsedArray, config)) {
 	                return;
 	            }
-
+	
 	            config._a = parsedArray;
 	            config._tzm = calculateOffset(match[8], match[9], match[10]);
-
+	
 	            config._d = createUTCDate.apply(null, config._a);
 	            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
-
+	
 	            getParsingFlags(config).rfc2822 = true;
 	        } else {
 	            config._isValid = false;
 	        }
 	    }
-
+	
 	    // date from iso format or fallback
 	    function configFromString(config) {
 	        var matched = aspNetJsonRegex.exec(config._i);
-
+	
 	        if (matched !== null) {
 	            config._d = new Date(+matched[1]);
 	            return;
 	        }
-
+	
 	        configFromISO(config);
 	        if (config._isValid === false) {
 	            delete config._isValid;
 	        } else {
 	            return;
 	        }
-
+	
 	        configFromRFC2822(config);
 	        if (config._isValid === false) {
 	            delete config._isValid;
 	        } else {
 	            return;
 	        }
-
+	
 	        // Final attempt, use Input Fallback
 	        hooks.createFromInputFallback(config);
 	    }
-
+	
 	    hooks.createFromInputFallback = deprecate(
 	        'value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), ' +
 	        'which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are ' +
@@ -3372,13 +3536,13 @@
 	            config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
 	        }
 	    );
-
+	
 	    // constant that refers to the ISO standard
 	    hooks.ISO_8601 = function () {};
-
+	
 	    // constant that refers to the RFC 2822 form
 	    hooks.RFC_2822 = function () {};
-
+	
 	    // date from string and format string
 	    function configFromStringAndFormat(config) {
 	        // TODO: Move this to another part of the creation flow to prevent circular deps
@@ -3392,15 +3556,15 @@
 	        }
 	        config._a = [];
 	        getParsingFlags(config).empty = true;
-
+	
 	        // This array is used to make a Date, either with `new Date` or `Date.UTC`
 	        var string = '' + config._i,
 	            i, parsedInput, tokens, token, skipped,
 	            stringLength = string.length,
 	            totalParsedInputLength = 0;
-
+	
 	        tokens = expandFormat(config._f, config._locale).match(formattingTokens) || [];
-
+	
 	        for (i = 0; i < tokens.length; i++) {
 	            token = tokens[i];
 	            parsedInput = (string.match(getParseRegexForToken(token, config)) || [])[0];
@@ -3428,33 +3592,33 @@
 	                getParsingFlags(config).unusedTokens.push(token);
 	            }
 	        }
-
+	
 	        // add remaining unparsed input length to the string
 	        getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
 	        if (string.length > 0) {
 	            getParsingFlags(config).unusedInput.push(string);
 	        }
-
+	
 	        // clear _12h flag if hour is <= 12
 	        if (config._a[HOUR] <= 12 &&
 	            getParsingFlags(config).bigHour === true &&
 	            config._a[HOUR] > 0) {
 	            getParsingFlags(config).bigHour = undefined;
 	        }
-
+	
 	        getParsingFlags(config).parsedDateParts = config._a.slice(0);
 	        getParsingFlags(config).meridiem = config._meridiem;
 	        // handle meridiem
 	        config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
-
+	
 	        configFromArray(config);
 	        checkOverflow(config);
 	    }
-
-
+	
+	
 	    function meridiemFixWrap (locale, hour, meridiem) {
 	        var isPm;
-
+	
 	        if (meridiem == null) {
 	            // nothing to do
 	            return hour;
@@ -3476,22 +3640,22 @@
 	            return hour;
 	        }
 	    }
-
+	
 	    // date from string and array of format strings
 	    function configFromStringAndArray(config) {
 	        var tempConfig,
 	            bestMoment,
-
+	
 	            scoreToBeat,
 	            i,
 	            currentScore;
-
+	
 	        if (config._f.length === 0) {
 	            getParsingFlags(config).invalidFormat = true;
 	            config._d = new Date(NaN);
 	            return;
 	        }
-
+	
 	        for (i = 0; i < config._f.length; i++) {
 	            currentScore = 0;
 	            tempConfig = copyConfig({}, config);
@@ -3500,41 +3664,41 @@
 	            }
 	            tempConfig._f = config._f[i];
 	            configFromStringAndFormat(tempConfig);
-
+	
 	            if (!isValid(tempConfig)) {
 	                continue;
 	            }
-
+	
 	            // if there is any input that was not parsed add a penalty for that format
 	            currentScore += getParsingFlags(tempConfig).charsLeftOver;
-
+	
 	            //or tokens
 	            currentScore += getParsingFlags(tempConfig).unusedTokens.length * 10;
-
+	
 	            getParsingFlags(tempConfig).score = currentScore;
-
+	
 	            if (scoreToBeat == null || currentScore < scoreToBeat) {
 	                scoreToBeat = currentScore;
 	                bestMoment = tempConfig;
 	            }
 	        }
-
+	
 	        extend(config, bestMoment || tempConfig);
 	    }
-
+	
 	    function configFromObject(config) {
 	        if (config._d) {
 	            return;
 	        }
-
+	
 	        var i = normalizeObjectUnits(config._i);
 	        config._a = map([i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond], function (obj) {
 	            return obj && parseInt(obj, 10);
 	        });
-
+	
 	        configFromArray(config);
 	    }
-
+	
 	    function createFromConfig (config) {
 	        var res = new Moment(checkOverflow(prepareConfig(config)));
 	        if (res._nextDay) {
@@ -3542,24 +3706,24 @@
 	            res.add(1, 'd');
 	            res._nextDay = undefined;
 	        }
-
+	
 	        return res;
 	    }
-
+	
 	    function prepareConfig (config) {
 	        var input = config._i,
 	            format = config._f;
-
+	
 	        config._locale = config._locale || getLocale(config._l);
-
+	
 	        if (input === null || (format === undefined && input === '')) {
 	            return createInvalid({nullInput: true});
 	        }
-
+	
 	        if (typeof input === 'string') {
 	            config._i = input = config._locale.preparse(input);
 	        }
-
+	
 	        if (isMoment(input)) {
 	            return new Moment(checkOverflow(input));
 	        } else if (isDate(input)) {
@@ -3571,14 +3735,14 @@
 	        }  else {
 	            configFromInput(config);
 	        }
-
+	
 	        if (!isValid(config)) {
 	            config._d = null;
 	        }
-
+	
 	        return config;
 	    }
-
+	
 	    function configFromInput(config) {
 	        var input = config._i;
 	        if (isUndefined(input)) {
@@ -3601,15 +3765,15 @@
 	            hooks.createFromInputFallback(config);
 	        }
 	    }
-
+	
 	    function createLocalOrUTC (input, format, locale, strict, isUTC) {
 	        var c = {};
-
+	
 	        if (locale === true || locale === false) {
 	            strict = locale;
 	            locale = undefined;
 	        }
-
+	
 	        if ((isObject(input) && isObjectEmpty(input)) ||
 	                (isArray(input) && input.length === 0)) {
 	            input = undefined;
@@ -3622,14 +3786,14 @@
 	        c._i = input;
 	        c._f = format;
 	        c._strict = strict;
-
+	
 	        return createFromConfig(c);
 	    }
-
+	
 	    function createLocal (input, format, locale, strict) {
 	        return createLocalOrUTC(input, format, locale, strict, false);
 	    }
-
+	
 	    var prototypeMin = deprecate(
 	        'moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/',
 	        function () {
@@ -3641,7 +3805,7 @@
 	            }
 	        }
 	    );
-
+	
 	    var prototypeMax = deprecate(
 	        'moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/',
 	        function () {
@@ -3653,7 +3817,7 @@
 	            }
 	        }
 	    );
-
+	
 	    // Pick a moment m from moments so that m[fn](other) is true for all
 	    // other. This relies on the function fn to be transitive.
 	    //
@@ -3675,33 +3839,33 @@
 	        }
 	        return res;
 	    }
-
+	
 	    // TODO: Use [].sort instead?
 	    function min () {
 	        var args = [].slice.call(arguments, 0);
-
+	
 	        return pickBy('isBefore', args);
 	    }
-
+	
 	    function max () {
 	        var args = [].slice.call(arguments, 0);
-
+	
 	        return pickBy('isAfter', args);
 	    }
-
+	
 	    var now = function () {
 	        return Date.now ? Date.now() : +(new Date());
 	    };
-
+	
 	    var ordering = ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
-
+	
 	    function isDurationValid(m) {
 	        for (var key in m) {
 	            if (!(indexOf.call(ordering, key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
 	                return false;
 	            }
 	        }
-
+	
 	        var unitHasDecimal = false;
 	        for (var i = 0; i < ordering.length; ++i) {
 	            if (m[ordering[i]]) {
@@ -3713,18 +3877,18 @@
 	                }
 	            }
 	        }
-
+	
 	        return true;
 	    }
-
+	
 	    function isValid$1() {
 	        return this._isValid;
 	    }
-
+	
 	    function createInvalid$1() {
 	        return createDuration(NaN);
 	    }
-
+	
 	    function Duration (duration) {
 	        var normalizedInput = normalizeObjectUnits(duration),
 	            years = normalizedInput.year || 0,
@@ -3736,9 +3900,9 @@
 	            minutes = normalizedInput.minute || 0,
 	            seconds = normalizedInput.second || 0,
 	            milliseconds = normalizedInput.millisecond || 0;
-
+	
 	        this._isValid = isDurationValid(normalizedInput);
-
+	
 	        // representation for dateAddRemove
 	        this._milliseconds = +milliseconds +
 	            seconds * 1e3 + // 1000
@@ -3754,18 +3918,18 @@
 	        this._months = +months +
 	            quarters * 3 +
 	            years * 12;
-
+	
 	        this._data = {};
-
+	
 	        this._locale = getLocale();
-
+	
 	        this._bubble();
 	    }
-
+	
 	    function isDuration (obj) {
 	        return obj instanceof Duration;
 	    }
-
+	
 	    function absRound (number) {
 	        if (number < 0) {
 	            return Math.round(-1 * number) * -1;
@@ -3773,9 +3937,9 @@
 	            return Math.round(number);
 	        }
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    function offset (token, separator) {
 	        addFormatToken(token, 0, 0, function () {
 	            var offset = this.utcOffset();
@@ -3787,42 +3951,42 @@
 	            return sign + zeroFill(~~(offset / 60), 2) + separator + zeroFill(~~(offset) % 60, 2);
 	        });
 	    }
-
+	
 	    offset('Z', ':');
 	    offset('ZZ', '');
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('Z',  matchShortOffset);
 	    addRegexToken('ZZ', matchShortOffset);
 	    addParseToken(['Z', 'ZZ'], function (input, array, config) {
 	        config._useUTC = true;
 	        config._tzm = offsetFromString(matchShortOffset, input);
 	    });
-
+	
 	    // HELPERS
-
+	
 	    // timezone chunker
 	    // '+10:00' > ['10',  '00']
 	    // '-1530'  > ['-15', '30']
 	    var chunkOffset = /([\+\-]|\d\d)/gi;
-
+	
 	    function offsetFromString(matcher, string) {
 	        var matches = (string || '').match(matcher);
-
+	
 	        if (matches === null) {
 	            return null;
 	        }
-
+	
 	        var chunk   = matches[matches.length - 1] || [];
 	        var parts   = (chunk + '').match(chunkOffset) || ['-', 0, 0];
 	        var minutes = +(parts[1] * 60) + toInt(parts[2]);
-
+	
 	        return minutes === 0 ?
 	          0 :
 	          parts[0] === '+' ? minutes : -minutes;
 	    }
-
+	
 	    // Return a moment from input, that is local/utc/zone equivalent to model.
 	    function cloneWithOffset(input, model) {
 	        var res, diff;
@@ -3837,21 +4001,21 @@
 	            return createLocal(input).local();
 	        }
 	    }
-
+	
 	    function getDateOffset (m) {
 	        // On Firefox.24 Date#getTimezoneOffset returns a floating point.
 	        // https://github.com/moment/moment/pull/1871
 	        return -Math.round(m._d.getTimezoneOffset() / 15) * 15;
 	    }
-
+	
 	    // HOOKS
-
+	
 	    // This function will be called whenever a moment is mutated.
 	    // It is intended to keep the offset in sync with the timezone.
 	    hooks.updateOffset = function () {};
-
+	
 	    // MOMENTS
-
+	
 	    // keepLocalTime = true means only change the timezone, without
 	    // affecting the local hour. So 5:31:26 +0300 --[utcOffset(2, true)]-->
 	    // 5:31:26 +0200 It is possible that 5:31:26 doesn't exist with offset
@@ -3899,37 +4063,37 @@
 	            return this._isUTC ? offset : getDateOffset(this);
 	        }
 	    }
-
+	
 	    function getSetZone (input, keepLocalTime) {
 	        if (input != null) {
 	            if (typeof input !== 'string') {
 	                input = -input;
 	            }
-
+	
 	            this.utcOffset(input, keepLocalTime);
-
+	
 	            return this;
 	        } else {
 	            return -this.utcOffset();
 	        }
 	    }
-
+	
 	    function setOffsetToUTC (keepLocalTime) {
 	        return this.utcOffset(0, keepLocalTime);
 	    }
-
+	
 	    function setOffsetToLocal (keepLocalTime) {
 	        if (this._isUTC) {
 	            this.utcOffset(0, keepLocalTime);
 	            this._isUTC = false;
-
+	
 	            if (keepLocalTime) {
 	                this.subtract(getDateOffset(this), 'm');
 	            }
 	        }
 	        return this;
 	    }
-
+	
 	    function setOffsetToParsedOffset () {
 	        if (this._tzm != null) {
 	            this.utcOffset(this._tzm, false, true);
@@ -3944,33 +4108,33 @@
 	        }
 	        return this;
 	    }
-
+	
 	    function hasAlignedHourOffset (input) {
 	        if (!this.isValid()) {
 	            return false;
 	        }
 	        input = input ? createLocal(input).utcOffset() : 0;
-
+	
 	        return (this.utcOffset() - input) % 60 === 0;
 	    }
-
+	
 	    function isDaylightSavingTime () {
 	        return (
 	            this.utcOffset() > this.clone().month(0).utcOffset() ||
 	            this.utcOffset() > this.clone().month(5).utcOffset()
 	        );
 	    }
-
+	
 	    function isDaylightSavingTimeShifted () {
 	        if (!isUndefined(this._isDSTShifted)) {
 	            return this._isDSTShifted;
 	        }
-
+	
 	        var c = {};
-
+	
 	        copyConfig(c, this);
 	        c = prepareConfig(c);
-
+	
 	        if (c._a) {
 	            var other = c._isUTC ? createUTC(c._a) : createLocal(c._a);
 	            this._isDSTShifted = this.isValid() &&
@@ -3978,30 +4142,30 @@
 	        } else {
 	            this._isDSTShifted = false;
 	        }
-
+	
 	        return this._isDSTShifted;
 	    }
-
+	
 	    function isLocal () {
 	        return this.isValid() ? !this._isUTC : false;
 	    }
-
+	
 	    function isUtcOffset () {
 	        return this.isValid() ? this._isUTC : false;
 	    }
-
+	
 	    function isUtc () {
 	        return this.isValid() ? this._isUTC && this._offset === 0 : false;
 	    }
-
+	
 	    // ASP.NET json date format regex
 	    var aspNetRegex = /^(\-|\+)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/;
-
+	
 	    // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
 	    // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
 	    // and further modified to allow for strings containing both week and day
 	    var isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
-
+	
 	    function createDuration (input, key) {
 	        var duration = input,
 	            // matching against regexp is expensive, do it on demand
@@ -4009,7 +4173,7 @@
 	            sign,
 	            ret,
 	            diffRes;
-
+	
 	        if (isDuration(input)) {
 	            duration = {
 	                ms : input._milliseconds,
@@ -4048,24 +4212,24 @@
 	            duration = {};
 	        } else if (typeof duration === 'object' && ('from' in duration || 'to' in duration)) {
 	            diffRes = momentsDifference(createLocal(duration.from), createLocal(duration.to));
-
+	
 	            duration = {};
 	            duration.ms = diffRes.milliseconds;
 	            duration.M = diffRes.months;
 	        }
-
+	
 	        ret = new Duration(duration);
-
+	
 	        if (isDuration(input) && hasOwnProp(input, '_locale')) {
 	            ret._locale = input._locale;
 	        }
-
+	
 	        return ret;
 	    }
-
+	
 	    createDuration.fn = Duration.prototype;
 	    createDuration.invalid = createInvalid$1;
-
+	
 	    function parseIso (inp, sign) {
 	        // We'd normally use ~~inp for this, but unfortunately it also
 	        // converts floats to ints.
@@ -4074,27 +4238,27 @@
 	        // apply sign while we're at it
 	        return (isNaN(res) ? 0 : res) * sign;
 	    }
-
+	
 	    function positiveMomentsDifference(base, other) {
 	        var res = {};
-
+	
 	        res.months = other.month() - base.month() +
 	            (other.year() - base.year()) * 12;
 	        if (base.clone().add(res.months, 'M').isAfter(other)) {
 	            --res.months;
 	        }
-
+	
 	        res.milliseconds = +other - +(base.clone().add(res.months, 'M'));
-
+	
 	        return res;
 	    }
-
+	
 	    function momentsDifference(base, other) {
 	        var res;
 	        if (!(base.isValid() && other.isValid())) {
 	            return {milliseconds: 0, months: 0};
 	        }
-
+	
 	        other = cloneWithOffset(other, base);
 	        if (base.isBefore(other)) {
 	            res = positiveMomentsDifference(base, other);
@@ -4103,10 +4267,10 @@
 	            res.milliseconds = -res.milliseconds;
 	            res.months = -res.months;
 	        }
-
+	
 	        return res;
 	    }
-
+	
 	    // TODO: remove 'name' arg after deprecation is removed
 	    function createAdder(direction, name) {
 	        return function (val, period) {
@@ -4117,26 +4281,26 @@
 	                'See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.');
 	                tmp = val; val = period; period = tmp;
 	            }
-
+	
 	            val = typeof val === 'string' ? +val : val;
 	            dur = createDuration(val, period);
 	            addSubtract(this, dur, direction);
 	            return this;
 	        };
 	    }
-
+	
 	    function addSubtract (mom, duration, isAdding, updateOffset) {
 	        var milliseconds = duration._milliseconds,
 	            days = absRound(duration._days),
 	            months = absRound(duration._months);
-
+	
 	        if (!mom.isValid()) {
 	            // No op
 	            return;
 	        }
-
+	
 	        updateOffset = updateOffset == null ? true : updateOffset;
-
+	
 	        if (months) {
 	            setMonth(mom, get(mom, 'Month') + months * isAdding);
 	        }
@@ -4150,10 +4314,10 @@
 	            hooks.updateOffset(mom, days || months);
 	        }
 	    }
-
+	
 	    var add      = createAdder(1, 'add');
 	    var subtract = createAdder(-1, 'subtract');
-
+	
 	    function getCalendarFormat(myMoment, now) {
 	        var diff = myMoment.diff(now, 'days', true);
 	        return diff < -6 ? 'sameElse' :
@@ -4163,23 +4327,23 @@
 	                diff < 2 ? 'nextDay' :
 	                diff < 7 ? 'nextWeek' : 'sameElse';
 	    }
-
+	
 	    function calendar$1 (time, formats) {
 	        // We want to compare the start of today, vs this.
 	        // Getting start-of-today depends on whether we're local/utc/offset or not.
 	        var now = time || createLocal(),
 	            sod = cloneWithOffset(now, this).startOf('day'),
 	            format = hooks.calendarFormat(this, sod) || 'sameElse';
-
+	
 	        var output = formats && (isFunction(formats[format]) ? formats[format].call(this, now) : formats[format]);
-
+	
 	        return this.format(output || this.localeData().calendar(format, this, createLocal(now)));
 	    }
-
+	
 	    function clone () {
 	        return new Moment(this);
 	    }
-
+	
 	    function isAfter (input, units) {
 	        var localInput = isMoment(input) ? input : createLocal(input);
 	        if (!(this.isValid() && localInput.isValid())) {
@@ -4192,7 +4356,7 @@
 	            return localInput.valueOf() < this.clone().startOf(units).valueOf();
 	        }
 	    }
-
+	
 	    function isBefore (input, units) {
 	        var localInput = isMoment(input) ? input : createLocal(input);
 	        if (!(this.isValid() && localInput.isValid())) {
@@ -4205,7 +4369,7 @@
 	            return this.clone().endOf(units).valueOf() < localInput.valueOf();
 	        }
 	    }
-
+	
 	    function isBetween (from, to, units, inclusivity) {
 	        var localFrom = isMoment(from) ? from : createLocal(from),
 	            localTo = isMoment(to) ? to : createLocal(to);
@@ -4216,7 +4380,7 @@
 	        return (inclusivity[0] === '(' ? this.isAfter(localFrom, units) : !this.isBefore(localFrom, units)) &&
 	            (inclusivity[1] === ')' ? this.isBefore(localTo, units) : !this.isAfter(localTo, units));
 	    }
-
+	
 	    function isSame (input, units) {
 	        var localInput = isMoment(input) ? input : createLocal(input),
 	            inputMs;
@@ -4231,34 +4395,34 @@
 	            return this.clone().startOf(units).valueOf() <= inputMs && inputMs <= this.clone().endOf(units).valueOf();
 	        }
 	    }
-
+	
 	    function isSameOrAfter (input, units) {
 	        return this.isSame(input, units) || this.isAfter(input, units);
 	    }
-
+	
 	    function isSameOrBefore (input, units) {
 	        return this.isSame(input, units) || this.isBefore(input, units);
 	    }
-
+	
 	    function diff (input, units, asFloat) {
 	        var that,
 	            zoneDelta,
 	            output;
-
+	
 	        if (!this.isValid()) {
 	            return NaN;
 	        }
-
+	
 	        that = cloneWithOffset(input, this);
-
+	
 	        if (!that.isValid()) {
 	            return NaN;
 	        }
-
+	
 	        zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
-
+	
 	        units = normalizeUnits(units);
-
+	
 	        switch (units) {
 	            case 'year': output = monthDiff(this, that) / 12; break;
 	            case 'month': output = monthDiff(this, that); break;
@@ -4270,17 +4434,17 @@
 	            case 'week': output = (this - that - zoneDelta) / 6048e5; break; // 1000 * 60 * 60 * 24 * 7, negate dst
 	            default: output = this - that;
 	        }
-
+	
 	        return asFloat ? output : absFloor(output);
 	    }
-
+	
 	    function monthDiff (a, b) {
 	        // difference in months
 	        var wholeMonthDiff = ((b.year() - a.year()) * 12) + (b.month() - a.month()),
 	            // b is in (anchor - 1 month, anchor + 1 month)
 	            anchor = a.clone().add(wholeMonthDiff, 'months'),
 	            anchor2, adjust;
-
+	
 	        if (b - anchor < 0) {
 	            anchor2 = a.clone().add(wholeMonthDiff - 1, 'months');
 	            // linear across the month
@@ -4290,18 +4454,18 @@
 	            // linear across the month
 	            adjust = (b - anchor) / (anchor2 - anchor);
 	        }
-
+	
 	        //check for negative zero, return zero if negative zero
 	        return -(wholeMonthDiff + adjust) || 0;
 	    }
-
+	
 	    hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
 	    hooks.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';
-
+	
 	    function toString () {
 	        return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
 	    }
-
+	
 	    function toISOString(keepOffset) {
 	        if (!this.isValid()) {
 	            return null;
@@ -4321,7 +4485,7 @@
 	        }
 	        return formatMoment(m, utc ? 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]' : 'YYYY-MM-DD[T]HH:mm:ss.SSSZ');
 	    }
-
+	
 	    /**
 	     * Return a human readable representation of a moment that can
 	     * also be evaluated to get a new moment which is the same
@@ -4342,10 +4506,10 @@
 	        var year = (0 <= this.year() && this.year() <= 9999) ? 'YYYY' : 'YYYYYY';
 	        var datetime = '-MM-DD[T]HH:mm:ss.SSS';
 	        var suffix = zone + '[")]';
-
+	
 	        return this.format(prefix + year + datetime + suffix);
 	    }
-
+	
 	    function format (inputString) {
 	        if (!inputString) {
 	            inputString = this.isUtc() ? hooks.defaultFormatUtc : hooks.defaultFormat;
@@ -4353,7 +4517,7 @@
 	        var output = formatMoment(this, inputString);
 	        return this.localeData().postformat(output);
 	    }
-
+	
 	    function from (time, withoutSuffix) {
 	        if (this.isValid() &&
 	                ((isMoment(time) && time.isValid()) ||
@@ -4363,11 +4527,11 @@
 	            return this.localeData().invalidDate();
 	        }
 	    }
-
+	
 	    function fromNow (withoutSuffix) {
 	        return this.from(createLocal(), withoutSuffix);
 	    }
-
+	
 	    function to (time, withoutSuffix) {
 	        if (this.isValid() &&
 	                ((isMoment(time) && time.isValid()) ||
@@ -4377,17 +4541,17 @@
 	            return this.localeData().invalidDate();
 	        }
 	    }
-
+	
 	    function toNow (withoutSuffix) {
 	        return this.to(createLocal(), withoutSuffix);
 	    }
-
+	
 	    // If passed a locale key, it will set the locale for this
 	    // instance.  Otherwise, it will return the locale configuration
 	    // variables for this instance.
 	    function locale (key) {
 	        var newLocaleData;
-
+	
 	        if (key === undefined) {
 	            return this._locale._abbr;
 	        } else {
@@ -4398,7 +4562,7 @@
 	            return this;
 	        }
 	    }
-
+	
 	    var lang = deprecate(
 	        'moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.',
 	        function (key) {
@@ -4409,21 +4573,21 @@
 	            }
 	        }
 	    );
-
+	
 	    function localeData () {
 	        return this._locale;
 	    }
-
+	
 	    var MS_PER_SECOND = 1000;
 	    var MS_PER_MINUTE = 60 * MS_PER_SECOND;
 	    var MS_PER_HOUR = 60 * MS_PER_MINUTE;
 	    var MS_PER_400_YEARS = (365 * 400 + 97) * 24 * MS_PER_HOUR;
-
+	
 	    // actual modulo - handles negative numbers (for dates before 1970):
 	    function mod$1(dividend, divisor) {
 	        return (dividend % divisor + divisor) % divisor;
 	    }
-
+	
 	    function localStartOfDate(y, m, d) {
 	        // the date constructor remaps years 0-99 to 1900-1999
 	        if (y < 100 && y >= 0) {
@@ -4433,7 +4597,7 @@
 	            return new Date(y, m, d).valueOf();
 	        }
 	    }
-
+	
 	    function utcStartOfDate(y, m, d) {
 	        // Date.UTC remaps years 0-99 to 1900-1999
 	        if (y < 100 && y >= 0) {
@@ -4443,16 +4607,16 @@
 	            return Date.UTC(y, m, d);
 	        }
 	    }
-
+	
 	    function startOf (units) {
 	        var time;
 	        units = normalizeUnits(units);
 	        if (units === undefined || units === 'millisecond' || !this.isValid()) {
 	            return this;
 	        }
-
+	
 	        var startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
-
+	
 	        switch (units) {
 	            case 'year':
 	                time = startOfDate(this.year(), 0, 1);
@@ -4486,21 +4650,21 @@
 	                time -= mod$1(time, MS_PER_SECOND);
 	                break;
 	        }
-
+	
 	        this._d.setTime(time);
 	        hooks.updateOffset(this, true);
 	        return this;
 	    }
-
+	
 	    function endOf (units) {
 	        var time;
 	        units = normalizeUnits(units);
 	        if (units === undefined || units === 'millisecond' || !this.isValid()) {
 	            return this;
 	        }
-
+	
 	        var startOfDate = this._isUTC ? utcStartOfDate : localStartOfDate;
-
+	
 	        switch (units) {
 	            case 'year':
 	                time = startOfDate(this.year() + 1, 0, 1) - 1;
@@ -4534,29 +4698,29 @@
 	                time += MS_PER_SECOND - mod$1(time, MS_PER_SECOND) - 1;
 	                break;
 	        }
-
+	
 	        this._d.setTime(time);
 	        hooks.updateOffset(this, true);
 	        return this;
 	    }
-
+	
 	    function valueOf () {
 	        return this._d.valueOf() - ((this._offset || 0) * 60000);
 	    }
-
+	
 	    function unix () {
 	        return Math.floor(this.valueOf() / 1000);
 	    }
-
+	
 	    function toDate () {
 	        return new Date(this.valueOf());
 	    }
-
+	
 	    function toArray () {
 	        var m = this;
 	        return [m.year(), m.month(), m.date(), m.hour(), m.minute(), m.second(), m.millisecond()];
 	    }
-
+	
 	    function toObject () {
 	        var m = this;
 	        return {
@@ -4569,24 +4733,24 @@
 	            milliseconds: m.milliseconds()
 	        };
 	    }
-
+	
 	    function toJSON () {
 	        // new Date(NaN).toJSON() === null
 	        return this.isValid() ? this.toISOString() : null;
 	    }
-
+	
 	    function isValid$2 () {
 	        return isValid(this);
 	    }
-
+	
 	    function parsingFlags () {
 	        return extend({}, getParsingFlags(this));
 	    }
-
+	
 	    function invalidAt () {
 	        return getParsingFlags(this).overflow;
 	    }
-
+	
 	    function creationData() {
 	        return {
 	            input: this._i,
@@ -4596,39 +4760,39 @@
 	            strict: this._strict
 	        };
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken(0, ['gg', 2], 0, function () {
 	        return this.weekYear() % 100;
 	    });
-
+	
 	    addFormatToken(0, ['GG', 2], 0, function () {
 	        return this.isoWeekYear() % 100;
 	    });
-
+	
 	    function addWeekYearFormatToken (token, getter) {
 	        addFormatToken(0, [token, token.length], 0, getter);
 	    }
-
+	
 	    addWeekYearFormatToken('gggg',     'weekYear');
 	    addWeekYearFormatToken('ggggg',    'weekYear');
 	    addWeekYearFormatToken('GGGG',  'isoWeekYear');
 	    addWeekYearFormatToken('GGGGG', 'isoWeekYear');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('weekYear', 'gg');
 	    addUnitAlias('isoWeekYear', 'GG');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('weekYear', 1);
 	    addUnitPriority('isoWeekYear', 1);
-
-
+	
+	
 	    // PARSING
-
+	
 	    addRegexToken('G',      matchSigned);
 	    addRegexToken('g',      matchSigned);
 	    addRegexToken('GG',     match1to2, match2);
@@ -4637,17 +4801,17 @@
 	    addRegexToken('gggg',   match1to4, match4);
 	    addRegexToken('GGGGG',  match1to6, match6);
 	    addRegexToken('ggggg',  match1to6, match6);
-
+	
 	    addWeekParseToken(['gggg', 'ggggg', 'GGGG', 'GGGGG'], function (input, week, config, token) {
 	        week[token.substr(0, 2)] = toInt(input);
 	    });
-
+	
 	    addWeekParseToken(['gg', 'GG'], function (input, week, config, token) {
 	        week[token] = hooks.parseTwoDigitYear(input);
 	    });
-
+	
 	    // MOMENTS
-
+	
 	    function getSetWeekYear (input) {
 	        return getSetWeekYearHelper.call(this,
 	                input,
@@ -4656,21 +4820,21 @@
 	                this.localeData()._week.dow,
 	                this.localeData()._week.doy);
 	    }
-
+	
 	    function getSetISOWeekYear (input) {
 	        return getSetWeekYearHelper.call(this,
 	                input, this.isoWeek(), this.isoWeekday(), 1, 4);
 	    }
-
+	
 	    function getISOWeeksInYear () {
 	        return weeksInYear(this.year(), 1, 4);
 	    }
-
+	
 	    function getWeeksInYear () {
 	        var weekInfo = this.localeData()._week;
 	        return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
 	    }
-
+	
 	    function getSetWeekYearHelper(input, week, weekday, dow, doy) {
 	        var weeksTarget;
 	        if (input == null) {
@@ -4683,55 +4847,55 @@
 	            return setWeekAll.call(this, input, week, weekday, dow, doy);
 	        }
 	    }
-
+	
 	    function setWeekAll(weekYear, week, weekday, dow, doy) {
 	        var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy),
 	            date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
-
+	
 	        this.year(date.getUTCFullYear());
 	        this.month(date.getUTCMonth());
 	        this.date(date.getUTCDate());
 	        return this;
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('Q', 0, 'Qo', 'quarter');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('quarter', 'Q');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('quarter', 7);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('Q', match1);
 	    addParseToken('Q', function (input, array) {
 	        array[MONTH] = (toInt(input) - 1) * 3;
 	    });
-
+	
 	    // MOMENTS
-
+	
 	    function getSetQuarter (input) {
 	        return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('D', ['DD', 2], 'Do', 'date');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('date', 'D');
-
+	
 	    // PRIORITY
 	    addUnitPriority('date', 9);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('D',  match1to2);
 	    addRegexToken('DD', match1to2, match2);
 	    addRegexToken('Do', function (isStrict, locale) {
@@ -4740,98 +4904,98 @@
 	          (locale._dayOfMonthOrdinalParse || locale._ordinalParse) :
 	          locale._dayOfMonthOrdinalParseLenient;
 	    });
-
+	
 	    addParseToken(['D', 'DD'], DATE);
 	    addParseToken('Do', function (input, array) {
 	        array[DATE] = toInt(input.match(match1to2)[0]);
 	    });
-
+	
 	    // MOMENTS
-
+	
 	    var getSetDayOfMonth = makeGetSet('Date', true);
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('dayOfYear', 'DDD');
-
+	
 	    // PRIORITY
 	    addUnitPriority('dayOfYear', 4);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('DDD',  match1to3);
 	    addRegexToken('DDDD', match3);
 	    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
 	        config._dayOfYear = toInt(input);
 	    });
-
+	
 	    // HELPERS
-
+	
 	    // MOMENTS
-
+	
 	    function getSetDayOfYear (input) {
 	        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
 	        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
 	    }
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('m', ['mm', 2], 0, 'minute');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('minute', 'm');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('minute', 14);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('m',  match1to2);
 	    addRegexToken('mm', match1to2, match2);
 	    addParseToken(['m', 'mm'], MINUTE);
-
+	
 	    // MOMENTS
-
+	
 	    var getSetMinute = makeGetSet('Minutes', false);
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('s', ['ss', 2], 0, 'second');
-
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('second', 's');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('second', 15);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('s',  match1to2);
 	    addRegexToken('ss', match1to2, match2);
 	    addParseToken(['s', 'ss'], SECOND);
-
+	
 	    // MOMENTS
-
+	
 	    var getSetSecond = makeGetSet('Seconds', false);
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('S', 0, 0, function () {
 	        return ~~(this.millisecond() / 100);
 	    });
-
+	
 	    addFormatToken(0, ['SS', 2], 0, function () {
 	        return ~~(this.millisecond() / 10);
 	    });
-
+	
 	    addFormatToken(0, ['SSS', 3], 0, 'millisecond');
 	    addFormatToken(0, ['SSSS', 4], 0, function () {
 	        return this.millisecond() * 10;
@@ -4851,55 +5015,55 @@
 	    addFormatToken(0, ['SSSSSSSSS', 9], 0, function () {
 	        return this.millisecond() * 1000000;
 	    });
-
-
+	
+	
 	    // ALIASES
-
+	
 	    addUnitAlias('millisecond', 'ms');
-
+	
 	    // PRIORITY
-
+	
 	    addUnitPriority('millisecond', 16);
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('S',    match1to3, match1);
 	    addRegexToken('SS',   match1to3, match2);
 	    addRegexToken('SSS',  match1to3, match3);
-
+	
 	    var token;
 	    for (token = 'SSSS'; token.length <= 9; token += 'S') {
 	        addRegexToken(token, matchUnsigned);
 	    }
-
+	
 	    function parseMs(input, array) {
 	        array[MILLISECOND] = toInt(('0.' + input) * 1000);
 	    }
-
+	
 	    for (token = 'S'; token.length <= 9; token += 'S') {
 	        addParseToken(token, parseMs);
 	    }
 	    // MOMENTS
-
+	
 	    var getSetMillisecond = makeGetSet('Milliseconds', false);
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('z',  0, 0, 'zoneAbbr');
 	    addFormatToken('zz', 0, 0, 'zoneName');
-
+	
 	    // MOMENTS
-
+	
 	    function getZoneAbbr () {
 	        return this._isUTC ? 'UTC' : '';
 	    }
-
+	
 	    function getZoneName () {
 	        return this._isUTC ? 'Coordinated Universal Time' : '';
 	    }
-
+	
 	    var proto = Moment.prototype;
-
+	
 	    proto.add               = add;
 	    proto.calendar          = calendar$1;
 	    proto.clone             = clone;
@@ -4975,21 +5139,21 @@
 	    proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
 	    proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', getSetZone);
 	    proto.isDSTShifted = deprecate('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', isDaylightSavingTimeShifted);
-
+	
 	    function createUnix (input) {
 	        return createLocal(input * 1000);
 	    }
-
+	
 	    function createInZone () {
 	        return createLocal.apply(null, arguments).parseZone();
 	    }
-
+	
 	    function preParsePostFormat (string) {
 	        return string;
 	    }
-
+	
 	    var proto$1 = Locale.prototype;
-
+	
 	    proto$1.calendar        = calendar;
 	    proto$1.longDateFormat  = longDateFormat;
 	    proto$1.invalidDate     = invalidDate;
@@ -4999,7 +5163,7 @@
 	    proto$1.relativeTime    = relativeTime;
 	    proto$1.pastFuture      = pastFuture;
 	    proto$1.set             = set;
-
+	
 	    proto$1.months            =        localeMonths;
 	    proto$1.monthsShort       =        localeMonthsShort;
 	    proto$1.monthsParse       =        localeMonthsParse;
@@ -5008,37 +5172,37 @@
 	    proto$1.week = localeWeek;
 	    proto$1.firstDayOfYear = localeFirstDayOfYear;
 	    proto$1.firstDayOfWeek = localeFirstDayOfWeek;
-
+	
 	    proto$1.weekdays       =        localeWeekdays;
 	    proto$1.weekdaysMin    =        localeWeekdaysMin;
 	    proto$1.weekdaysShort  =        localeWeekdaysShort;
 	    proto$1.weekdaysParse  =        localeWeekdaysParse;
-
+	
 	    proto$1.weekdaysRegex       =        weekdaysRegex;
 	    proto$1.weekdaysShortRegex  =        weekdaysShortRegex;
 	    proto$1.weekdaysMinRegex    =        weekdaysMinRegex;
-
+	
 	    proto$1.isPM = localeIsPM;
 	    proto$1.meridiem = localeMeridiem;
-
+	
 	    function get$1 (format, index, field, setter) {
 	        var locale = getLocale();
 	        var utc = createUTC().set(setter, index);
 	        return locale[field](utc, format);
 	    }
-
+	
 	    function listMonthsImpl (format, index, field) {
 	        if (isNumber(format)) {
 	            index = format;
 	            format = undefined;
 	        }
-
+	
 	        format = format || '';
-
+	
 	        if (index != null) {
 	            return get$1(format, index, field, 'month');
 	        }
-
+	
 	        var i;
 	        var out = [];
 	        for (i = 0; i < 12; i++) {
@@ -5046,7 +5210,7 @@
 	        }
 	        return out;
 	    }
-
+	
 	    // ()
 	    // (5)
 	    // (fmt, 5)
@@ -5061,28 +5225,28 @@
 	                index = format;
 	                format = undefined;
 	            }
-
+	
 	            format = format || '';
 	        } else {
 	            format = localeSorted;
 	            index = format;
 	            localeSorted = false;
-
+	
 	            if (isNumber(format)) {
 	                index = format;
 	                format = undefined;
 	            }
-
+	
 	            format = format || '';
 	        }
-
+	
 	        var locale = getLocale(),
 	            shift = localeSorted ? locale._week.dow : 0;
-
+	
 	        if (index != null) {
 	            return get$1(format, (index + shift) % 7, field, 'day');
 	        }
-
+	
 	        var i;
 	        var out = [];
 	        for (i = 0; i < 7; i++) {
@@ -5090,27 +5254,27 @@
 	        }
 	        return out;
 	    }
-
+	
 	    function listMonths (format, index) {
 	        return listMonthsImpl(format, index, 'months');
 	    }
-
+	
 	    function listMonthsShort (format, index) {
 	        return listMonthsImpl(format, index, 'monthsShort');
 	    }
-
+	
 	    function listWeekdays (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdays');
 	    }
-
+	
 	    function listWeekdaysShort (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysShort');
 	    }
-
+	
 	    function listWeekdaysMin (localeSorted, format, index) {
 	        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysMin');
 	    }
-
+	
 	    getSetGlobalLocale('en', {
 	        dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
 	        ordinal : function (number) {
@@ -5122,51 +5286,51 @@
 	            return number + output;
 	        }
 	    });
-
+	
 	    // Side effect imports
-
+	
 	    hooks.lang = deprecate('moment.lang is deprecated. Use moment.locale instead.', getSetGlobalLocale);
 	    hooks.langData = deprecate('moment.langData is deprecated. Use moment.localeData instead.', getLocale);
-
+	
 	    var mathAbs = Math.abs;
-
+	
 	    function abs () {
 	        var data           = this._data;
-
+	
 	        this._milliseconds = mathAbs(this._milliseconds);
 	        this._days         = mathAbs(this._days);
 	        this._months       = mathAbs(this._months);
-
+	
 	        data.milliseconds  = mathAbs(data.milliseconds);
 	        data.seconds       = mathAbs(data.seconds);
 	        data.minutes       = mathAbs(data.minutes);
 	        data.hours         = mathAbs(data.hours);
 	        data.months        = mathAbs(data.months);
 	        data.years         = mathAbs(data.years);
-
+	
 	        return this;
 	    }
-
+	
 	    function addSubtract$1 (duration, input, value, direction) {
 	        var other = createDuration(input, value);
-
+	
 	        duration._milliseconds += direction * other._milliseconds;
 	        duration._days         += direction * other._days;
 	        duration._months       += direction * other._months;
-
+	
 	        return duration._bubble();
 	    }
-
+	
 	    // supports only 2.0-style add(1, 's') or add(duration)
 	    function add$1 (input, value) {
 	        return addSubtract$1(this, input, value, 1);
 	    }
-
+	
 	    // supports only 2.0-style subtract(1, 's') or subtract(duration)
 	    function subtract$1 (input, value) {
 	        return addSubtract$1(this, input, value, -1);
 	    }
-
+	
 	    function absCeil (number) {
 	        if (number < 0) {
 	            return Math.floor(number);
@@ -5174,14 +5338,14 @@
 	            return Math.ceil(number);
 	        }
 	    }
-
+	
 	    function bubble () {
 	        var milliseconds = this._milliseconds;
 	        var days         = this._days;
 	        var months       = this._months;
 	        var data         = this._data;
 	        var seconds, minutes, hours, years, monthsFromDays;
-
+	
 	        // if we have a mix of positive and negative values, bubble down first
 	        // check: https://github.com/moment/moment/issues/2166
 	        if (!((milliseconds >= 0 && days >= 0 && months >= 0) ||
@@ -5190,49 +5354,49 @@
 	            days = 0;
 	            months = 0;
 	        }
-
+	
 	        // The following code bubbles up values, see the tests for
 	        // examples of what that means.
 	        data.milliseconds = milliseconds % 1000;
-
+	
 	        seconds           = absFloor(milliseconds / 1000);
 	        data.seconds      = seconds % 60;
-
+	
 	        minutes           = absFloor(seconds / 60);
 	        data.minutes      = minutes % 60;
-
+	
 	        hours             = absFloor(minutes / 60);
 	        data.hours        = hours % 24;
-
+	
 	        days += absFloor(hours / 24);
-
+	
 	        // convert days to months
 	        monthsFromDays = absFloor(daysToMonths(days));
 	        months += monthsFromDays;
 	        days -= absCeil(monthsToDays(monthsFromDays));
-
+	
 	        // 12 months -> 1 year
 	        years = absFloor(months / 12);
 	        months %= 12;
-
+	
 	        data.days   = days;
 	        data.months = months;
 	        data.years  = years;
-
+	
 	        return this;
 	    }
-
+	
 	    function daysToMonths (days) {
 	        // 400 years have 146097 days (taking into account leap year rules)
 	        // 400 years have 12 months === 4800
 	        return days * 4800 / 146097;
 	    }
-
+	
 	    function monthsToDays (months) {
 	        // the reverse of daysToMonths
 	        return months * 146097 / 4800;
 	    }
-
+	
 	    function as (units) {
 	        if (!this.isValid()) {
 	            return NaN;
@@ -5240,9 +5404,9 @@
 	        var days;
 	        var months;
 	        var milliseconds = this._milliseconds;
-
+	
 	        units = normalizeUnits(units);
-
+	
 	        if (units === 'month' || units === 'quarter' || units === 'year') {
 	            days = this._days + milliseconds / 864e5;
 	            months = this._months + daysToMonths(days);
@@ -5266,7 +5430,7 @@
 	            }
 	        }
 	    }
-
+	
 	    // TODO: Use this.as('ms')?
 	    function valueOf$1 () {
 	        if (!this.isValid()) {
@@ -5279,13 +5443,13 @@
 	            toInt(this._months / 12) * 31536e6
 	        );
 	    }
-
+	
 	    function makeAs (alias) {
 	        return function () {
 	            return this.as(alias);
 	        };
 	    }
-
+	
 	    var asMilliseconds = makeAs('ms');
 	    var asSeconds      = makeAs('s');
 	    var asMinutes      = makeAs('m');
@@ -5295,22 +5459,22 @@
 	    var asMonths       = makeAs('M');
 	    var asQuarters     = makeAs('Q');
 	    var asYears        = makeAs('y');
-
+	
 	    function clone$1 () {
 	        return createDuration(this);
 	    }
-
+	
 	    function get$2 (units) {
 	        units = normalizeUnits(units);
 	        return this.isValid() ? this[units + 's']() : NaN;
 	    }
-
+	
 	    function makeGetter(name) {
 	        return function () {
 	            return this.isValid() ? this._data[name] : NaN;
 	        };
 	    }
-
+	
 	    var milliseconds = makeGetter('milliseconds');
 	    var seconds      = makeGetter('seconds');
 	    var minutes      = makeGetter('minutes');
@@ -5318,11 +5482,11 @@
 	    var days         = makeGetter('days');
 	    var months       = makeGetter('months');
 	    var years        = makeGetter('years');
-
+	
 	    function weeks () {
 	        return absFloor(this.days() / 7);
 	    }
-
+	
 	    var round = Math.round;
 	    var thresholds = {
 	        ss: 44,         // a few seconds to seconds
@@ -5332,12 +5496,12 @@
 	        d : 26,         // days to month
 	        M : 11          // months to year
 	    };
-
+	
 	    // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
 	    function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale) {
 	        return locale.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
 	    }
-
+	
 	    function relativeTime$1 (posNegDuration, withoutSuffix, locale) {
 	        var duration = createDuration(posNegDuration).abs();
 	        var seconds  = round(duration.as('s'));
@@ -5346,7 +5510,7 @@
 	        var days     = round(duration.as('d'));
 	        var months   = round(duration.as('M'));
 	        var years    = round(duration.as('y'));
-
+	
 	        var a = seconds <= thresholds.ss && ['s', seconds]  ||
 	                seconds < thresholds.s   && ['ss', seconds] ||
 	                minutes <= 1             && ['m']           ||
@@ -5358,13 +5522,13 @@
 	                months  <= 1             && ['M']           ||
 	                months  < thresholds.M   && ['MM', months]  ||
 	                years   <= 1             && ['y']           || ['yy', years];
-
+	
 	        a[2] = withoutSuffix;
 	        a[3] = +posNegDuration > 0;
 	        a[4] = locale;
 	        return substituteTimeAgo.apply(null, a);
 	    }
-
+	
 	    // This function allows you to set the rounding function for relative time strings
 	    function getSetRelativeTimeRounding (roundingFunction) {
 	        if (roundingFunction === undefined) {
@@ -5376,7 +5540,7 @@
 	        }
 	        return false;
 	    }
-
+	
 	    // This function allows you to set a threshold for relative time strings
 	    function getSetRelativeTimeThreshold (threshold, limit) {
 	        if (thresholds[threshold] === undefined) {
@@ -5391,28 +5555,28 @@
 	        }
 	        return true;
 	    }
-
+	
 	    function humanize (withSuffix) {
 	        if (!this.isValid()) {
 	            return this.localeData().invalidDate();
 	        }
-
+	
 	        var locale = this.localeData();
 	        var output = relativeTime$1(this, !withSuffix, locale);
-
+	
 	        if (withSuffix) {
 	            output = locale.pastFuture(+this, output);
 	        }
-
+	
 	        return locale.postformat(output);
 	    }
-
+	
 	    var abs$1 = Math.abs;
-
+	
 	    function sign(x) {
 	        return ((x > 0) - (x < 0)) || +x;
 	    }
-
+	
 	    function toISOString$1() {
 	        // for ISO strings we do not use the normal bubbling rules:
 	        //  * milliseconds bubble up until they become hours
@@ -5424,23 +5588,23 @@
 	        if (!this.isValid()) {
 	            return this.localeData().invalidDate();
 	        }
-
+	
 	        var seconds = abs$1(this._milliseconds) / 1000;
 	        var days         = abs$1(this._days);
 	        var months       = abs$1(this._months);
 	        var minutes, hours, years;
-
+	
 	        // 3600 seconds -> 60 minutes -> 1 hour
 	        minutes           = absFloor(seconds / 60);
 	        hours             = absFloor(minutes / 60);
 	        seconds %= 60;
 	        minutes %= 60;
-
+	
 	        // 12 months -> 1 year
 	        years  = absFloor(months / 12);
 	        months %= 12;
-
-
+	
+	
 	        // inspired by https://github.com/dordille/moment-isoduration/blob/master/moment.isoduration.js
 	        var Y = years;
 	        var M = months;
@@ -5449,18 +5613,18 @@
 	        var m = minutes;
 	        var s = seconds ? seconds.toFixed(3).replace(/\.?0+$/, '') : '';
 	        var total = this.asSeconds();
-
+	
 	        if (!total) {
 	            // this is the same as C#'s (Noda) and python (isodate)...
 	            // but not other JS (goog.date)
 	            return 'P0D';
 	        }
-
+	
 	        var totalSign = total < 0 ? '-' : '';
 	        var ymSign = sign(this._months) !== sign(total) ? '-' : '';
 	        var daysSign = sign(this._days) !== sign(total) ? '-' : '';
 	        var hmsSign = sign(this._milliseconds) !== sign(total) ? '-' : '';
-
+	
 	        return totalSign + 'P' +
 	            (Y ? ymSign + Y + 'Y' : '') +
 	            (M ? ymSign + M + 'M' : '') +
@@ -5470,9 +5634,9 @@
 	            (m ? hmsSign + m + 'M' : '') +
 	            (s ? hmsSign + s + 'S' : '');
 	    }
-
+	
 	    var proto$2 = Duration.prototype;
-
+	
 	    proto$2.isValid        = isValid$1;
 	    proto$2.abs            = abs;
 	    proto$2.add            = add$1;
@@ -5505,19 +5669,19 @@
 	    proto$2.toJSON         = toISOString$1;
 	    proto$2.locale         = locale;
 	    proto$2.localeData     = localeData;
-
+	
 	    proto$2.toIsoString = deprecate('toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)', toISOString$1);
 	    proto$2.lang = lang;
-
+	
 	    // Side effect imports
-
+	
 	    // FORMATTING
-
+	
 	    addFormatToken('X', 0, 0, 'unix');
 	    addFormatToken('x', 0, 0, 'valueOf');
-
+	
 	    // PARSING
-
+	
 	    addRegexToken('x', matchSigned);
 	    addRegexToken('X', matchTimestamp);
 	    addParseToken('X', function (input, array, config) {
@@ -5526,14 +5690,14 @@
 	    addParseToken('x', function (input, array, config) {
 	        config._d = new Date(toInt(input));
 	    });
-
+	
 	    // Side effect imports
-
-
+	
+	
 	    hooks.version = '2.24.0';
-
+	
 	    setHookCallback(createLocal);
-
+	
 	    hooks.fn                    = proto;
 	    hooks.min                   = min;
 	    hooks.max                   = max;
@@ -5561,7 +5725,7 @@
 	    hooks.relativeTimeThreshold = getSetRelativeTimeThreshold;
 	    hooks.calendarFormat        = getCalendarFormat;
 	    hooks.prototype             = proto;
-
+	
 	    // currently HTML5 input type only supports 24-hour formats
 	    hooks.HTML5_FMT = {
 	        DATETIME_LOCAL: 'YYYY-MM-DDTHH:mm',             // <input type="datetime-local" />
@@ -5574,11 +5738,11 @@
 	        WEEK: 'GGGG-[W]WW',                             // <input type="week" />
 	        MONTH: 'YYYY-MM'                                // <input type="month" />
 	    };
-
+	
 	    return hooks;
-
+	
 	})));
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)(module)))
 
 /***/ }),
@@ -5876,14 +6040,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var af = moment.defineLocale('af', {
 	        months : 'Januarie_Februarie_Maart_April_Mei_Junie_Julie_Augustus_September_Oktober_November_Desember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mrt_Apr_Mei_Jun_Jul_Aug_Sep_Okt_Nov_Des'.split('_'),
@@ -5942,9 +6106,9 @@
 	            doy : 4  // Die week wat die 4de Januarie bevat is die eerste week van die jaar.
 	        }
 	    });
-
+	
 	    return af;
-
+	
 	})));
 
 
@@ -5953,14 +6117,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '١',
 	        '2': '٢',
@@ -6015,7 +6179,7 @@
 	        'نوفمبر',
 	        'ديسمبر'
 	    ];
-
+	
 	    var ar = moment.defineLocale('ar', {
 	        months : months,
 	        monthsShort : months,
@@ -6081,9 +6245,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ar;
-
+	
 	})));
 
 
@@ -6092,14 +6256,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var arDz = moment.defineLocale('ar-dz', {
 	        months : 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        monthsShort : 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
@@ -6144,9 +6308,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arDz;
-
+	
 	})));
 
 
@@ -6155,14 +6319,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var arKw = moment.defineLocale('ar-kw', {
 	        months : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
 	        monthsShort : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
@@ -6207,9 +6371,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arKw;
-
+	
 	})));
 
 
@@ -6218,14 +6382,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '1',
 	        '2': '2',
@@ -6269,7 +6433,7 @@
 	        'نوفمبر',
 	        'ديسمبر'
 	    ];
-
+	
 	    var arLy = moment.defineLocale('ar-ly', {
 	        months : months,
 	        monthsShort : months,
@@ -6333,9 +6497,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arLy;
-
+	
 	})));
 
 
@@ -6344,14 +6508,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var arMa = moment.defineLocale('ar-ma', {
 	        months : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
 	        monthsShort : 'يناير_فبراير_مارس_أبريل_ماي_يونيو_يوليوز_غشت_شتنبر_أكتوبر_نونبر_دجنبر'.split('_'),
@@ -6396,9 +6560,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arMa;
-
+	
 	})));
 
 
@@ -6407,14 +6571,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '١',
 	        '2': '٢',
@@ -6438,7 +6602,7 @@
 	        '٩': '9',
 	        '٠': '0'
 	    };
-
+	
 	    var arSa = moment.defineLocale('ar-sa', {
 	        months : 'يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        monthsShort : 'يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
@@ -6504,9 +6668,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arSa;
-
+	
 	})));
 
 
@@ -6515,14 +6679,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var arTn = moment.defineLocale('ar-tn', {
 	        months: 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
 	        monthsShort: 'جانفي_فيفري_مارس_أفريل_ماي_جوان_جويلية_أوت_سبتمبر_أكتوبر_نوفمبر_ديسمبر'.split('_'),
@@ -6567,9 +6731,9 @@
 	            doy: 4 // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return arTn;
-
+	
 	})));
 
 
@@ -6578,14 +6742,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var suffixes = {
 	        1: '-inci',
 	        5: '-inci',
@@ -6606,7 +6770,7 @@
 	        60: '-ıncı',
 	        90: '-ıncı'
 	    };
-
+	
 	    var az = moment.defineLocale('az', {
 	        months : 'yanvar_fevral_mart_aprel_may_iyun_iyul_avqust_sentyabr_oktyabr_noyabr_dekabr'.split('_'),
 	        monthsShort : 'yan_fev_mar_apr_may_iyn_iyl_avq_sen_okt_noy_dek'.split('_'),
@@ -6676,9 +6840,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return az;
-
+	
 	})));
 
 
@@ -6687,14 +6851,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function plural(word, num) {
 	        var forms = word.split('_');
 	        return num % 10 === 1 && num % 100 !== 11 ? forms[0] : (num % 10 >= 2 && num % 10 <= 4 && (num % 100 < 10 || num % 100 >= 20) ? forms[1] : forms[2]);
@@ -6718,7 +6882,7 @@
 	            return number + ' ' + plural(format[key], +number);
 	        }
 	    }
-
+	
 	    var be = moment.defineLocale('be', {
 	        months : {
 	            format: 'студзеня_лютага_сакавіка_красавіка_траўня_чэрвеня_ліпеня_жніўня_верасня_кастрычніка_лістапада_снежня'.split('_'),
@@ -6812,9 +6976,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return be;
-
+	
 	})));
 
 
@@ -6823,14 +6987,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var bg = moment.defineLocale('bg', {
 	        months : 'януари_февруари_март_април_май_юни_юли_август_септември_октомври_ноември_декември'.split('_'),
 	        monthsShort : 'янр_фев_мар_апр_май_юни_юли_авг_сеп_окт_ное_дек'.split('_'),
@@ -6906,9 +7070,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return bg;
-
+	
 	})));
 
 
@@ -6917,14 +7081,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var bm = moment.defineLocale('bm', {
 	        months : 'Zanwuyekalo_Fewuruyekalo_Marisikalo_Awirilikalo_Mɛkalo_Zuwɛnkalo_Zuluyekalo_Utikalo_Sɛtanburukalo_ɔkutɔburukalo_Nowanburukalo_Desanburukalo'.split('_'),
 	        monthsShort : 'Zan_Few_Mar_Awi_Mɛ_Zuw_Zul_Uti_Sɛt_ɔku_Now_Des'.split('_'),
@@ -6968,9 +7132,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return bm;
-
+	
 	})));
 
 
@@ -6979,14 +7143,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '১',
 	        '2': '২',
@@ -7011,7 +7175,7 @@
 	        '৯': '9',
 	        '০': '0'
 	    };
-
+	
 	    var bn = moment.defineLocale('bn', {
 	        months : 'জানুয়ারী_ফেব্রুয়ারি_মার্চ_এপ্রিল_মে_জুন_জুলাই_আগস্ট_সেপ্টেম্বর_অক্টোবর_নভেম্বর_ডিসেম্বর'.split('_'),
 	        monthsShort : 'জানু_ফেব_মার্চ_এপ্র_মে_জুন_জুল_আগ_সেপ্ট_অক্টো_নভে_ডিসে'.split('_'),
@@ -7091,9 +7255,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return bn;
-
+	
 	})));
 
 
@@ -7102,14 +7266,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '༡',
 	        '2': '༢',
@@ -7134,7 +7298,7 @@
 	        '༩': '9',
 	        '༠': '0'
 	    };
-
+	
 	    var bo = moment.defineLocale('bo', {
 	        months : 'ཟླ་བ་དང་པོ_ཟླ་བ་གཉིས་པ_ཟླ་བ་གསུམ་པ_ཟླ་བ་བཞི་པ_ཟླ་བ་ལྔ་པ_ཟླ་བ་དྲུག་པ_ཟླ་བ་བདུན་པ_ཟླ་བ་བརྒྱད་པ_ཟླ་བ་དགུ་པ_ཟླ་བ་བཅུ་པ_ཟླ་བ་བཅུ་གཅིག་པ_ཟླ་བ་བཅུ་གཉིས་པ'.split('_'),
 	        monthsShort : 'ཟླ་བ་དང་པོ_ཟླ་བ་གཉིས་པ_ཟླ་བ་གསུམ་པ_ཟླ་བ་བཞི་པ_ཟླ་བ་ལྔ་པ_ཟླ་བ་དྲུག་པ_ཟླ་བ་བདུན་པ_ཟླ་བ་བརྒྱད་པ_ཟླ་བ་དགུ་པ_ཟླ་བ་བཅུ་པ_ཟླ་བ་བཅུ་གཅིག་པ_ཟླ་བ་བཅུ་གཉིས་པ'.split('_'),
@@ -7214,9 +7378,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return bo;
-
+	
 	})));
 
 
@@ -7225,14 +7389,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function relativeTimeWithMutation(number, withoutSuffix, key) {
 	        var format = {
 	            'mm': 'munutenn',
@@ -7276,7 +7440,7 @@
 	        }
 	        return mutationTable[text.charAt(0)] + text.substring(1);
 	    }
-
+	
 	    var br = moment.defineLocale('br', {
 	        months : 'Genver_C\'hwevrer_Meurzh_Ebrel_Mae_Mezheven_Gouere_Eost_Gwengolo_Here_Du_Kerzu'.split('_'),
 	        monthsShort : 'Gen_C\'hwe_Meu_Ebr_Mae_Eve_Gou_Eos_Gwe_Her_Du_Ker'.split('_'),
@@ -7326,9 +7490,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return br;
-
+	
 	})));
 
 
@@ -7337,14 +7501,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function translate(number, withoutSuffix, key) {
 	        var result = number + ' ';
 	        switch (key) {
@@ -7406,7 +7570,7 @@
 	                return result;
 	        }
 	    }
-
+	
 	    var bs = moment.defineLocale('bs', {
 	        months : 'januar_februar_mart_april_maj_juni_juli_august_septembar_oktobar_novembar_decembar'.split('_'),
 	        monthsShort : 'jan._feb._mar._apr._maj._jun._jul._aug._sep._okt._nov._dec.'.split('_'),
@@ -7481,9 +7645,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return bs;
-
+	
 	})));
 
 
@@ -7492,14 +7656,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ca = moment.defineLocale('ca', {
 	        months : {
 	            standalone: 'gener_febrer_març_abril_maig_juny_juliol_agost_setembre_octubre_novembre_desembre'.split('_'),
@@ -7573,9 +7737,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ca;
-
+	
 	})));
 
 
@@ -7584,22 +7748,22 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = 'leden_únor_březen_duben_květen_červen_červenec_srpen_září_říjen_listopad_prosinec'.split('_'),
 	        monthsShort = 'led_úno_bře_dub_kvě_čvn_čvc_srp_zář_říj_lis_pro'.split('_');
-
+	
 	    var monthsParse = [/^led/i, /^úno/i, /^bře/i, /^dub/i, /^kvě/i, /^(čvn|červen$|června)/i, /^(čvc|červenec|července)/i, /^srp/i, /^zář/i, /^říj/i, /^lis/i, /^pro/i];
 	    // NOTE: 'červen' is substring of 'červenec'; therefore 'červenec' must precede 'červen' in the regex to be fully matched.
 	    // Otherwise parser matches '1. červenec' as '1. červen' + 'ec'.
 	    var monthsRegex = /^(leden|únor|březen|duben|květen|červenec|července|červen|června|srpen|září|říjen|listopad|prosinec|led|úno|bře|dub|kvě|čvn|čvc|srp|zář|říj|lis|pro)/i;
-
+	
 	    function plural(n) {
 	        return (n > 1) && (n < 5) && (~~(n / 10) !== 1);
 	    }
@@ -7662,7 +7826,7 @@
 	                break;
 	        }
 	    }
-
+	
 	    var cs = moment.defineLocale('cs', {
 	        months : months,
 	        monthsShort : monthsShort,
@@ -7749,9 +7913,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return cs;
-
+	
 	})));
 
 
@@ -7760,14 +7924,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var cv = moment.defineLocale('cv', {
 	        months : 'кӑрлач_нарӑс_пуш_ака_май_ҫӗртме_утӑ_ҫурла_авӑн_юпа_чӳк_раштав'.split('_'),
 	        monthsShort : 'кӑр_нар_пуш_ака_май_ҫӗр_утӑ_ҫур_авн_юпа_чӳк_раш'.split('_'),
@@ -7816,9 +7980,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return cv;
-
+	
 	})));
 
 
@@ -7827,14 +7991,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var cy = moment.defineLocale('cy', {
 	        months: 'Ionawr_Chwefror_Mawrth_Ebrill_Mai_Mehefin_Gorffennaf_Awst_Medi_Hydref_Tachwedd_Rhagfyr'.split('_'),
 	        monthsShort: 'Ion_Chwe_Maw_Ebr_Mai_Meh_Gor_Aws_Med_Hyd_Tach_Rhag'.split('_'),
@@ -7900,9 +8064,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return cy;
-
+	
 	})));
 
 
@@ -7911,14 +8075,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var da = moment.defineLocale('da', {
 	        months : 'januar_februar_marts_april_maj_juni_juli_august_september_oktober_november_december'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_maj_jun_jul_aug_sep_okt_nov_dec'.split('_'),
@@ -7964,9 +8128,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return da;
-
+	
 	})));
 
 
@@ -7975,14 +8139,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            'm': ['eine Minute', 'einer Minute'],
@@ -7996,7 +8160,7 @@
 	        };
 	        return withoutSuffix ? format[key][0] : format[key][1];
 	    }
-
+	
 	    var de = moment.defineLocale('de', {
 	        months : 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
 	        monthsShort : 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
@@ -8044,9 +8208,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return de;
-
+	
 	})));
 
 
@@ -8055,14 +8219,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            'm': ['eine Minute', 'einer Minute'],
@@ -8076,7 +8240,7 @@
 	        };
 	        return withoutSuffix ? format[key][0] : format[key][1];
 	    }
-
+	
 	    var deAt = moment.defineLocale('de-at', {
 	        months : 'Jänner_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
 	        monthsShort : 'Jän._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
@@ -8124,9 +8288,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return deAt;
-
+	
 	})));
 
 
@@ -8135,14 +8299,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            'm': ['eine Minute', 'einer Minute'],
@@ -8156,7 +8320,7 @@
 	        };
 	        return withoutSuffix ? format[key][0] : format[key][1];
 	    }
-
+	
 	    var deCh = moment.defineLocale('de-ch', {
 	        months : 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
 	        monthsShort : 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
@@ -8204,9 +8368,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return deCh;
-
+	
 	})));
 
 
@@ -8215,14 +8379,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = [
 	        'ޖެނުއަރީ',
 	        'ފެބްރުއަރީ',
@@ -8245,7 +8409,7 @@
 	        'ހުކުރު',
 	        'ހޮނިހިރު'
 	    ];
-
+	
 	    var dv = moment.defineLocale('dv', {
 	        months : months,
 	        monthsShort : months,
@@ -8253,7 +8417,7 @@
 	        weekdaysShort : weekdays,
 	        weekdaysMin : 'އާދި_ހޯމަ_އަން_ބުދަ_ބުރާ_ހުކު_ހޮނި'.split('_'),
 	        longDateFormat : {
-
+	
 	            LT : 'HH:mm',
 	            LTS : 'HH:mm:ss',
 	            L : 'D/M/YYYY',
@@ -8307,9 +8471,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return dv;
-
+	
 	})));
 
 
@@ -8318,18 +8482,18 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
+	
 	    function isFunction(input) {
 	        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
 	    }
-
-
+	
+	
 	    var el = moment.defineLocale('el', {
 	        monthsNominativeEl : 'Ιανουάριος_Φεβρουάριος_Μάρτιος_Απρίλιος_Μάιος_Ιούνιος_Ιούλιος_Αύγουστος_Σεπτέμβριος_Οκτώβριος_Νοέμβριος_Δεκέμβριος'.split('_'),
 	        monthsGenitiveEl : 'Ιανουαρίου_Φεβρουαρίου_Μαρτίου_Απριλίου_Μαΐου_Ιουνίου_Ιουλίου_Αυγούστου_Σεπτεμβρίου_Οκτωβρίου_Νοεμβρίου_Δεκεμβρίου'.split('_'),
@@ -8411,9 +8575,9 @@
 	            doy : 4  // The week that contains Jan 4st is the first week of the year.
 	        }
 	    });
-
+	
 	    return el;
-
+	
 	})));
 
 
@@ -8422,14 +8586,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enSG = moment.defineLocale('en-SG', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8482,9 +8646,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return enSG;
-
+	
 	})));
 
 
@@ -8493,14 +8657,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enAu = moment.defineLocale('en-au', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8553,9 +8717,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return enAu;
-
+	
 	})));
 
 
@@ -8564,14 +8728,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enCa = moment.defineLocale('en-ca', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8620,9 +8784,9 @@
 	            return number + output;
 	        }
 	    });
-
+	
 	    return enCa;
-
+	
 	})));
 
 
@@ -8631,14 +8795,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enGb = moment.defineLocale('en-gb', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8691,9 +8855,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return enGb;
-
+	
 	})));
 
 
@@ -8702,14 +8866,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enIe = moment.defineLocale('en-ie', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8762,9 +8926,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return enIe;
-
+	
 	})));
 
 
@@ -8773,14 +8937,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enIl = moment.defineLocale('en-il', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8828,9 +8992,9 @@
 	            return number + output;
 	        }
 	    });
-
+	
 	    return enIl;
-
+	
 	})));
 
 
@@ -8839,14 +9003,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var enNz = moment.defineLocale('en-nz', {
 	        months : 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
@@ -8899,9 +9063,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return enNz;
-
+	
 	})));
 
 
@@ -8910,14 +9074,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var eo = moment.defineLocale('eo', {
 	        months : 'januaro_februaro_marto_aprilo_majo_junio_julio_aŭgusto_septembro_oktobro_novembro_decembro'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_maj_jun_jul_aŭg_sep_okt_nov_dec'.split('_'),
@@ -8974,9 +9138,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return eo;
-
+	
 	})));
 
 
@@ -8985,20 +9149,20 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
 	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
-
+	
 	    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
 	    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
-
+	
 	    var es = moment.defineLocale('es', {
 	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
 	        monthsShort : function (m, format) {
@@ -9070,9 +9234,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return es;
-
+	
 	})));
 
 
@@ -9081,20 +9245,20 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
 	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
-
+	
 	    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
 	    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
-
+	
 	    var esDo = moment.defineLocale('es-do', {
 	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
 	        monthsShort : function (m, format) {
@@ -9166,9 +9330,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return esDo;
-
+	
 	})));
 
 
@@ -9177,20 +9341,20 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_'),
 	        monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
-
+	
 	    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
 	    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
-
+	
 	    var esUs = moment.defineLocale('es-us', {
 	        months : 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
 	        monthsShort : function (m, format) {
@@ -9262,9 +9426,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return esUs;
-
+	
 	})));
 
 
@@ -9273,14 +9437,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            's' : ['mõne sekundi', 'mõni sekund', 'paar sekundit'],
@@ -9300,7 +9464,7 @@
 	        }
 	        return isFuture ? format[key][0] : format[key][1];
 	    }
-
+	
 	    var et = moment.defineLocale('et', {
 	        months        : 'jaanuar_veebruar_märts_aprill_mai_juuni_juuli_august_september_oktoober_november_detsember'.split('_'),
 	        monthsShort   : 'jaan_veebr_märts_apr_mai_juuni_juuli_aug_sept_okt_nov_dets'.split('_'),
@@ -9346,9 +9510,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return et;
-
+	
 	})));
 
 
@@ -9357,14 +9521,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var eu = moment.defineLocale('eu', {
 	        months : 'urtarrila_otsaila_martxoa_apirila_maiatza_ekaina_uztaila_abuztua_iraila_urria_azaroa_abendua'.split('_'),
 	        monthsShort : 'urt._ots._mar._api._mai._eka._uzt._abu._ira._urr._aza._abe.'.split('_'),
@@ -9416,9 +9580,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return eu;
-
+	
 	})));
 
 
@@ -9427,14 +9591,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '۱',
 	        '2': '۲',
@@ -9458,7 +9622,7 @@
 	        '۹': '9',
 	        '۰': '0'
 	    };
-
+	
 	    var fa = moment.defineLocale('fa', {
 	        months : 'ژانویه_فوریه_مارس_آوریل_مه_ژوئن_ژوئیه_اوت_سپتامبر_اکتبر_نوامبر_دسامبر'.split('_'),
 	        monthsShort : 'ژانویه_فوریه_مارس_آوریل_مه_ژوئن_ژوئیه_اوت_سپتامبر_اکتبر_نوامبر_دسامبر'.split('_'),
@@ -9526,9 +9690,9 @@
 	            doy : 12 // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return fa;
-
+	
 	})));
 
 
@@ -9537,14 +9701,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var numbersPast = 'nolla yksi kaksi kolme neljä viisi kuusi seitsemän kahdeksan yhdeksän'.split(' '),
 	        numbersFuture = [
 	            'nolla', 'yhden', 'kahden', 'kolmen', 'neljän', 'viiden', 'kuuden',
@@ -9589,7 +9753,7 @@
 	    function verbalNumber(number, isFuture) {
 	        return number < 10 ? (isFuture ? numbersFuture[number] : numbersPast[number]) : number;
 	    }
-
+	
 	    var fi = moment.defineLocale('fi', {
 	        months : 'tammikuu_helmikuu_maaliskuu_huhtikuu_toukokuu_kesäkuu_heinäkuu_elokuu_syyskuu_lokakuu_marraskuu_joulukuu'.split('_'),
 	        monthsShort : 'tammi_helmi_maalis_huhti_touko_kesä_heinä_elo_syys_loka_marras_joulu'.split('_'),
@@ -9639,9 +9803,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return fi;
-
+	
 	})));
 
 
@@ -9650,14 +9814,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var fo = moment.defineLocale('fo', {
 	        months : 'januar_februar_mars_apríl_mai_juni_juli_august_september_oktober_november_desember'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_mai_jun_jul_aug_sep_okt_nov_des'.split('_'),
@@ -9703,9 +9867,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return fo;
-
+	
 	})));
 
 
@@ -9714,14 +9878,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var fr = moment.defineLocale('fr', {
 	        months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
 	        monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
@@ -9770,7 +9934,7 @@
 	                // See https://github.com/moment/moment/issues/3375
 	                case 'D':
 	                    return number + (number === 1 ? 'er' : '');
-
+	
 	                // Words with masculine grammatical gender: mois, trimestre, jour
 	                default:
 	                case 'M':
@@ -9778,7 +9942,7 @@
 	                case 'DDD':
 	                case 'd':
 	                    return number + (number === 1 ? 'er' : 'e');
-
+	
 	                // Words with feminine grammatical gender: semaine
 	                case 'w':
 	                case 'W':
@@ -9790,9 +9954,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return fr;
-
+	
 	})));
 
 
@@ -9801,14 +9965,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var frCa = moment.defineLocale('fr-ca', {
 	        months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
 	        monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
@@ -9860,7 +10024,7 @@
 	                case 'DDD':
 	                case 'd':
 	                    return number + (number === 1 ? 'er' : 'e');
-
+	
 	                // Words with feminine grammatical gender: semaine
 	                case 'w':
 	                case 'W':
@@ -9868,9 +10032,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return frCa;
-
+	
 	})));
 
 
@@ -9879,14 +10043,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var frCh = moment.defineLocale('fr-ch', {
 	        months : 'janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre'.split('_'),
 	        monthsShort : 'janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.'.split('_'),
@@ -9938,7 +10102,7 @@
 	                case 'DDD':
 	                case 'd':
 	                    return number + (number === 1 ? 'er' : 'e');
-
+	
 	                // Words with feminine grammatical gender: semaine
 	                case 'w':
 	                case 'W':
@@ -9950,9 +10114,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return frCh;
-
+	
 	})));
 
 
@@ -9961,17 +10125,17 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortWithDots = 'jan._feb._mrt._apr._mai_jun._jul._aug._sep._okt._nov._des.'.split('_'),
 	        monthsShortWithoutDots = 'jan_feb_mrt_apr_mai_jun_jul_aug_sep_okt_nov_des'.split('_');
-
+	
 	    var fy = moment.defineLocale('fy', {
 	        months : 'jannewaris_febrewaris_maart_april_maaie_juny_july_augustus_septimber_oktober_novimber_desimber'.split('_'),
 	        monthsShort : function (m, format) {
@@ -10029,9 +10193,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return fy;
-
+	
 	})));
 
 
@@ -10040,27 +10204,27 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
-
+	
+	
+	
 	    var months = [
 	        'Eanáir', 'Feabhra', 'Márta', 'Aibreán', 'Bealtaine', 'Méitheamh', 'Iúil', 'Lúnasa', 'Meán Fómhair', 'Deaireadh Fómhair', 'Samhain', 'Nollaig'
 	    ];
-
+	
 	    var monthsShort = ['Eaná', 'Feab', 'Márt', 'Aibr', 'Beal', 'Méit', 'Iúil', 'Lúna', 'Meán', 'Deai', 'Samh', 'Noll'];
-
+	
 	    var weekdays = ['Dé Domhnaigh', 'Dé Luain', 'Dé Máirt', 'Dé Céadaoin', 'Déardaoin', 'Dé hAoine', 'Dé Satharn'];
-
+	
 	    var weekdaysShort = ['Dom', 'Lua', 'Mái', 'Céa', 'Déa', 'hAo', 'Sat'];
-
+	
 	    var weekdaysMin = ['Do', 'Lu', 'Má', 'Ce', 'Dé', 'hA', 'Sa'];
-
+	
 	    var ga = moment.defineLocale('ga', {
 	        months: months,
 	        monthsShort: monthsShort,
@@ -10110,9 +10274,9 @@
 	            doy: 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ga;
-
+	
 	})));
 
 
@@ -10121,26 +10285,26 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = [
 	        'Am Faoilleach', 'An Gearran', 'Am Màrt', 'An Giblean', 'An Cèitean', 'An t-Ògmhios', 'An t-Iuchar', 'An Lùnastal', 'An t-Sultain', 'An Dàmhair', 'An t-Samhain', 'An Dùbhlachd'
 	    ];
-
+	
 	    var monthsShort = ['Faoi', 'Gear', 'Màrt', 'Gibl', 'Cèit', 'Ògmh', 'Iuch', 'Lùn', 'Sult', 'Dàmh', 'Samh', 'Dùbh'];
-
+	
 	    var weekdays = ['Didòmhnaich', 'Diluain', 'Dimàirt', 'Diciadain', 'Diardaoin', 'Dihaoine', 'Disathairne'];
-
+	
 	    var weekdaysShort = ['Did', 'Dil', 'Dim', 'Dic', 'Dia', 'Dih', 'Dis'];
-
+	
 	    var weekdaysMin = ['Dò', 'Lu', 'Mà', 'Ci', 'Ar', 'Ha', 'Sa'];
-
+	
 	    var gd = moment.defineLocale('gd', {
 	        months : months,
 	        monthsShort : monthsShort,
@@ -10190,9 +10354,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return gd;
-
+	
 	})));
 
 
@@ -10201,14 +10365,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var gl = moment.defineLocale('gl', {
 	        months : 'xaneiro_febreiro_marzo_abril_maio_xuño_xullo_agosto_setembro_outubro_novembro_decembro'.split('_'),
 	        monthsShort : 'xan._feb._mar._abr._mai._xuñ._xul._ago._set._out._nov._dec.'.split('_'),
@@ -10271,9 +10435,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return gl;
-
+	
 	})));
 
 
@@ -10282,14 +10446,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            's': ['thodde secondanim', 'thodde second'],
@@ -10307,7 +10471,7 @@
 	        };
 	        return withoutSuffix ? format[key][0] : format[key][1];
 	    }
-
+	
 	    var gomLatn = moment.defineLocale('gom-latn', {
 	        months : 'Janer_Febrer_Mars_Abril_Mai_Jun_Julai_Agost_Setembr_Otubr_Novembr_Dezembr'.split('_'),
 	        monthsShort : 'Jan._Feb._Mars_Abr._Mai_Jun_Jul._Ago._Set._Otu._Nov._Dez.'.split('_'),
@@ -10398,9 +10562,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return gomLatn;
-
+	
 	})));
 
 
@@ -10409,14 +10573,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	            '1': '૧',
 	            '2': '૨',
@@ -10441,7 +10605,7 @@
 	            '૯': '9',
 	            '૦': '0'
 	        };
-
+	
 	    var gu = moment.defineLocale('gu', {
 	        months: 'જાન્યુઆરી_ફેબ્રુઆરી_માર્ચ_એપ્રિલ_મે_જૂન_જુલાઈ_ઑગસ્ટ_સપ્ટેમ્બર_ઑક્ટ્બર_નવેમ્બર_ડિસેમ્બર'.split('_'),
 	        monthsShort: 'જાન્યુ._ફેબ્રુ._માર્ચ_એપ્રિ._મે_જૂન_જુલા._ઑગ._સપ્ટે._ઑક્ટ્._નવે._ડિસે.'.split('_'),
@@ -10526,9 +10690,9 @@
 	            doy: 6 // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return gu;
-
+	
 	})));
 
 
@@ -10537,14 +10701,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var he = moment.defineLocale('he', {
 	        months : 'ינואר_פברואר_מרץ_אפריל_מאי_יוני_יולי_אוגוסט_ספטמבר_אוקטובר_נובמבר_דצמבר'.split('_'),
 	        monthsShort : 'ינו׳_פבר׳_מרץ_אפר׳_מאי_יוני_יולי_אוג׳_ספט׳_אוק׳_נוב׳_דצמ׳'.split('_'),
@@ -10627,9 +10791,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return he;
-
+	
 	})));
 
 
@@ -10638,14 +10802,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '१',
 	        '2': '२',
@@ -10670,7 +10834,7 @@
 	        '९': '9',
 	        '०': '0'
 	    };
-
+	
 	    var hi = moment.defineLocale('hi', {
 	        months : 'जनवरी_फ़रवरी_मार्च_अप्रैल_मई_जून_जुलाई_अगस्त_सितम्बर_अक्टूबर_नवम्बर_दिसम्बर'.split('_'),
 	        monthsShort : 'जन._फ़र._मार्च_अप्रै._मई_जून_जुल._अग._सित._अक्टू._नव._दिस.'.split('_'),
@@ -10755,9 +10919,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return hi;
-
+	
 	})));
 
 
@@ -10766,14 +10930,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function translate(number, withoutSuffix, key) {
 	        var result = number + ' ';
 	        switch (key) {
@@ -10835,7 +10999,7 @@
 	                return result;
 	        }
 	    }
-
+	
 	    var hr = moment.defineLocale('hr', {
 	        months : {
 	            format: 'siječnja_veljače_ožujka_travnja_svibnja_lipnja_srpnja_kolovoza_rujna_listopada_studenoga_prosinca'.split('_'),
@@ -10913,9 +11077,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return hr;
-
+	
 	})));
 
 
@@ -10924,14 +11088,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var weekEndings = 'vasárnap hétfőn kedden szerdán csütörtökön pénteken szombaton'.split(' ');
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        var num = number;
@@ -10966,7 +11130,7 @@
 	    function week(isFuture) {
 	        return (isFuture ? '' : '[múlt] ') + '[' + weekEndings[this.day()] + '] LT[-kor]';
 	    }
-
+	
 	    var hu = moment.defineLocale('hu', {
 	        months : 'január_február_március_április_május_június_július_augusztus_szeptember_október_november_december'.split('_'),
 	        monthsShort : 'jan_feb_márc_ápr_máj_jún_júl_aug_szept_okt_nov_dec'.split('_'),
@@ -11027,9 +11191,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return hu;
-
+	
 	})));
 
 
@@ -11038,14 +11202,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var hyAm = moment.defineLocale('hy-am', {
 	        months : {
 	            format: 'հունվարի_փետրվարի_մարտի_ապրիլի_մայիսի_հունիսի_հուլիսի_օգոստոսի_սեպտեմբերի_հոկտեմբերի_նոյեմբերի_դեկտեմբերի'.split('_'),
@@ -11126,9 +11290,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return hyAm;
-
+	
 	})));
 
 
@@ -11137,14 +11301,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var id = moment.defineLocale('id', {
 	        months : 'Januari_Februari_Maret_April_Mei_Juni_Juli_Agustus_September_Oktober_November_Desember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_Mei_Jun_Jul_Agt_Sep_Okt_Nov_Des'.split('_'),
@@ -11212,9 +11376,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return id;
-
+	
 	})));
 
 
@@ -11223,14 +11387,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function plural(n) {
 	        if (n % 100 === 11) {
 	            return true;
@@ -11302,7 +11466,7 @@
 	                return result + (withoutSuffix || isFuture ? 'ár' : 'ári');
 	        }
 	    }
-
+	
 	    var is = moment.defineLocale('is', {
 	        months : 'janúar_febrúar_mars_apríl_maí_júní_júlí_ágúst_september_október_nóvember_desember'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_maí_jún_júl_ágú_sep_okt_nóv_des'.split('_'),
@@ -11348,9 +11512,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return is;
-
+	
 	})));
 
 
@@ -11359,14 +11523,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var it = moment.defineLocale('it', {
 	        months : 'gennaio_febbraio_marzo_aprile_maggio_giugno_luglio_agosto_settembre_ottobre_novembre_dicembre'.split('_'),
 	        monthsShort : 'gen_feb_mar_apr_mag_giu_lug_ago_set_ott_nov_dic'.split('_'),
@@ -11421,9 +11585,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return it;
-
+	
 	})));
 
 
@@ -11432,14 +11596,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var itCh = moment.defineLocale('it-ch', {
 	        months : 'gennaio_febbraio_marzo_aprile_maggio_giugno_luglio_agosto_settembre_ottobre_novembre_dicembre'.split('_'),
 	        monthsShort : 'gen_feb_mar_apr_mag_giu_lug_ago_set_ott_nov_dic'.split('_'),
@@ -11494,9 +11658,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return itCh;
-
+	
 	})));
 
 
@@ -11505,14 +11669,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ja = moment.defineLocale('ja', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
@@ -11590,9 +11754,9 @@
 	            yy : '%d年'
 	        }
 	    });
-
+	
 	    return ja;
-
+	
 	})));
 
 
@@ -11601,14 +11765,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var jv = moment.defineLocale('jv', {
 	        months : 'Januari_Februari_Maret_April_Mei_Juni_Juli_Agustus_September_Oktober_Nopember_Desember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mar_Apr_Mei_Jun_Jul_Ags_Sep_Okt_Nop_Des'.split('_'),
@@ -11676,9 +11840,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return jv;
-
+	
 	})));
 
 
@@ -11687,14 +11851,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ka = moment.defineLocale('ka', {
 	        months : {
 	            standalone: 'იანვარი_თებერვალი_მარტი_აპრილი_მაისი_ივნისი_ივლისი_აგვისტო_სექტემბერი_ოქტომბერი_ნოემბერი_დეკემბერი'.split('_'),
@@ -11769,9 +11933,9 @@
 	            doy : 7
 	        }
 	    });
-
+	
 	    return ka;
-
+	
 	})));
 
 
@@ -11780,14 +11944,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var suffixes = {
 	        0: '-ші',
 	        1: '-ші',
@@ -11810,7 +11974,7 @@
 	        90: '-шы',
 	        100: '-ші'
 	    };
-
+	
 	    var kk = moment.defineLocale('kk', {
 	        months : 'қаңтар_ақпан_наурыз_сәуір_мамыр_маусым_шілде_тамыз_қыркүйек_қазан_қараша_желтоқсан'.split('_'),
 	        monthsShort : 'қаң_ақп_нау_сәу_мам_мау_шіл_там_қыр_қаз_қар_жел'.split('_'),
@@ -11860,9 +12024,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return kk;
-
+	
 	})));
 
 
@@ -11871,14 +12035,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '១',
 	        '2': '២',
@@ -11902,7 +12066,7 @@
 	        '៩': '9',
 	        '០': '0'
 	    };
-
+	
 	    var km = moment.defineLocale('km', {
 	        months: 'មករា_កុម្ភៈ_មីនា_មេសា_ឧសភា_មិថុនា_កក្កដា_សីហា_កញ្ញា_តុលា_វិច្ឆិកា_ធ្នូ'.split(
 	            '_'
@@ -11974,9 +12138,9 @@
 	            doy: 4 // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return km;
-
+	
 	})));
 
 
@@ -11985,14 +12149,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '೧',
 	        '2': '೨',
@@ -12017,7 +12181,7 @@
 	        '೯': '9',
 	        '೦': '0'
 	    };
-
+	
 	    var kn = moment.defineLocale('kn', {
 	        months : 'ಜನವರಿ_ಫೆಬ್ರವರಿ_ಮಾರ್ಚ್_ಏಪ್ರಿಲ್_ಮೇ_ಜೂನ್_ಜುಲೈ_ಆಗಸ್ಟ್_ಸೆಪ್ಟೆಂಬರ್_ಅಕ್ಟೋಬರ್_ನವೆಂಬರ್_ಡಿಸೆಂಬರ್'.split('_'),
 	        monthsShort : 'ಜನ_ಫೆಬ್ರ_ಮಾರ್ಚ್_ಏಪ್ರಿಲ್_ಮೇ_ಜೂನ್_ಜುಲೈ_ಆಗಸ್ಟ್_ಸೆಪ್ಟೆಂ_ಅಕ್ಟೋ_ನವೆಂ_ಡಿಸೆಂ'.split('_'),
@@ -12104,9 +12268,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return kn;
-
+	
 	})));
 
 
@@ -12115,14 +12279,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ko = moment.defineLocale('ko', {
 	        months : '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split('_'),
 	        monthsShort : '1월_2월_3월_4월_5월_6월_7월_8월_9월_10월_11월_12월'.split('_'),
@@ -12189,9 +12353,9 @@
 	            return hour < 12 ? '오전' : '오후';
 	        }
 	    });
-
+	
 	    return ko;
-
+	
 	})));
 
 
@@ -12200,14 +12364,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '١',
 	        '2': '٢',
@@ -12245,8 +12409,8 @@
 	        'تشرینی دووەم',
 	        'كانونی یەکەم'
 	    ];
-
-
+	
+	
 	    var ku = moment.defineLocale('ku', {
 	        months : months,
 	        monthsShort : months,
@@ -12312,9 +12476,9 @@
 	            doy : 12 // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ku;
-
+	
 	})));
 
 
@@ -12323,14 +12487,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var suffixes = {
 	        0: '-чү',
 	        1: '-чи',
@@ -12353,7 +12517,7 @@
 	        90: '-чу',
 	        100: '-чү'
 	    };
-
+	
 	    var ky = moment.defineLocale('ky', {
 	        months : 'январь_февраль_март_апрель_май_июнь_июль_август_сентябрь_октябрь_ноябрь_декабрь'.split('_'),
 	        monthsShort : 'янв_фев_март_апр_май_июнь_июль_авг_сен_окт_ноя_дек'.split('_'),
@@ -12403,9 +12567,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ky;
-
+	
 	})));
 
 
@@ -12414,14 +12578,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            'm': ['eng Minutt', 'enger Minutt'],
@@ -12486,7 +12650,7 @@
 	            return eifelerRegelAppliesToNumber(number);
 	        }
 	    }
-
+	
 	    var lb = moment.defineLocale('lb', {
 	        months: 'Januar_Februar_Mäerz_Abrëll_Mee_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
 	        monthsShort: 'Jan._Febr._Mrz._Abr._Mee_Jun._Jul._Aug._Sept._Okt._Nov._Dez.'.split('_'),
@@ -12543,9 +12707,9 @@
 	            doy: 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return lb;
-
+	
 	})));
 
 
@@ -12554,14 +12718,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var lo = moment.defineLocale('lo', {
 	        months : 'ມັງກອນ_ກຸມພາ_ມີນາ_ເມສາ_ພຶດສະພາ_ມິຖຸນາ_ກໍລະກົດ_ສິງຫາ_ກັນຍາ_ຕຸລາ_ພະຈິກ_ທັນວາ'.split('_'),
 	        monthsShort : 'ມັງກອນ_ກຸມພາ_ມີນາ_ເມສາ_ພຶດສະພາ_ມິຖຸນາ_ກໍລະກົດ_ສິງຫາ_ກັນຍາ_ຕຸລາ_ພະຈິກ_ທັນວາ'.split('_'),
@@ -12617,9 +12781,9 @@
 	            return 'ທີ່' + number;
 	        }
 	    });
-
+	
 	    return lo;
-
+	
 	})));
 
 
@@ -12628,14 +12792,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var units = {
 	        'ss' : 'sekundė_sekundžių_sekundes',
 	        'm' : 'minutė_minutės_minutę',
@@ -12739,9 +12903,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return lt;
-
+	
 	})));
 
 
@@ -12750,14 +12914,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var units = {
 	        'ss': 'sekundes_sekundēm_sekunde_sekundes'.split('_'),
 	        'm': 'minūtes_minūtēm_minūte_minūtes'.split('_'),
@@ -12793,7 +12957,7 @@
 	    function relativeSeconds(number, withoutSuffix) {
 	        return withoutSuffix ? 'dažas sekundes' : 'dažām sekundēm';
 	    }
-
+	
 	    var lv = moment.defineLocale('lv', {
 	        months : 'janvāris_februāris_marts_aprīlis_maijs_jūnijs_jūlijs_augusts_septembris_oktobris_novembris_decembris'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_mai_jūn_jūl_aug_sep_okt_nov_dec'.split('_'),
@@ -12840,9 +13004,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return lv;
-
+	
 	})));
 
 
@@ -12851,14 +13015,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var translator = {
 	        words: { //Different grammatical cases
 	            ss: ['sekund', 'sekunda', 'sekundi'],
@@ -12882,7 +13046,7 @@
 	            }
 	        }
 	    };
-
+	
 	    var me = moment.defineLocale('me', {
 	        months: 'januar_februar_mart_april_maj_jun_jul_avgust_septembar_oktobar_novembar_decembar'.split('_'),
 	        monthsShort: 'jan._feb._mar._apr._maj_jun_jul_avg._sep._okt._nov._dec.'.split('_'),
@@ -12902,7 +13066,7 @@
 	        calendar: {
 	            sameDay: '[danas u] LT',
 	            nextDay: '[sjutra u] LT',
-
+	
 	            nextWeek: function () {
 	                switch (this.day()) {
 	                    case 0:
@@ -12956,9 +13120,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return me;
-
+	
 	})));
 
 
@@ -12967,14 +13131,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var mi = moment.defineLocale('mi', {
 	        months: 'Kohi-tāte_Hui-tanguru_Poutū-te-rangi_Paenga-whāwhā_Haratua_Pipiri_Hōngoingoi_Here-turi-kōkā_Mahuru_Whiringa-ā-nuku_Whiringa-ā-rangi_Hakihea'.split('_'),
 	        monthsShort: 'Kohi_Hui_Pou_Pae_Hara_Pipi_Hōngoi_Here_Mahu_Whi-nu_Whi-ra_Haki'.split('_'),
@@ -13024,9 +13188,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return mi;
-
+	
 	})));
 
 
@@ -13035,14 +13199,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var mk = moment.defineLocale('mk', {
 	        months : 'јануари_февруари_март_април_мај_јуни_јули_август_септември_октомври_ноември_декември'.split('_'),
 	        monthsShort : 'јан_фев_мар_апр_мај_јун_јул_авг_сеп_окт_ное_дек'.split('_'),
@@ -13118,9 +13282,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return mk;
-
+	
 	})));
 
 
@@ -13129,14 +13293,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ml = moment.defineLocale('ml', {
 	        months : 'ജനുവരി_ഫെബ്രുവരി_മാർച്ച്_ഏപ്രിൽ_മേയ്_ജൂൺ_ജൂലൈ_ഓഗസ്റ്റ്_സെപ്റ്റംബർ_ഒക്ടോബർ_നവംബർ_ഡിസംബർ'.split('_'),
 	        monthsShort : 'ജനു._ഫെബ്രു._മാർ._ഏപ്രി._മേയ്_ജൂൺ_ജൂലൈ._ഓഗ._സെപ്റ്റ._ഒക്ടോ._നവം._ഡിസം.'.split('_'),
@@ -13203,9 +13367,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return ml;
-
+	
 	})));
 
 
@@ -13214,14 +13378,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function translate(number, withoutSuffix, key, isFuture) {
 	        switch (key) {
 	            case 's':
@@ -13247,7 +13411,7 @@
 	                return number;
 	        }
 	    }
-
+	
 	    var mn = moment.defineLocale('mn', {
 	        months : 'Нэгдүгээр сар_Хоёрдугаар сар_Гуравдугаар сар_Дөрөвдүгээр сар_Тавдугаар сар_Зургадугаар сар_Долдугаар сар_Наймдугаар сар_Есдүгээр сар_Аравдугаар сар_Арван нэгдүгээр сар_Арван хоёрдугаар сар'.split('_'),
 	        monthsShort : '1 сар_2 сар_3 сар_4 сар_5 сар_6 сар_7 сар_8 сар_9 сар_10 сар_11 сар_12 сар'.split('_'),
@@ -13311,9 +13475,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return mn;
-
+	
 	})));
 
 
@@ -13322,14 +13486,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '१',
 	        '2': '२',
@@ -13354,7 +13518,7 @@
 	        '९': '9',
 	        '०': '0'
 	    };
-
+	
 	    function relativeTimeMr(number, withoutSuffix, string, isFuture)
 	    {
 	        var output = '';
@@ -13392,7 +13556,7 @@
 	        }
 	        return output.replace(/%d/i, number);
 	    }
-
+	
 	    var mr = moment.defineLocale('mr', {
 	        months : 'जानेवारी_फेब्रुवारी_मार्च_एप्रिल_मे_जून_जुलै_ऑगस्ट_सप्टेंबर_ऑक्टोबर_नोव्हेंबर_डिसेंबर'.split('_'),
 	        monthsShort: 'जाने._फेब्रु._मार्च._एप्रि._मे._जून._जुलै._ऑग._सप्टें._ऑक्टो._नोव्हें._डिसें.'.split('_'),
@@ -13475,9 +13639,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return mr;
-
+	
 	})));
 
 
@@ -13486,14 +13650,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ms = moment.defineLocale('ms', {
 	        months : 'Januari_Februari_Mac_April_Mei_Jun_Julai_Ogos_September_Oktober_November_Disember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mac_Apr_Mei_Jun_Jul_Ogs_Sep_Okt_Nov_Dis'.split('_'),
@@ -13561,9 +13725,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ms;
-
+	
 	})));
 
 
@@ -13572,14 +13736,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var msMy = moment.defineLocale('ms-my', {
 	        months : 'Januari_Februari_Mac_April_Mei_Jun_Julai_Ogos_September_Oktober_November_Disember'.split('_'),
 	        monthsShort : 'Jan_Feb_Mac_Apr_Mei_Jun_Jul_Ogs_Sep_Okt_Nov_Dis'.split('_'),
@@ -13647,9 +13811,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return msMy;
-
+	
 	})));
 
 
@@ -13658,14 +13822,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var mt = moment.defineLocale('mt', {
 	        months : 'Jannar_Frar_Marzu_April_Mejju_Ġunju_Lulju_Awwissu_Settembru_Ottubru_Novembru_Diċembru'.split('_'),
 	        monthsShort : 'Jan_Fra_Mar_Apr_Mej_Ġun_Lul_Aww_Set_Ott_Nov_Diċ'.split('_'),
@@ -13711,9 +13875,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return mt;
-
+	
 	})));
 
 
@@ -13722,14 +13886,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '၁',
 	        '2': '၂',
@@ -13753,14 +13917,14 @@
 	        '၉': '9',
 	        '၀': '0'
 	    };
-
+	
 	    var my = moment.defineLocale('my', {
 	        months: 'ဇန်နဝါရီ_ဖေဖော်ဝါရီ_မတ်_ဧပြီ_မေ_ဇွန်_ဇူလိုင်_သြဂုတ်_စက်တင်ဘာ_အောက်တိုဘာ_နိုဝင်ဘာ_ဒီဇင်ဘာ'.split('_'),
 	        monthsShort: 'ဇန်_ဖေ_မတ်_ပြီ_မေ_ဇွန်_လိုင်_သြ_စက်_အောက်_နို_ဒီ'.split('_'),
 	        weekdays: 'တနင်္ဂနွေ_တနင်္လာ_အင်္ဂါ_ဗုဒ္ဓဟူး_ကြာသပတေး_သောကြာ_စနေ'.split('_'),
 	        weekdaysShort: 'နွေ_လာ_ဂါ_ဟူး_ကြာ_သော_နေ'.split('_'),
 	        weekdaysMin: 'နွေ_လာ_ဂါ_ဟူး_ကြာ_သော_နေ'.split('_'),
-
+	
 	        longDateFormat: {
 	            LT: 'HH:mm',
 	            LTS: 'HH:mm:ss',
@@ -13808,9 +13972,9 @@
 	            doy: 4 // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return my;
-
+	
 	})));
 
 
@@ -13819,14 +13983,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var nb = moment.defineLocale('nb', {
 	        months : 'januar_februar_mars_april_mai_juni_juli_august_september_oktober_november_desember'.split('_'),
 	        monthsShort : 'jan._feb._mars_april_mai_juni_juli_aug._sep._okt._nov._des.'.split('_'),
@@ -13874,9 +14038,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return nb;
-
+	
 	})));
 
 
@@ -13885,14 +14049,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '१',
 	        '2': '२',
@@ -13917,7 +14081,7 @@
 	        '९': '9',
 	        '०': '0'
 	    };
-
+	
 	    var ne = moment.defineLocale('ne', {
 	        months : 'जनवरी_फेब्रुवरी_मार्च_अप्रिल_मई_जुन_जुलाई_अगष्ट_सेप्टेम्बर_अक्टोबर_नोभेम्बर_डिसेम्बर'.split('_'),
 	        monthsShort : 'जन._फेब्रु._मार्च_अप्रि._मई_जुन_जुलाई._अग._सेप्ट._अक्टो._नोभे._डिसे.'.split('_'),
@@ -14001,9 +14165,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ne;
-
+	
 	})));
 
 
@@ -14012,20 +14176,20 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortWithDots = 'jan._feb._mrt._apr._mei_jun._jul._aug._sep._okt._nov._dec.'.split('_'),
 	        monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
-
+	
 	    var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
 	    var monthsRegex = /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
-
+	
 	    var nl = moment.defineLocale('nl', {
 	        months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
 	        monthsShort : function (m, format) {
@@ -14037,16 +14201,16 @@
 	                return monthsShortWithDots[m.month()];
 	            }
 	        },
-
+	
 	        monthsRegex: monthsRegex,
 	        monthsShortRegex: monthsRegex,
 	        monthsStrictRegex: /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december)/i,
 	        monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
-
+	
 	        monthsParse : monthsParse,
 	        longMonthsParse : monthsParse,
 	        shortMonthsParse : monthsParse,
-
+	
 	        weekdays : 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
 	        weekdaysShort : 'zo._ma._di._wo._do._vr._za.'.split('_'),
 	        weekdaysMin : 'zo_ma_di_wo_do_vr_za'.split('_'),
@@ -14092,9 +14256,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return nl;
-
+	
 	})));
 
 
@@ -14103,20 +14267,20 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsShortWithDots = 'jan._feb._mrt._apr._mei_jun._jul._aug._sep._okt._nov._dec.'.split('_'),
 	        monthsShortWithoutDots = 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_');
-
+	
 	    var monthsParse = [/^jan/i, /^feb/i, /^maart|mrt.?$/i, /^apr/i, /^mei$/i, /^jun[i.]?$/i, /^jul[i.]?$/i, /^aug/i, /^sep/i, /^okt/i, /^nov/i, /^dec/i];
 	    var monthsRegex = /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december|jan\.?|feb\.?|mrt\.?|apr\.?|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i;
-
+	
 	    var nlBe = moment.defineLocale('nl-be', {
 	        months : 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
 	        monthsShort : function (m, format) {
@@ -14128,16 +14292,16 @@
 	                return monthsShortWithDots[m.month()];
 	            }
 	        },
-
+	
 	        monthsRegex: monthsRegex,
 	        monthsShortRegex: monthsRegex,
 	        monthsStrictRegex: /^(januari|februari|maart|april|mei|ju[nl]i|augustus|september|oktober|november|december)/i,
 	        monthsShortStrictRegex: /^(jan\.?|feb\.?|mrt\.?|apr\.?|mei|ju[nl]\.?|aug\.?|sep\.?|okt\.?|nov\.?|dec\.?)/i,
-
+	
 	        monthsParse : monthsParse,
 	        longMonthsParse : monthsParse,
 	        shortMonthsParse : monthsParse,
-
+	
 	        weekdays : 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
 	        weekdaysShort : 'zo._ma._di._wo._do._vr._za.'.split('_'),
 	        weekdaysMin : 'zo_ma_di_wo_do_vr_za'.split('_'),
@@ -14183,9 +14347,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return nlBe;
-
+	
 	})));
 
 
@@ -14194,14 +14358,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var nn = moment.defineLocale('nn', {
 	        months : 'januar_februar_mars_april_mai_juni_juli_august_september_oktober_november_desember'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_mai_jun_jul_aug_sep_okt_nov_des'.split('_'),
@@ -14247,9 +14411,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return nn;
-
+	
 	})));
 
 
@@ -14258,14 +14422,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '੧',
 	        '2': '੨',
@@ -14290,7 +14454,7 @@
 	        '੯': '9',
 	        '੦': '0'
 	    };
-
+	
 	    var paIn = moment.defineLocale('pa-in', {
 	        // There are months name as per Nanakshahi Calendar but they are not used as rigidly in modern Punjabi.
 	        months : 'ਜਨਵਰੀ_ਫ਼ਰਵਰੀ_ਮਾਰਚ_ਅਪ੍ਰੈਲ_ਮਈ_ਜੂਨ_ਜੁਲਾਈ_ਅਗਸਤ_ਸਤੰਬਰ_ਅਕਤੂਬਰ_ਨਵੰਬਰ_ਦਸੰਬਰ'.split('_'),
@@ -14375,9 +14539,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return paIn;
-
+	
 	})));
 
 
@@ -14386,14 +14550,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var monthsNominative = 'styczeń_luty_marzec_kwiecień_maj_czerwiec_lipiec_sierpień_wrzesień_październik_listopad_grudzień'.split('_'),
 	        monthsSubjective = 'stycznia_lutego_marca_kwietnia_maja_czerwca_lipca_sierpnia_września_października_listopada_grudnia'.split('_');
 	    function plural(n) {
@@ -14418,7 +14582,7 @@
 	                return result + (plural(number) ? 'lata' : 'lat');
 	        }
 	    }
-
+	
 	    var pl = moment.defineLocale('pl', {
 	        months : function (momentToFormat, format) {
 	            if (!momentToFormat) {
@@ -14453,16 +14617,16 @@
 	                switch (this.day()) {
 	                    case 0:
 	                        return '[W niedzielę o] LT';
-
+	
 	                    case 2:
 	                        return '[We wtorek o] LT';
-
+	
 	                    case 3:
 	                        return '[W środę o] LT';
-
+	
 	                    case 6:
 	                        return '[W sobotę o] LT';
-
+	
 	                    default:
 	                        return '[W] dddd [o] LT';
 	                }
@@ -14505,9 +14669,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return pl;
-
+	
 	})));
 
 
@@ -14516,14 +14680,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var pt = moment.defineLocale('pt', {
 	        months : 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
 	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
@@ -14574,9 +14738,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return pt;
-
+	
 	})));
 
 
@@ -14585,14 +14749,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ptBr = moment.defineLocale('pt-br', {
 	        months : 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
 	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
@@ -14639,9 +14803,9 @@
 	        dayOfMonthOrdinalParse: /\d{1,2}º/,
 	        ordinal : '%dº'
 	    });
-
+	
 	    return ptBr;
-
+	
 	})));
 
 
@@ -14650,14 +14814,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function relativeTimeWithPlural(number, withoutSuffix, key) {
 	        var format = {
 	                'ss': 'secunde',
@@ -14673,7 +14837,7 @@
 	        }
 	        return number + separator + format[key];
 	    }
-
+	
 	    var ro = moment.defineLocale('ro', {
 	        months : 'ianuarie_februarie_martie_aprilie_mai_iunie_iulie_august_septembrie_octombrie_noiembrie_decembrie'.split('_'),
 	        monthsShort : 'ian._febr._mart._apr._mai_iun._iul._aug._sept._oct._nov._dec.'.split('_'),
@@ -14718,9 +14882,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ro;
-
+	
 	})));
 
 
@@ -14729,14 +14893,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function plural(word, num) {
 	        var forms = word.split('_');
 	        return num % 10 === 1 && num % 100 !== 11 ? forms[0] : (num % 10 >= 2 && num % 10 <= 4 && (num % 100 < 10 || num % 100 >= 20) ? forms[1] : forms[2]);
@@ -14758,7 +14922,7 @@
 	        }
 	    }
 	    var monthsParse = [/^янв/i, /^фев/i, /^мар/i, /^апр/i, /^ма[йя]/i, /^июн/i, /^июл/i, /^авг/i, /^сен/i, /^окт/i, /^ноя/i, /^дек/i];
-
+	
 	    // http://new.gramota.ru/spravka/rules/139-prop : § 103
 	    // Сокращения месяцев: http://new.gramota.ru/spravka/buro/search-answer?s=242637
 	    // CLDR data:          http://www.unicode.org/cldr/charts/28/summary/ru.html#1753
@@ -14782,16 +14946,16 @@
 	        monthsParse : monthsParse,
 	        longMonthsParse : monthsParse,
 	        shortMonthsParse : monthsParse,
-
+	
 	        // полные названия с падежами, по три буквы, для некоторых, по 4 буквы, сокращения с точкой и без точки
 	        monthsRegex: /^(январ[ья]|янв\.?|феврал[ья]|февр?\.?|марта?|мар\.?|апрел[ья]|апр\.?|ма[йя]|июн[ья]|июн\.?|июл[ья]|июл\.?|августа?|авг\.?|сентябр[ья]|сент?\.?|октябр[ья]|окт\.?|ноябр[ья]|нояб?\.?|декабр[ья]|дек\.?)/i,
-
+	
 	        // копия предыдущего
 	        monthsShortRegex: /^(январ[ья]|янв\.?|феврал[ья]|февр?\.?|марта?|мар\.?|апрел[ья]|апр\.?|ма[йя]|июн[ья]|июн\.?|июл[ья]|июл\.?|августа?|авг\.?|сентябр[ья]|сент?\.?|октябр[ья]|окт\.?|ноябр[ья]|нояб?\.?|декабр[ья]|дек\.?)/i,
-
+	
 	        // полные названия с падежами
 	        monthsStrictRegex: /^(январ[яь]|феврал[яь]|марта?|апрел[яь]|ма[яй]|июн[яь]|июл[яь]|августа?|сентябр[яь]|октябр[яь]|ноябр[яь]|декабр[яь])/i,
-
+	
 	        // Выражение, которое соотвествует только сокращённым формам
 	        monthsShortStrictRegex: /^(янв\.|февр?\.|мар[т.]|апр\.|ма[яй]|июн[ья.]|июл[ья.]|авг\.|сент?\.|окт\.|нояб?\.|дек\.)/i,
 	        longDateFormat : {
@@ -14904,9 +15068,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ru;
-
+	
 	})));
 
 
@@ -14915,14 +15079,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = [
 	        'جنوري',
 	        'فيبروري',
@@ -14946,7 +15110,7 @@
 	        'جمع',
 	        'ڇنڇر'
 	    ];
-
+	
 	    var sd = moment.defineLocale('sd', {
 	        months : months,
 	        monthsShort : months,
@@ -15006,9 +15170,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sd;
-
+	
 	})));
 
 
@@ -15017,14 +15181,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var se = moment.defineLocale('se', {
 	        months : 'ođđajagemánnu_guovvamánnu_njukčamánnu_cuoŋománnu_miessemánnu_geassemánnu_suoidnemánnu_borgemánnu_čakčamánnu_golggotmánnu_skábmamánnu_juovlamánnu'.split('_'),
 	        monthsShort : 'ođđj_guov_njuk_cuo_mies_geas_suoi_borg_čakč_golg_skáb_juov'.split('_'),
@@ -15070,9 +15234,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return se;
-
+	
 	})));
 
 
@@ -15081,14 +15245,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    /*jshint -W100*/
 	    var si = moment.defineLocale('si', {
 	        months : 'ජනවාරි_පෙබරවාරි_මාර්තු_අප්‍රේල්_මැයි_ජූනි_ජූලි_අගෝස්තු_සැප්තැම්බර්_ඔක්තෝබර්_නොවැම්බර්_දෙසැම්බර්'.split('_'),
@@ -15145,9 +15309,9 @@
 	            }
 	        }
 	    });
-
+	
 	    return si;
-
+	
 	})));
 
 
@@ -15156,14 +15320,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = 'január_február_marec_apríl_máj_jún_júl_august_september_október_november_december'.split('_'),
 	        monthsShort = 'jan_feb_mar_apr_máj_jún_júl_aug_sep_okt_nov_dec'.split('_');
 	    function plural(n) {
@@ -15228,7 +15392,7 @@
 	                break;
 	        }
 	    }
-
+	
 	    var sk = moment.defineLocale('sk', {
 	        months : months,
 	        monthsShort : monthsShort,
@@ -15305,9 +15469,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sk;
-
+	
 	})));
 
 
@@ -15316,14 +15480,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var result = number + ' ';
 	        switch (key) {
@@ -15405,7 +15569,7 @@
 	                return result;
 	        }
 	    }
-
+	
 	    var sl = moment.defineLocale('sl', {
 	        months : 'januar_februar_marec_april_maj_junij_julij_avgust_september_oktober_november_december'.split('_'),
 	        monthsShort : 'jan._feb._mar._apr._maj._jun._jul._avg._sep._okt._nov._dec.'.split('_'),
@@ -15425,7 +15589,7 @@
 	        calendar : {
 	            sameDay  : '[danes ob] LT',
 	            nextDay  : '[jutri ob] LT',
-
+	
 	            nextWeek : function () {
 	                switch (this.day()) {
 	                    case 0:
@@ -15482,9 +15646,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sl;
-
+	
 	})));
 
 
@@ -15493,14 +15657,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var sq = moment.defineLocale('sq', {
 	        months : 'Janar_Shkurt_Mars_Prill_Maj_Qershor_Korrik_Gusht_Shtator_Tetor_Nëntor_Dhjetor'.split('_'),
 	        monthsShort : 'Jan_Shk_Mar_Pri_Maj_Qer_Kor_Gus_Sht_Tet_Nën_Dhj'.split('_'),
@@ -15554,9 +15718,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sq;
-
+	
 	})));
 
 
@@ -15565,14 +15729,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var translator = {
 	        words: { //Different grammatical cases
 	            ss: ['sekunda', 'sekunde', 'sekundi'],
@@ -15596,7 +15760,7 @@
 	            }
 	        }
 	    };
-
+	
 	    var sr = moment.defineLocale('sr', {
 	        months: 'januar_februar_mart_april_maj_jun_jul_avgust_septembar_oktobar_novembar_decembar'.split('_'),
 	        monthsShort: 'jan._feb._mar._apr._maj_jun_jul_avg._sep._okt._nov._dec.'.split('_'),
@@ -15669,9 +15833,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sr;
-
+	
 	})));
 
 
@@ -15680,14 +15844,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var translator = {
 	        words: { //Different grammatical cases
 	            ss: ['секунда', 'секунде', 'секунди'],
@@ -15711,7 +15875,7 @@
 	            }
 	        }
 	    };
-
+	
 	    var srCyrl = moment.defineLocale('sr-cyrl', {
 	        months: 'јануар_фебруар_март_април_мај_јун_јул_август_септембар_октобар_новембар_децембар'.split('_'),
 	        monthsShort: 'јан._феб._мар._апр._мај_јун_јул_авг._сеп._окт._нов._дец.'.split('_'),
@@ -15784,9 +15948,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return srCyrl;
-
+	
 	})));
 
 
@@ -15795,14 +15959,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ss = moment.defineLocale('ss', {
 	        months : "Bhimbidvwane_Indlovana_Indlov'lenkhulu_Mabasa_Inkhwekhweti_Inhlaba_Kholwane_Ingci_Inyoni_Imphala_Lweti_Ingongoni".split('_'),
 	        monthsShort : 'Bhi_Ina_Inu_Mab_Ink_Inh_Kho_Igc_Iny_Imp_Lwe_Igo'.split('_'),
@@ -15876,9 +16040,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ss;
-
+	
 	})));
 
 
@@ -15887,14 +16051,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var sv = moment.defineLocale('sv', {
 	        months : 'januari_februari_mars_april_maj_juni_juli_augusti_september_oktober_november_december'.split('_'),
 	        monthsShort : 'jan_feb_mar_apr_maj_jun_jul_aug_sep_okt_nov_dec'.split('_'),
@@ -15949,9 +16113,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sv;
-
+	
 	})));
 
 
@@ -15960,14 +16124,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var sw = moment.defineLocale('sw', {
 	        months : 'Januari_Februari_Machi_Aprili_Mei_Juni_Julai_Agosti_Septemba_Oktoba_Novemba_Desemba'.split('_'),
 	        monthsShort : 'Jan_Feb_Mac_Apr_Mei_Jun_Jul_Ago_Sep_Okt_Nov_Des'.split('_'),
@@ -16012,9 +16176,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return sw;
-
+	
 	})));
 
 
@@ -16023,14 +16187,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var symbolMap = {
 	        '1': '௧',
 	        '2': '௨',
@@ -16054,7 +16218,7 @@
 	        '௯': '9',
 	        '௦': '0'
 	    };
-
+	
 	    var ta = moment.defineLocale('ta', {
 	        months : 'ஜனவரி_பிப்ரவரி_மார்ச்_ஏப்ரல்_மே_ஜூன்_ஜூலை_ஆகஸ்ட்_செப்டெம்பர்_அக்டோபர்_நவம்பர்_டிசம்பர்'.split('_'),
 	        monthsShort : 'ஜனவரி_பிப்ரவரி_மார்ச்_ஏப்ரல்_மே_ஜூன்_ஜூலை_ஆகஸ்ட்_செப்டெம்பர்_அக்டோபர்_நவம்பர்_டிசம்பர்'.split('_'),
@@ -16145,9 +16309,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ta;
-
+	
 	})));
 
 
@@ -16156,14 +16320,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var te = moment.defineLocale('te', {
 	        months : 'జనవరి_ఫిబ్రవరి_మార్చి_ఏప్రిల్_మే_జూన్_జులై_ఆగస్టు_సెప్టెంబర్_అక్టోబర్_నవంబర్_డిసెంబర్'.split('_'),
 	        monthsShort : 'జన._ఫిబ్ర._మార్చి_ఏప్రి._మే_జూన్_జులై_ఆగ._సెప్._అక్టో._నవ._డిసె.'.split('_'),
@@ -16238,9 +16402,9 @@
 	            doy : 6  // The week that contains Jan 6th is the first week of the year.
 	        }
 	    });
-
+	
 	    return te;
-
+	
 	})));
 
 
@@ -16249,14 +16413,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var tet = moment.defineLocale('tet', {
 	        months : 'Janeiru_Fevereiru_Marsu_Abril_Maiu_Juñu_Jullu_Agustu_Setembru_Outubru_Novembru_Dezembru'.split('_'),
 	        monthsShort : 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
@@ -16309,9 +16473,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tet;
-
+	
 	})));
 
 
@@ -16320,14 +16484,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var suffixes = {
 	        0: '-ум',
 	        1: '-ум',
@@ -16352,7 +16516,7 @@
 	        90: '-ум',
 	        100: '-ум'
 	    };
-
+	
 	    var tg = moment.defineLocale('tg', {
 	        months : 'январ_феврал_март_апрел_май_июн_июл_август_сентябр_октябр_ноябр_декабр'.split('_'),
 	        monthsShort : 'янв_фев_мар_апр_май_июн_июл_авг_сен_окт_ноя_дек'.split('_'),
@@ -16429,9 +16593,9 @@
 	            doy : 7  // The week that contains Jan 1th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tg;
-
+	
 	})));
 
 
@@ -16440,14 +16604,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var th = moment.defineLocale('th', {
 	        months : 'มกราคม_กุมภาพันธ์_มีนาคม_เมษายน_พฤษภาคม_มิถุนายน_กรกฎาคม_สิงหาคม_กันยายน_ตุลาคม_พฤศจิกายน_ธันวาคม'.split('_'),
 	        monthsShort : 'ม.ค._ก.พ._มี.ค._เม.ย._พ.ค._มิ.ย._ก.ค._ส.ค._ก.ย._ต.ค._พ.ย._ธ.ค.'.split('_'),
@@ -16500,9 +16664,9 @@
 	            yy : '%d ปี'
 	        }
 	    });
-
+	
 	    return th;
-
+	
 	})));
 
 
@@ -16511,14 +16675,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var tlPh = moment.defineLocale('tl-ph', {
 	        months : 'Enero_Pebrero_Marso_Abril_Mayo_Hunyo_Hulyo_Agosto_Setyembre_Oktubre_Nobyembre_Disyembre'.split('_'),
 	        monthsShort : 'Ene_Peb_Mar_Abr_May_Hun_Hul_Ago_Set_Okt_Nob_Dis'.split('_'),
@@ -16566,9 +16730,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tlPh;
-
+	
 	})));
 
 
@@ -16577,16 +16741,16 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var numbersNouns = 'pagh_wa’_cha’_wej_loS_vagh_jav_Soch_chorgh_Hut'.split('_');
-
+	
 	    function translateFuture(output) {
 	        var time = output;
 	        time = (output.indexOf('jaj') !== -1) ?
@@ -16598,7 +16762,7 @@
 	        time + ' pIq';
 	        return time;
 	    }
-
+	
 	    function translatePast(output) {
 	        var time = output;
 	        time = (output.indexOf('jaj') !== -1) ?
@@ -16610,7 +16774,7 @@
 	        time + ' ret';
 	        return time;
 	    }
-
+	
 	    function translate(number, withoutSuffix, string, isFuture) {
 	        var numberNoun = numberAsNoun(number);
 	        switch (string) {
@@ -16628,7 +16792,7 @@
 	                return numberNoun + ' DIS';
 	        }
 	    }
-
+	
 	    function numberAsNoun(number) {
 	        var hundred = Math.floor((number % 1000) / 100),
 	        ten = Math.floor((number % 100) / 10),
@@ -16645,7 +16809,7 @@
 	        }
 	        return (word === '') ? 'pagh' : word;
 	    }
-
+	
 	    var tlh = moment.defineLocale('tlh', {
 	        months : 'tera’ jar wa’_tera’ jar cha’_tera’ jar wej_tera’ jar loS_tera’ jar vagh_tera’ jar jav_tera’ jar Soch_tera’ jar chorgh_tera’ jar Hut_tera’ jar wa’maH_tera’ jar wa’maH wa’_tera’ jar wa’maH cha’'.split('_'),
 	        monthsShort : 'jar wa’_jar cha’_jar wej_jar loS_jar vagh_jar jav_jar Soch_jar chorgh_jar Hut_jar wa’maH_jar wa’maH wa’_jar wa’maH cha’'.split('_'),
@@ -16692,9 +16856,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tlh;
-
+	
 	})));
 
 
@@ -16708,7 +16872,7 @@
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
+	
 	    var suffixes = {
 	        1: '\'inci',
 	        5: '\'inci',
@@ -16729,7 +16893,7 @@
 	        60: '\'ıncı',
 	        90: '\'ıncı'
 	    };
-
+	
 	    var tr = moment.defineLocale('tr', {
 	        months : 'Ocak_Şubat_Mart_Nisan_Mayıs_Haziran_Temmuz_Ağustos_Eylül_Ekim_Kasım_Aralık'.split('_'),
 	        monthsShort : 'Oca_Şub_Mar_Nis_May_Haz_Tem_Ağu_Eyl_Eki_Kas_Ara'.split('_'),
@@ -16790,9 +16954,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tr;
-
+	
 	})));
 
 
@@ -16801,14 +16965,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    // After the year there should be a slash and the amount of years since December 26, 1979 in Roman numerals.
 	    // This is currently too difficult (maybe even impossible) to add.
 	    var tzl = moment.defineLocale('tzl', {
@@ -16867,7 +17031,7 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    function processRelativeTime(number, withoutSuffix, key, isFuture) {
 	        var format = {
 	            's': ['viensas secunds', '\'iensas secunds'],
@@ -16885,9 +17049,9 @@
 	        };
 	        return isFuture ? format[key][0] : (withoutSuffix ? format[key][0] : format[key][1]);
 	    }
-
+	
 	    return tzl;
-
+	
 	})));
 
 
@@ -16896,14 +17060,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var tzm = moment.defineLocale('tzm', {
 	        months : 'ⵉⵏⵏⴰⵢⵔ_ⴱⵕⴰⵢⵕ_ⵎⴰⵕⵚ_ⵉⴱⵔⵉⵔ_ⵎⴰⵢⵢⵓ_ⵢⵓⵏⵢⵓ_ⵢⵓⵍⵢⵓⵣ_ⵖⵓⵛⵜ_ⵛⵓⵜⴰⵏⴱⵉⵔ_ⴽⵟⵓⴱⵕ_ⵏⵓⵡⴰⵏⴱⵉⵔ_ⴷⵓⵊⵏⴱⵉⵔ'.split('_'),
 	        monthsShort : 'ⵉⵏⵏⴰⵢⵔ_ⴱⵕⴰⵢⵕ_ⵎⴰⵕⵚ_ⵉⴱⵔⵉⵔ_ⵎⴰⵢⵢⵓ_ⵢⵓⵏⵢⵓ_ⵢⵓⵍⵢⵓⵣ_ⵖⵓⵛⵜ_ⵛⵓⵜⴰⵏⴱⵉⵔ_ⴽⵟⵓⴱⵕ_ⵏⵓⵡⴰⵏⴱⵉⵔ_ⴷⵓⵊⵏⴱⵉⵔ'.split('_'),
@@ -16947,9 +17111,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tzm;
-
+	
 	})));
 
 
@@ -16958,14 +17122,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var tzmLatn = moment.defineLocale('tzm-latn', {
 	        months : 'innayr_brˤayrˤ_marˤsˤ_ibrir_mayyw_ywnyw_ywlywz_ɣwšt_šwtanbir_ktˤwbrˤ_nwwanbir_dwjnbir'.split('_'),
 	        monthsShort : 'innayr_brˤayrˤ_marˤsˤ_ibrir_mayyw_ywnyw_ywlywz_ɣwšt_šwtanbir_ktˤwbrˤ_nwwanbir_dwjnbir'.split('_'),
@@ -17009,9 +17173,9 @@
 	            doy : 12  // The week that contains Jan 12th is the first week of the year.
 	        }
 	    });
-
+	
 	    return tzmLatn;
-
+	
 	})));
 
 
@@ -17020,14 +17184,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js language configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var ugCn = moment.defineLocale('ug-cn', {
 	        months: 'يانۋار_فېۋرال_مارت_ئاپرېل_ماي_ئىيۇن_ئىيۇل_ئاۋغۇست_سېنتەبىر_ئۆكتەبىر_نويابىر_دېكابىر'.split(
 	            '_'
@@ -17105,7 +17269,7 @@
 	            y: 'بىر يىل',
 	            yy: '%d يىل'
 	        },
-
+	
 	        dayOfMonthOrdinalParse: /\d{1,2}(-كۈنى|-ئاي|-ھەپتە)/,
 	        ordinal: function (number, period) {
 	            switch (period) {
@@ -17132,9 +17296,9 @@
 	            doy: 7 // The week that contains Jan 1st is the first week of the year.
 	        }
 	    });
-
+	
 	    return ugCn;
-
+	
 	})));
 
 
@@ -17143,14 +17307,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    function plural(word, num) {
 	        var forms = word.split('_');
 	        return num % 10 === 1 && num % 100 !== 11 ? forms[0] : (num % 10 >= 2 && num % 10 <= 4 && (num % 100 < 10 || num % 100 >= 20) ? forms[1] : forms[2]);
@@ -17180,14 +17344,14 @@
 	            'accusative': 'неділю_понеділок_вівторок_середу_четвер_п’ятницю_суботу'.split('_'),
 	            'genitive': 'неділі_понеділка_вівторка_середи_четверга_п’ятниці_суботи'.split('_')
 	        };
-
+	
 	        if (m === true) {
 	            return weekdays['nominative'].slice(1, 7).concat(weekdays['nominative'].slice(0, 1));
 	        }
 	        if (!m) {
 	            return weekdays['nominative'];
 	        }
-
+	
 	        var nounCase = (/(\[[ВвУу]\]) ?dddd/).test(format) ?
 	            'accusative' :
 	            ((/\[?(?:минулої|наступної)? ?\] ?dddd/).test(format) ?
@@ -17200,7 +17364,7 @@
 	            return str + 'о' + (this.hours() === 11 ? 'б' : '') + '] LT';
 	        };
 	    }
-
+	
 	    var uk = moment.defineLocale('uk', {
 	        months : {
 	            'format': 'січня_лютого_березня_квітня_травня_червня_липня_серпня_вересня_жовтня_листопада_грудня'.split('_'),
@@ -17290,9 +17454,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return uk;
-
+	
 	})));
 
 
@@ -17301,14 +17465,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var months = [
 	        'جنوری',
 	        'فروری',
@@ -17332,7 +17496,7 @@
 	        'جمعہ',
 	        'ہفتہ'
 	    ];
-
+	
 	    var ur = moment.defineLocale('ur', {
 	        months : months,
 	        monthsShort : months,
@@ -17392,9 +17556,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return ur;
-
+	
 	})));
 
 
@@ -17403,14 +17567,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var uz = moment.defineLocale('uz', {
 	        months : 'январ_феврал_март_апрел_май_июн_июл_август_сентябр_октябр_ноябр_декабр'.split('_'),
 	        monthsShort : 'янв_фев_мар_апр_май_июн_июл_авг_сен_окт_ноя_дек'.split('_'),
@@ -17454,9 +17618,9 @@
 	            doy : 7  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return uz;
-
+	
 	})));
 
 
@@ -17465,14 +17629,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var uzLatn = moment.defineLocale('uz-latn', {
 	        months : 'Yanvar_Fevral_Mart_Aprel_May_Iyun_Iyul_Avgust_Sentabr_Oktabr_Noyabr_Dekabr'.split('_'),
 	        monthsShort : 'Yan_Fev_Mar_Apr_May_Iyun_Iyul_Avg_Sen_Okt_Noy_Dek'.split('_'),
@@ -17516,9 +17680,9 @@
 	            doy : 7  // The week that contains Jan 7th is the first week of the year.
 	        }
 	    });
-
+	
 	    return uzLatn;
-
+	
 	})));
 
 
@@ -17527,14 +17691,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var vi = moment.defineLocale('vi', {
 	        months : 'tháng 1_tháng 2_tháng 3_tháng 4_tháng 5_tháng 6_tháng 7_tháng 8_tháng 9_tháng 10_tháng 11_tháng 12'.split('_'),
 	        monthsShort : 'Th01_Th02_Th03_Th04_Th05_Th06_Th07_Th08_Th09_Th10_Th11_Th12'.split('_'),
@@ -17599,9 +17763,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return vi;
-
+	
 	})));
 
 
@@ -17610,14 +17774,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var xPseudo = moment.defineLocale('x-pseudo', {
 	        months : 'J~áñúá~rý_F~ébrú~árý_~Márc~h_Áp~ríl_~Máý_~Júñé~_Júl~ý_Áú~gúst~_Sép~témb~ér_Ó~ctób~ér_Ñ~óvém~bér_~Décé~mbér'.split('_'),
 	        monthsShort : 'J~áñ_~Féb_~Már_~Ápr_~Máý_~Júñ_~Júl_~Áúg_~Sép_~Óct_~Ñóv_~Déc'.split('_'),
@@ -17671,9 +17835,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return xPseudo;
-
+	
 	})));
 
 
@@ -17682,14 +17846,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var yo = moment.defineLocale('yo', {
 	        months : 'Sẹ́rẹ́_Èrèlè_Ẹrẹ̀nà_Ìgbé_Èbibi_Òkùdu_Agẹmo_Ògún_Owewe_Ọ̀wàrà_Bélú_Ọ̀pẹ̀̀'.split('_'),
 	        monthsShort : 'Sẹ́r_Èrl_Ẹrn_Ìgb_Èbi_Òkù_Agẹ_Ògú_Owe_Ọ̀wà_Bél_Ọ̀pẹ̀̀'.split('_'),
@@ -17735,9 +17899,9 @@
 	            doy : 4 // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return yo;
-
+	
 	})));
 
 
@@ -17746,14 +17910,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var zhCn = moment.defineLocale('zh-cn', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
@@ -17849,9 +18013,9 @@
 	            doy : 4  // The week that contains Jan 4th is the first week of the year.
 	        }
 	    });
-
+	
 	    return zhCn;
-
+	
 	})));
 
 
@@ -17860,14 +18024,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var zhHk = moment.defineLocale('zh-hk', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
@@ -17956,9 +18120,9 @@
 	            yy : '%d 年'
 	        }
 	    });
-
+	
 	    return zhHk;
-
+	
 	})));
 
 
@@ -17967,14 +18131,14 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	//! moment.js locale configuration
-
+	
 	;(function (global, factory) {
 	    true ? factory(__webpack_require__(5)) :
 	   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
 	   factory(global.moment)
 	}(this, (function (moment) { 'use strict';
-
-
+	
+	
 	    var zhTw = moment.defineLocale('zh-tw', {
 	        months : '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'),
 	        monthsShort : '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'),
@@ -18063,9 +18227,9 @@
 	            yy : '%d 年'
 	        }
 	    });
-
+	
 	    return zhTw;
-
+	
 	})));
 
 
@@ -18080,21 +18244,21 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
+	
 	var _moment = __webpack_require__(5);
-
+	
 	var _moment2 = _interopRequireDefault(_moment);
-
+	
 	var _resellers_dashboardSummaryHtml = __webpack_require__(137);
-
+	
 	var _resellers_dashboardSummaryHtml2 = _interopRequireDefault(_resellers_dashboardSummaryHtml);
-
+	
 	// var oneMonthAgo = moment().subtract(1, 'months').toDate();
 	var dateObj = new Date();
 	var year = dateObj.getFullYear();
@@ -18103,12 +18267,12 @@
 	var datenow = year + "-" + monthnow;
 	var oneMonthAgo = ("0" + dateObj.getMonth()).slice(-2);
 	var dateOneMonthAgo = year + "-" + oneMonthAgo;
-
+	
 	var has_seen_alert = false;
-
+	
 	function resellersdashboardSummary(Restangular) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {},
@@ -18119,7 +18283,7 @@
 	                has_seen_alert = true;
 	                $scope.has_seen_alert = true;
 	            };
-
+	
 	            //my sales this month
 	            Restangular.all('sales_by_month?distributorname=' + localStorage.userName + '').getList().then(function (response) {
 	                var data = response.data;
@@ -18138,7 +18302,7 @@
 	                    $scope.stats.this_month = response.data[number].count;
 	                }
 	            });
-
+	
 	            //my sales last month
 	            Restangular.all('sales_by_month?distributorname=' + localStorage.userName + '').getList().then(function (response) {
 	                var data = response.data;
@@ -18157,7 +18321,7 @@
 	                    $scope.stats.last_month = response.data[number].count;
 	                }
 	            });
-
+	
 	            //my sales this year
 	            Restangular.all('sales_by_month?distributorname=' + localStorage.userName + '&startsaledate=' + year + '-01-01&endsaledate=' + year + '-12-31').getList().then(function (response) {
 	                var data = response.data;
@@ -18174,7 +18338,7 @@
 	                    $scope.stats.this_year = sum;
 	                }
 	            });
-
+	
 	            //my sales last year
 	            Restangular.all('sales_by_month?distributorname=' + localStorage.userName + '&startsaledate=' + yearago + '-01-01&endsaledate=' + yearago + '-12-31').getList().then(function (response) {
 	                var data = response.data;
@@ -18195,9 +18359,9 @@
 	        template: _resellers_dashboardSummaryHtml2['default']
 	    };
 	}
-
+	
 	resellersdashboardSummary.$inject = ['Restangular'];
-
+	
 	exports['default'] = resellersdashboardSummary;
 	module.exports = exports['default'];
 
@@ -18212,58 +18376,58 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
+	
 	var _graphsHtml = __webpack_require__(139);
-
+	
 	var _graphsHtml2 = _interopRequireDefault(_graphsHtml);
-
+	
 	function graph(Restangular) {
 		'use strict';
-
+	
 		return {
 			restrict: 'E',
 			scope: {},
 			controller: function controller($scope, VisDataSet) {
-
+	
 				$scope.onSelect = function (items) {
 					// debugger;
 					alert('select');
 				};
-
+	
 				$scope.onClick = function (props) {
 					//debugger;
 					alert('Click');
 				};
-
+	
 				$scope.onDoubleClick = function (props) {
 					// debugger;
 					alert('DoubleClick');
 				};
-
+	
 				$scope.rightClick = function (props) {
 					alert('Right click!');
 					props.event.preventDefault();
 				};
-
+	
 				$scope.options = {
 					//stack: false,
 					//style:'bar',
 					//barChart: {width:50, align:'center'}, // align: left, center, right
 					//drawPoints: false,
-
+	
 					start: '2017-05-05',
 					end: Date.now(),
-
+	
 					editable: true
-
+	
 				};
-
+	
 				//orientation: 'top'
 				var items = [{ x: '2014-06-11', y: 10 }, { x: '2014-06-12', y: 25 }, { x: '2014-06-13', y: 30 }, { x: '2014-06-14', y: 10 }, { x: '2014-06-15', y: 15 }, { x: '2014-06-16', y: 30 }];
 				// Model Test
@@ -18271,7 +18435,7 @@
 			template: _graphsHtml2['default']
 		};
 	}
-
+	
 	graph.$inject = ['Restangular'];
 	exports['default'] = graph;
 	module.exports = exports['default'];
@@ -18284,16 +18448,107 @@
 
 /***/ }),
 /* 140 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _activeDevicesChartHtml = __webpack_require__(141);
+	
+	var _activeDevicesChartHtml2 = _interopRequireDefault(_activeDevicesChartHtml);
+	
+	exports['default'] = function ($stateProvider) {
+	    $stateProvider.state('reports/active_devices', {
+	        parent: 'main',
+	        url: '/activeDevicesChart',
+	        params: {},
+	
+	        controller: function controller(Restangular, $scope, VisDataSet, notification) {
+	
+	            $scope.options = {
+	                style: 'bar',
+	                barChart: { width: 50, align: 'center' }, // align: left, center, right
+	                drawPoints: false,
+	                dataAxis: {
+	                    icons: true
+	                },
+	                orientation: 'top',
+	                start: new Date().setDate(new Date('1/1/2019').getDate() - 240)
+	            };
+	
+	            Restangular.all('reports/active_devices').getList().then(function (response) {
+	                if (response.data) var res = response.data;else var res = response;
+	
+	                $scope.options = {
+	                    style: 'bar',
+	                    barChart: { width: 50, align: 'center' }, // align: left, center, right
+	                    drawPoints: false,
+	                    dataAxis: {
+	                        icons: true
+	                    },
+	                    orientation: 'top',
+	                    // start: new Date('1/1/2019').getDate() + 180,
+	                    start: new Date().setDate(new Date('1/1/2019').getDate() - 240),
+	                    end: new Date().setDate(new Date(res[res.length - 1].date).getDate() + 185),
+	                    zoomable: false
+	                };
+	                var mapData = function mapData(items, id) {
+	                    return items.map(function (item) {
+	                        if (item.appid === id) {
+	                            return {
+	                                x: new Date(item.date).setDate(1),
+	                                y: item.total
+	                            };
+	                        } else return { x: 0, y: 0 };
+	                    });
+	                };
+	                $scope.active_devices_chart_1 = {
+	                    items: mapData(res, 1)
+	                };
+	                $scope.active_devices_chart_2 = {
+	                    items: mapData(res, 2)
+	                };
+	                $scope.active_devices_chart_3 = {
+	                    items: mapData(res, 3)
+	                };
+	                $scope.active_devices_chart_4 = {
+	                    items: mapData(res, 4)
+	                };
+	            })['catch'](function (err) {
+	                winston.error("Failed to fetch data from endpoint /reports/active_devices, error: ", err);
+	                notification.log(err, { addnCls: 'humane-flatty-error' });
+	            });
+	        },
+	
+	        template: _activeDevicesChartHtml2['default']
+	    });
+	};
+	
+	module.exports = exports['default'];
+
+/***/ }),
+/* 141 */
+/***/ (function(module, exports) {
+
+	module.exports = "<h3>Box</h3>\r\n<vis-graph2d id=\"visualization\" data=\"active_devices_chart_1\" options=\"options\">\r\n</vis-graph2d>\r\n<br>\r\n<br>\r\n<h3>Android <Mobile></Mobile></h3>\r\n<vis-graph2d id=\"visualization\" data=\"active_devices_chart_2\" options=\"options\">\r\n</vis-graph2d>\r\n<br>\r\n<br>\r\n<h3>iOS</h3>\r\n<vis-graph2d id=\"visualization\" data=\"active_devices_chart_3\" options=\"options\">\r\n</vis-graph2d>\r\n<br>\r\n<br>\r\n<h3>Smart Tv</h3>\r\n<vis-graph2d id=\"visualization\" data=\"active_devices_chart_4\" options=\"options\">\r\n</vis-graph2d>";
+
+/***/ }),
+/* 142 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function sendpush(Restangular, $uibModal, $q, notification, $state) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18303,28 +18558,28 @@
 	            ngConfirm: '&'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.icon = 'glyphicon-plus';
-
+	
 	            if (attrs.type == 'softwareupdate') scope.label = 'Send Update Request';
 	            if (attrs.type == 'deletedata') scope.label = 'Send Delete Data Request';
 	            if (attrs.type == 'deletesharedpreferences') scope.label = 'Send Delete Shared Pref Request';
-
+	
 	            scope.modal = function () {
 	                element.bind('click', function () {
 	                    var modalInstance = $uibModal.open({
 	                        template: '<div class="modal-header">' + '<h5 class="modal-title">Are you sure ? (' + scope.label + ')</h5>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' + '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>' + '</div>',
 	                        controller: ('main', ['$scope', '$uibModalInstance', 'confirmClick', 'confirmMessge', function ($scope, $uibModalInstance, confirmClick, confirmMessge) {
-
+	
 	                            $scope.confirmMessage = confirmMessge;
-
+	
 	                            function closeModal() {
-
+	
 	                                $uibModalInstance.dismiss('cancel');
 	                            }
-
+	
 	                            $scope.ok = function () {
-
+	
 	                                closeModal();
 	                                $q.all(scope.selection.map(function (e) {
 	                                    return Restangular.one('send-message-action').customPOST({ deviceid: e.values.id, messageaction: attrs.type });
@@ -18334,7 +18589,7 @@
 	                                    return notification.log('A problem occurred, please try again', { addnCls: 'humane-flatty-error' }) && console.error(e);
 	                                });
 	                            };
-
+	
 	                            $scope.cancel = function () {
 	                                closeModal();
 	                            };
@@ -18356,24 +18611,24 @@
 	        template: '<span ng-click="modal()"><span class="glyphicon {{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</span>'
 	    };
 	}
-
+	
 	sendpush.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state'];
-
+	
 	exports['default'] = sendpush;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 141 */
+/* 143 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function sale(Restangular, $uibModal, $q, notification, $state) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18383,25 +18638,25 @@
 	            ngConfirm: '&'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.icon = 'glyphicon-plus';
-
+	
 	            if (attrs.type == 'cancel_sale') scope.label = 'Annul selected sales';
-
+	
 	            scope.modal = function () {
 	                element.bind('click', function () {
 	                    var modalInstance = $uibModal.open({
 	                        template: '<div class="modal-header">' + '<h5 class="modal-title">Are you sure ? (' + scope.label + ')</h5>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' + '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>' + '</div>',
 	                        controller: ('main', ['$scope', '$uibModalInstance', 'confirmClick', 'confirmMessge', function ($scope, $uibModalInstance, confirmClick, confirmMessge) {
-
+	
 	                            $scope.confirmMessage = confirmMessge;
-
+	
 	                            function closeModal() {
 	                                $uibModalInstance.dismiss('cancel');
 	                            }
-
+	
 	                            $scope.ok = function () {
-
+	
 	                                closeModal();
 	                                $q.all(scope.selection.map(function (e) {
 	                                    return Restangular.one('annul').customPOST({ sale_id: e.values.id, username: e.values.user_username, login_id: e.values.login_data_id, product: e.values.combo_id });
@@ -18410,7 +18665,7 @@
 	                                });
 	                                $state.reload(); //action is performed, reload page with latest data
 	                            };
-
+	
 	                            $scope.cancel = function () {
 	                                closeModal();
 	                            };
@@ -18432,24 +18687,24 @@
 	        template: '<span ng-click="modal()"><span class="glyphicon {{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</span>'
 	    };
 	}
-
+	
 	sale.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state'];
-
+	
 	exports['default'] = sale;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 142 */
+/* 144 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function sale(Restangular, $uibModal, $q, notification, $state) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18459,23 +18714,23 @@
 	            ngConfirm: '&'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.icon = 'glyphicon-plus';
-
+	
 	            if (attrs.type == 'update_film') scope.label = 'Update selected film(s)';
-
+	
 	            scope.modal = function () {
 	                element.bind('click', function () {
 	                    var modalInstance = $uibModal.open({
 	                        template: '<div class="modal-header">' + '<h5 class="modal-title">Are you sure ? (' + scope.label + ')</h5>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' + '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>' + '</div>',
 	                        controller: ('main', ['$scope', '$uibModalInstance', 'confirmClick', 'confirmMessge', function ($scope, $uibModalInstance, confirmClick, confirmMessge) {
-
+	
 	                            $scope.confirmMessage = confirmMessge;
-
+	
 	                            function closeModal() {
 	                                $uibModalInstance.dismiss('cancel');
 	                            }
-
+	
 	                            $scope.ok = function () {
 	                                closeModal();
 	                                $q.all(scope.selection.map(function (e) {
@@ -18485,7 +18740,7 @@
 	                                });
 	                                $state.reload(); //action is performed, reload page with latest data
 	                            };
-
+	
 	                            $scope.cancel = function () {
 	                                closeModal();
 	                            };
@@ -18507,24 +18762,24 @@
 	        template: '<span ng-click="modal()"><span class="glyphicon {{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</span>'
 	    };
 	}
-
+	
 	sale.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state'];
-
+	
 	exports['default'] = sale;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 143 */
+/* 145 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function move(Restangular, $uibModal, $q, notification, $state, $http) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18534,41 +18789,41 @@
 	            ngConfirm: '&'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.myFunction = function () {
 	                var spanDropdown = document.querySelectorAll('span.btn-group')[0];
 	                spanDropdown.classList.add("open");
 	            };
-
+	
 	            scope.icon = 'glyphicon-list';
 	            if (attrs.type == 'move_to_package') scope.button = 'Move to Package';
 	            var vods_array = [];
-
+	
 	            $http.get('../api/vodpackages?package_type_id=3&package_type_id=4').then(function (response) {
 	                var data = response.data;
 	                for (var i = 0; i < data.length; i++) {
 	                    vods_array.push({ name: data[i].package_name, id: data[i].id });
 	                }
 	            });
-
+	
 	            scope.list_of_vods = vods_array;
 	            var newarray = [];
-
+	
 	            scope.moveto = function () {
-
+	
 	                var spanDropdown = document.querySelectorAll('span.btn-group')[0];
 	                spanDropdown.classList.remove("open");
-
+	
 	                var array_of_selection_vod = scope.selection;
-
+	
 	                scope.change = function (name, id) {
 	                    scope.button = name;
 	                    var id_of_selected_package = id;
-
+	
 	                    for (var j = 0; j < array_of_selection_vod.length; j++) {
 	                        newarray.push({ package_id: id_of_selected_package, vod_id: array_of_selection_vod[j].values.id });
 	                    }
-
+	
 	                    if (newarray.length === 0) {
 	                        notification.log('Sorry, you have not selected any Vod item.', { addnCls: 'humane-flatty-error' });
 	                    } else {
@@ -18587,78 +18842,10 @@
 	        template: '<div class="btn-group" uib-dropdown is-open="status.isopen"> ' + '<button ng-click="myFunction()" id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">' + '<span class="glyphicon {{icon}}"></span> {{button}} <span class="caret"></span>' + '</button>' + '<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">' + '<li role="menuitem" ng-click="change(choice.name,choice.id)"  ng-repeat="choice in list_of_vods">' + '<p id="paragraph_vod" ng-click="moveto()">{{choice.name}}</p>' + '</li>' + '</ul>' + '</div>'
 	    };
 	}
-
+	
 	move.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
+	
 	exports['default'] = move;
-	module.exports = exports['default'];
-
-/***/ }),
-/* 144 */
-/***/ (function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-	function generate(Restangular, $uibModal, $q, notification, $state, $http) {
-	    'use strict';
-
-	    return {
-	        restrict: 'E',
-	        scope: { post: '&' },
-	        link: function link(scope) {
-	            scope.generate = function () {
-
-	                function guid() {
-	                    return "ssssssss".replace(/s/g, s4);
-	                }
-
-	                function s4() {
-	                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-	                }
-
-	                scope.post().values.jwtoken = guid();
-	            };
-	        },
-	        template: '<a class="btn btn-default btn-xs" ng-click="generate()"><i class="fa fa-key fa-lg"></i>&nbsp;Generate Api Key</a>'
-	    };
-	}
-
-	generate.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
-	exports['default'] = generate;
-	module.exports = exports['default'];
-
-/***/ }),
-/* 145 */
-/***/ (function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-	function roles(Restangular, $uibModal, $q, notification, $state, $http) {
-	    'use strict';
-
-	    return {
-	        restrict: 'E',
-	        scope: { post: '&' },
-	        link: function link(scope) {
-	            scope.goToRoles = function () {
-
-	                location.replace("/admin/#/Groups/list");
-	            };
-	        },
-	        template: '<a class="btn btn-default btn-md" ng-click="goToRoles()"><i class="fa fa-share fa-md"></i>&nbsp;Roles</a>'
-	    };
-	}
-
-	roles.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
-	exports['default'] = roles;
 	module.exports = exports['default'];
 
 /***/ }),
@@ -18666,13 +18853,81 @@
 /***/ (function(module, exports) {
 
 	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	function generate(Restangular, $uibModal, $q, notification, $state, $http) {
+	    'use strict';
+	
+	    return {
+	        restrict: 'E',
+	        scope: { post: '&' },
+	        link: function link(scope) {
+	            scope.generate = function () {
+	
+	                function guid() {
+	                    return "ssssssss".replace(/s/g, s4);
+	                }
+	
+	                function s4() {
+	                    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+	                }
+	
+	                scope.post().values.jwtoken = guid();
+	            };
+	        },
+	        template: '<a class="btn btn-default btn-xs" ng-click="generate()"><i class="fa fa-key fa-lg"></i>&nbsp;Generate Api Key</a>'
+	    };
+	}
+	
+	generate.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
+	
+	exports['default'] = generate;
+	module.exports = exports['default'];
 
+/***/ }),
+/* 147 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	function roles(Restangular, $uibModal, $q, notification, $state, $http) {
+	    'use strict';
+	
+	    return {
+	        restrict: 'E',
+	        scope: { post: '&' },
+	        link: function link(scope) {
+	            scope.goToRoles = function () {
+	
+	                location.replace("/admin/#/Groups/list");
+	            };
+	        },
+	        template: '<a class="btn btn-default btn-md" ng-click="goToRoles()"><i class="fa fa-share fa-md"></i>&nbsp;Roles</a>'
+	    };
+	}
+	
+	roles.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
+	
+	exports['default'] = roles;
+	module.exports = exports['default'];
+
+/***/ }),
+/* 148 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function allowMenu(Restangular, $state, notification) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18681,10 +18936,10 @@
 	        },
 	        link: function link(scope, element, attrs) {
 	            var obj = scope.$parent.datastore._entries; //saves group-related data into variable obj
-
+	
 	            scope.review = scope.review();
 	            scope.type = attrs.type;
-
+	
 	            if (scope.review.values['grouprights.allow'] === 1) {
 	                scope.buttonText = 'Allow';
 	                scope.buttonClass = 'allowButton';
@@ -18692,23 +18947,23 @@
 	                scope.buttonText = 'Denied';
 	                scope.buttonClass = 'deniedButton';
 	            }
-
+	
 	            scope.approve = function (method, value) {
-
+	
 	                if (!value) value = true;else value = !value;
-
+	
 	                var group_id; //will store the id of the group whose rights are being changed
 	                for (var i = 0; i < Object.keys(obj).length; i++) {
 	                    if (Object.keys(obj)[i].indexOf('Groups_') !== -1) {
 	                        group_id = obj[Object.keys(obj)[i]]["0"]._identifierValue; //property name and addressing is not constant, search for object named like 'Groups_'
 	                    }
 	                }
-
+	
 	                var theobj = {};
 	                theobj.group_id = group_id; // reads the value dynamically from variable set in the loop above, since name of the property can vary
 	                theobj.api_group_id = scope.review.values.id;
 	                if (method === 'allow') theobj.allow = value;
-
+	
 	                Restangular.one('grouprights').customPUT(theobj).then(function successCallback(response) {
 	                    notification.log('Updated successfully', { addnCls: 'humane-flatty-success' });
 	                    location.reload();
@@ -18720,24 +18975,24 @@
 	        template: '<label class="btn btn-default {{buttonClass}}">{{buttonText}}<input type="checkbox" ng-checked="review.values[\'grouprights.allow\'] == 1" ng-click="approve(\'allow\',review.values[\'grouprights.allow\'])" id="default" class="badgebox"><span class="badge">&check;</span></label>'
 	    };
 	}
-
+	
 	allowMenu.$inject = ['Restangular', '$state', 'notification'];
-
+	
 	exports['default'] = allowMenu;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 147 */
+/* 149 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function invite(Restangular, $uibModal, $q, notification, $state, $http) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18746,15 +19001,15 @@
 	            dismiss: '&'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.icon = 'fa fa-paper-plane fa-md';
 	            if (attrs.type === 'invite_users') scope.label = 'Invite';
-
+	
 	            //modal function
 	            scope.modal = function () {
 	                $uibModal.open({
 	                    template: '<div class="modal-header">' + '<h5 class="modal-title" style="font-weight: bold;font-size: 20px;">User Invitation</h5>' + '</div>' + '<div class="modal-body">' + '<div class="row text-center">' + '<div class="btn-group" uib-dropdown is-open="status.isopen"> ' + '<button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">' + '<span class="glyphicon {{icon}}"></span> {{button}} <p style="display: none;">{{group_id}}</p> <span class="caret"></span>' + '</button>' + '<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">' + '<li role="menuitem" ng-click="change(choice.name,choice.group_id)"  ng-repeat="choice in list_of_groups">' + '<p id="paragraph_vod">{{choice.name}}</p>' + '</li>' + '</ul>' + '</div>' + '</div>' + '<div class="row">' + '<form>' + '<div class="form-group" style="padding: 20px;">' + '<input type="text" id="emailinput" class="form-control" placeholder="Please enter the email address you want to invite" id="email">' + '</div>' + '</form>' + '</div>' + '</div>' + '<div class="modal-footer">' + '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' + '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>' + '</div>',
-
+	
 	                    controller: ('main', ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
 	                        //close modal
 	                        function closeModal() {
@@ -18762,11 +19017,11 @@
 	                        }
 	                        //./close modal
 	                        $scope.button = 'Choose Group';
-
+	
 	                        $scope.cancel = function () {
 	                            closeModal();
 	                        };
-
+	
 	                        var groups_array = [];
 	                        $http.get('../api/groups?exclude_group=superadmin').then(function successCallback(response) {
 	                            var data = response.data;
@@ -18776,23 +19031,23 @@
 	                        }, function errorCallback(response) {
 	                            notification.log(response.statusText, { addnCls: 'humane-flatty-error' });
 	                        });
-
+	
 	                        $scope.list_of_groups = groups_array;
-
+	
 	                        $scope.change = function (name, group_id) {
 	                            $scope.button = name;
 	                            $scope.group_id = group_id;
 	                        };
-
+	
 	                        $scope.ok = function () {
 	                            var email = document.getElementById('emailinput').value;
-
+	
 	                            if ($scope.group_id >= 0) {
 	                                if (email.length > 0) {
-
+	
 	                                    var data = { 'email': email, 'group_id': $scope.group_id };
 	                                    $http.post("../api/users/invite", data).then(function successCallback(response) {
-
+	
 	                                        new Promise(function (resolve, reject) {
 	                                            closeModal();
 	                                            notification.log(response.data.message, { addnCls: 'humane-flatty-success' });
@@ -18817,24 +19072,24 @@
 	        template: '<a class="btn btn-default btn-md" ng-click="modal()"><span class="{{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</a>'
 	    };
 	}
-
+	
 	invite.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
+	
 	exports['default'] = invite;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 148 */
+/* 150 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function approveInvitation(Restangular, $uibModal, $q, notification, $state, $http) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18844,7 +19099,7 @@
 	        link: function link(scope, element, attrs) {
 	            scope.review = scope.review();
 	            scope.reInvite = function () {
-
+	
 	                var data = { 'user_id': scope.review.values.id };
 	                $http.post("../api/users/reinvite", data).then(function successCallback(response) {
 	                    notification.log(response.data.message, { addnCls: 'humane-flatty-success' });
@@ -18853,28 +19108,28 @@
 	                });
 	            };
 	        },
-
+	
 	        template: '<a ng-if="review.values.invite_pending === true" class="btn btn-default btn-xs" ng-click="reInvite()"><i class="fa fa-paper-plane fa-lg"></i>&nbsp;Reinvite</a>'
 	    };
 	}
-
+	
 	approveInvitation.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
+	
 	exports['default'] = approveInvitation;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 149 */
+/* 151 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function importchannelLogs(Restangular, $uibModal, $q, notification, $state, $http) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18883,14 +19138,14 @@
 	            type: '@'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.see_logs_channels = function () {
 	                var currentFilename = scope.post().values.filename;
 	                var data = { 'filename': currentFilename };
-
+	
 	                $http.post('../api/import_channel', data).then(function successCallback(response) {
 	                    scope.thead = ["File Name", "Status", "Message", "Errors"];
-
+	
 	                    scope.tbody = [currentFilename, response.data.status, response.data.message, response.data.error];
 	                }, function errorCallback(response) {
 	                    notification.log(response.data.error, { addnCls: 'humane-flatty-error' });
@@ -18900,24 +19155,24 @@
 	        template: '<div class="container">' + '<div class="row">' + '<div class="btn-group inline pull-right">' + '<div class="btn btn-small"><a class="btn btn-default btn-md" ng-click="see_logs_channels()"><i class="fa fa-check fa-md"></i>&nbsp;Submit</a></div>' + '<div class="btn btn-small"><ma-back-button class="pull-right" label="Cancel"></ma-back-button></div>' + '</div>' + '</div>' + '<hr><br/><br/><br/><br/>' + '<div class="row">' + '<table class="table">' + '<thead>' + '<tr>' + '<th style="border-bottom:none;">{{thead[0]}}</th>' + '<th style="border-bottom:none;">{{thead[1]}}</th>' + '<th style="border-bottom:none;">{{thead[2]}}</th>' + '<th style="border-bottom:none;">{{thead[3]}}</th>' + '</tr>' + '</thead>' + '<tbody>' + '<tr>' + '<td style="border:none;">{{tbody[0]}}</td>' + '<td style="border:none;">{{tbody[1]}}</td>' + '<td style="border:none;">{{tbody[2]}}</td>' + '<td style="border:none;">{{tbody[3]}}</td>' + '</tr>' + '</tbody>' + '</table>' + '</div>' + '</div>'
 	    };
 	}
-
+	
 	importchannelLogs.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
+	
 	exports['default'] = importchannelLogs;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 150 */
+/* 152 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
 	function importvodLogs(Restangular, $uibModal, $q, notification, $state, $http) {
 	    'use strict';
-
+	
 	    return {
 	        restrict: 'E',
 	        scope: {
@@ -18926,14 +19181,14 @@
 	            type: '@'
 	        },
 	        link: function link(scope, element, attrs) {
-
+	
 	            scope.see_logs_vod = function () {
 	                var currentFilename = scope.post().values.filename;
 	                var data = { 'filename': currentFilename };
-
+	
 	                $http.post('../api/import_vod', data).then(function successCallback(response) {
 	                    scope.thead = ["File Name", "Status", "Message", "Errors"];
-
+	
 	                    scope.tbody = [currentFilename, response.data.status, response.data.message, response.data.error];
 	                }, function errorCallback(response) {
 	                    notification.log(response.data.error, { addnCls: 'humane-flatty-error' });
@@ -18943,38 +19198,44 @@
 	        template: '<div class="container">' + '<div class="row">' + '<div class="btn-group inline pull-right">' + '<div class="btn btn-small"><a class="btn btn-default btn-md" ng-click="see_logs_vod()"><i class="fa fa-check fa-md"></i>&nbsp;Submit</a></div>' + '<div class="btn btn-small"><ma-back-button class="pull-right" label="Cancel"></ma-back-button></div>' + '</div>' + '</div>' + '<hr><br/><br/><br/><br/>' + '<div class="row">' + '<table class="table">' + '<thead>' + '<tr>' + '<th style="border-bottom:none;">{{thead[0]}}</th>' + '<th style="border-bottom:none;">{{thead[1]}}</th>' + '<th style="border-bottom:none;">{{thead[2]}}</th>' + '<th style="border-bottom:none;">{{thead[3]}}</th>' + '</tr>' + '</thead>' + '<tbody>' + '<tr>' + '<td style="border:none;">{{tbody[0]}}</td>' + '<td style="border:none;">{{tbody[1]}}</td>' + '<td style="border:none;">{{tbody[2]}}</td>' + '<td style="border:none;">{{tbody[3]}}</td>' + '</tr>' + '</tbody>' + '</table>' + '</div>' + '</div>'
 	    };
 	}
-
+	
 	importvodLogs.$inject = ['Restangular', '$uibModal', '$q', 'notification', '$state', '$http'];
-
+	
 	exports['default'] = importvodLogs;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 151 */
+/* 153 */
+/***/ (function(module, exports) {
+
+	module.exports = "<vis-graph2d id=\"visualization\" data=\"sales_expiration_chart\" options=\"options\">\r\n</vis-graph2d>\r\n";
+
+/***/ }),
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _userDetailsHtml = __webpack_require__(152);
-
+	
+	var _userDetailsHtml = __webpack_require__(155);
+	
 	var _userDetailsHtml2 = _interopRequireDefault(_userDetailsHtml);
-
+	
 	function userDetails($stateProvider) {
-
+	
 	    $stateProvider.state('personal', {
 	        parent: 'main',
 	        url: '/personal',
 	        headers: { "Content-Type": "application/json;charset=UTF-8" },
 	        controller: ['$http', '$scope', 'notification', function ($http, $scope, notification) {
-
+	
 	            $http.get('../api/personal-details').then(function successCallback(response) {
-
+	
 	                if (response.status === 200) {
 	                    $scope.user = {
 	                        username: response.data.username,
@@ -18991,7 +19252,7 @@
 	                    notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
 	                }
 	            });
-
+	
 	            $scope.updateInfo = function () {
 	                $http.put('../api/personal-details', $scope.user).then(function successCallback(response) {
 	                    if (response.status === 200) {
@@ -19009,44 +19270,44 @@
 	        template: _userDetailsHtml2['default']
 	    });
 	}
-
+	
 	userDetails.$inject = ['$stateProvider'];
-
+	
 	exports['default'] = userDetails;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 152 */
+/* 155 */
 /***/ (function(module, exports) {
 
 	module.exports = "<head>\r\n  <style type=\"text/css\">\r\n    @media screen and ( max-width: 1600px ) {\r\n      .frm {\r\n        margin-left: 150px;\r\n        margin-right: 150px;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 989px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 767px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 600px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 540px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 480px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 380px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n  </style>\r\n</head>\r\n<body>\r\n    <div class=\"row list-header\">\r\n        <div class=\"col-lg-12\">\r\n            <div class=\"page-header\">\r\n                <h4>Personal Details</h4>\r\n            </div>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"container\">\r\n        <div class=\"row\">\r\n            <div class=\"col-md-12\">\r\n                <form ng-submit=\"updateInfo()\">\r\n                    <div class=\"form-group\">\r\n                        <label for=\"groupInput\">Group</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"groupInput\" ng-model=\"user.role\" placeholder=\"Group\" disabled=\"disabled\">\r\n                    </div>\r\n\r\n                    <div class=\"form-group\">\r\n                        <label for=\"usernameInput\">Username</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"usernameInput\" ng-model=\"user.username\" placeholder=\"Username\" disabled=\"disabled\">\r\n                    </div>\r\n\r\n                    <div class=\"form-group\">\r\n                        <label for=\"apikeyInput\">Api Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"apikeyInput\" ng-model=\"user.apikey\" placeholder=\"Api Key\" disabled=\"disabled\">\r\n                    </div>\r\n\r\n                    <div class=\"form-group\">\r\n                        <label for=\"emailInput\">Email</label>\r\n                        <input type=\"email\" class=\"form-control\" id=\"emailInput\" ng-model=\"user.email\" placeholder=\"Email\">\r\n                    </div>\r\n\r\n                    <div class=\"form-group\">\r\n                        <label for=\"telephoneInput\">Telephone</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"telephoneInput\" ng-model=\"user.telephone\" placeholder=\"Telephone\">\r\n                    </div>\r\n\r\n                    <hr>\r\n                    <button type=\"submit\" class=\"btn btn-default pull-right\">Submit</button>\r\n                </form>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</body>\r\n\r\n\r\n\r\n";
 
 /***/ }),
-/* 153 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _geoipHtml = __webpack_require__(154);
-
+	
+	var _geoipHtml = __webpack_require__(157);
+	
 	var _geoipHtml2 = _interopRequireDefault(_geoipHtml);
-
+	
 	function details($stateProvider) {
-
+	
 	    $stateProvider.state('geoip', {
 	        parent: 'main',
 	        url: '/geoip',
 	        headers: { "Content-Type": "application/json;charset=UTF-8" },
 	        controller: ['$http', '$scope', 'notification', function ($http, $scope, notification) {
-
+	
 	            $http.post('../apiv2/geoip/status').then(function successCallback(response) {
-
+	
 	                if (response.data.status === false) {
 	                    document.getElementById('status_false').style.display = "block";
 	                    document.getElementById('status_false').innerHTML = response.data.message;
@@ -19059,13 +19320,13 @@
 	                document.getElementById('status_true').style.display = "none";
 	                notification.log(response.statusText, { addnCls: 'humane-flatty-error' });
 	            });
-
+	
 	            $scope.updateurl = function () {
 	                var ui_url = document.getElementById('send_url').value;
-
+	
 	                var data = { 'url': ui_url };
 	                $http.post('../apiv2/geoip/update', data).then(function successCallback(response) {
-
+	
 	                    if (response.data.status === true) {
 	                        document.getElementById('status_false').style.display = "none";
 	                        document.getElementById('status_true').style.display = "block";
@@ -19087,36 +19348,36 @@
 	        template: _geoipHtml2['default']
 	    });
 	}
-
+	
 	details.$inject = ['$stateProvider'];
-
+	
 	exports['default'] = details;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 154 */
+/* 157 */
 /***/ (function(module, exports) {
 
 	module.exports = "<head>\r\n    <style type=\"text/css\">\r\n        @media screen and ( max-width: 1600px ) {\r\n            .frm {\r\n                margin-left: 150px;\r\n                margin-right: 150px;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 989px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 767px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 600px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 540px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 480px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 380px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n    </style>\r\n</head>\r\n\r\n<div class=\"row list-header\">\r\n    <div class=\"col-lg-12\">\r\n\r\n        <div class=\"page-header\">\r\n            <h4>GeoIP</h4>\r\n        </div>\r\n\r\n    </div>\r\n</div>\r\n\r\n<div class=\"row frm\">\r\n\r\n    <form ng-submit=\"updateurl()\">\r\n\r\n        <div class=\"alert alert-danger\" id=\"status_false\" style=\"display:none;\"></div>\r\n        <div class=\"alert alert-success\" id=\"status_true\" style=\"display: none;\"></div>\r\n\r\n        <div class=\"form-group\">\r\n            <label for=\"send_url\">URL</label>\r\n            <input class=\"form-control\" id=\"send_url\"  aria-describedby=\"emailHelp\" placeholder=\"URL\">\r\n        </div>\r\n\r\n        <hr>\r\n        <button type=\"submit\" class=\"btn btn-default pull-right\">Submit</button>\r\n    </form>\r\n\r\n\r\n</div>";
 
 /***/ }),
-/* 155 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _supportHtml = __webpack_require__(156);
-
+	
+	var _supportHtml = __webpack_require__(159);
+	
 	var _supportHtml2 = _interopRequireDefault(_supportHtml);
-
+	
 	function support($stateProvider) {
-
+	
 	    $stateProvider.state('support', {
 	        parent: 'main',
 	        url: '/support',
@@ -19124,88 +19385,88 @@
 	        template: _supportHtml2['default']
 	    });
 	}
-
+	
 	support.$inject = ['$stateProvider'];
-
+	
 	exports['default'] = support;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 156 */
+/* 159 */
 /***/ (function(module, exports) {
 
-	module.exports = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>Support</title>\r\n    <script type=\"text/javascript\" src=\"http://assets.freshdesk.com/widget/freshwidget.js\"></script>\r\n    <style type=\"text/css\" media=\"screen, projection\">\r\n        @import url(http://assets.freshdesk.com/widget/freshwidget.css);\r\n    </style>\r\n</head>\r\n<body>\r\n\r\n<iframe title=\"Feedback Form\" class=\"freshwidget-embedded-form\" id=\"freshwidget-embedded-form\" src=\"https://mago.freshdesk.com/widgets/feedback_widget/new?&widgetType=embedded&screenshot=No\" scrolling=\"no\" height=\"500px\" width=\"100%\" frameborder=\"0\" >\r\n</iframe>\r\n\r\n\r\n\r\n</body>\r\n</html>";
+	module.exports = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>Support</title>\r\n    <script type=\"text/javascript\" src=\"https://s3.amazonaws.com/assets.freshdesk.com/widget/freshwidget.js\"></script>\r\n    <style type=\"text/css\" media=\"screen, projection\">\r\n        @import url(https://s3.amazonaws.com/assets.freshdesk.com/widget/freshwidget.css);\r\n    </style>\r\n</head>\r\n<body>\r\n<iframe title=\"Feedback Form\" class=\"freshwidget-embedded-form\" id=\"freshwidget-embedded-form\" src=\"https://magoware.freshdesk.com/widgets/feedback_widget/new?&widgetType=embedded&screenshot=No&captcha=yes\" scrolling=\"no\" height=\"500px\" width=\"100%\" frameborder=\"0\" >\r\n</iframe>\r\n</body>\r\n</html>";
 
 /***/ }),
-/* 157 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _serverStatusHtml = __webpack_require__(158);
-
+	
+	var _serverStatusHtml = __webpack_require__(161);
+	
 	var _serverStatusHtml2 = _interopRequireDefault(_serverStatusHtml);
-
+	
 	function serverStatus($stateProvider) {
-
+	
 	    $stateProvider.state('serverStatus', {
 	        parent: 'main',
 	        url: '/serverStatus',
 	        controller: ['$http', '$scope', 'notification', function ($http, $scope, notification) {
-
+	
 	            $scope.statusUrl = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/status';
 	        }],
 	        template: _serverStatusHtml2['default']
 	    });
 	}
-
+	
 	serverStatus.$inject = ['$stateProvider'];
-
+	
 	exports['default'] = serverStatus;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 158 */
+/* 161 */
 /***/ (function(module, exports) {
 
 	module.exports = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>Server Status</title>\r\n</head>\r\n<body>\r\n    <div class=\"container\">\r\n        <div class=\"row\">\r\n            <div class=\"col-md-12\">\r\n                <iframe style=\"border: none;\" src=\"{{statusUrl}}\" height=\"800\" width=\"800\"></iframe>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</body>\r\n</html>";
 
 /***/ }),
-/* 159 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _changePasswordHtml = __webpack_require__(160);
-
+	
+	var _changePasswordHtml = __webpack_require__(163);
+	
 	var _changePasswordHtml2 = _interopRequireDefault(_changePasswordHtml);
-
+	
 	function changePassword($stateProvider) {
-
+	
 	    $stateProvider.state('change-password', {
 	        parent: 'main',
 	        url: '/change-password',
 	        headers: { "Content-Type": "application/json;charset=UTF-8" },
 	        controller: ['$http', '$scope', 'notification', function ($http, $scope, notification) {
-
+	
 	            $scope.pwdata = {
 	                currentPassword: '',
 	                newPassword: '',
 	                verifyPassword: ''
 	            };
-
+	
 	            $scope.changePass = function () {
 	                $http.post('../api/user/change-password', $scope.pwdata).then(function successCallback(response) {
 	                    if (response.status === 200) {
@@ -19223,146 +19484,303 @@
 	        template: _changePasswordHtml2['default']
 	    });
 	}
-
+	
 	changePassword.$inject = ['$stateProvider'];
-
+	
 	exports['default'] = changePassword;
 	module.exports = exports['default'];
 
 /***/ }),
-/* 160 */
+/* 163 */
 /***/ (function(module, exports) {
 
 	module.exports = "<head>\r\n  <style type=\"text/css\">\r\n    @media screen and ( max-width: 1600px ) {\r\n      .frm {\r\n        margin-left: 150px;\r\n        margin-right: 150px;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 989px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 767px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 600px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 540px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 480px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n\r\n    @media screen and ( max-width: 380px ) {\r\n      .frm {\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n      }\r\n    }\r\n  </style>\r\n</head>\r\n<body>\r\n\r\n<div class=\"row list-header\">\r\n    <div class=\"col-lg-12\">\r\n\r\n        <div class=\"page-header\">\r\n            <h4>Change Password</h4>\r\n        </div>\r\n\r\n    </div>\r\n</div>\r\n\r\n<div class=\"container\">\r\n    <div class=\"row\">\r\n\r\n        <div class=\"col-md-12\">\r\n            <form ng-submit=\"changePass()\">\r\n\r\n                <div class=\"form-group\">\r\n                    <label for=\"currentPassword\">Old Password</label>\r\n                    <input type=\"password\" class=\"form-control\" id=\"currentPassword\" ng-model=\"pwdata.currentPassword\" placeholder=\"\">\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <label for=\"newPassword\">New Password</label>\r\n                    <input type=\"password\" class=\"form-control\" id=\"newPassword\" ng-model=\"pwdata.newPassword\"  placeholder=\"\">\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <label for=\"verifyPassword\">Repeat Password</label>\r\n                    <input type=\"password\" class=\"form-control\" id=\"verifyPassword\" ng-model=\"pwdata.verifyPassword\" placeholder=\"\">\r\n                </div>\r\n\r\n                <button type=\"submit\" class=\"btn btn-default pull-right\">Submit</button>\r\n            </form>\r\n        </div>\r\n\r\n    </div>\r\n</div>\r\n</body>\r\n";
 
 /***/ }),
-/* 161 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _epgchartHtml = __webpack_require__(162);
-
+	
+	var _epgchartHtml = __webpack_require__(165);
+	
 	var _epgchartHtml2 = _interopRequireDefault(_epgchartHtml);
-
+	
 	exports['default'] = function ($stateProvider) {
-	    $stateProvider.state('epgdata_chart', {
-	        parent: 'main',
-	        url: '/epggraph',
-	        params: {},
-
-	        //controller: ['Restangular', '$scope', 'notification', (Restangular, $scope, notification) => {
-
-	        controller: function controller(Restangular, $scope, VisDataSet) {
-
-	            $scope.events = {
-	                //rangechange: $scope.onRangeChange,
-	                //rangechanged: $scope.onRangeChanged,
-	                //onload: $scope.onLoaded,
-	                select: $scope.onSelect,
-	                click: $scope.onClick
-	            };
-
-	            //doubleClick: $scope.onDoubleClick,
-	            //contextmenu: $scope.rightClick
-	            $scope.onSelect = function (items) {
-	                // debugger;
-	                winston.info('onselect: ', items);
-	            };
-
-	            $scope.onClick = function (items) {
-	                //debugger;
-	                winston.info('click: ', items);
-	            };
-
-	            $scope.dragEnd = function (items) {
-	                //debugger;
-	                winston.info('drag end: ', items);
-	            };
-
-	            $scope.onRangeChange = function (items) {
-	                //debugger;
-	                winston.info('enter onrangechange: ', items);
-	            };
-
-	            $scope.options = {
-	                stack: false,
-	                start: new Date(),
-	                end: new Date(1000 * 60 * 60 * 24 + new Date().valueOf()),
-	                editable: true,
-	                orientation: 'top',
-
-	                // right order
-	                groupOrder: function groupOrder(a, b) {
-	                    return a.value - b.value;
-	                }
-
-	            };
-
-	            $scope.events = {
-	                //rangechange: $scope.onRangeChange,
-	                //rangechanged: $scope.onRangeChanged,
-	                //onload: $scope.onLoaded,
-	                select: $scope.onSelect,
-	                click: $scope.onClick,
-	                dragEnd: $scope.dragEnd
-	            };
-
-	            //doubleClick: $scope.onDoubleClick,
-	            //contextmenu: $scope.rightClick
-	            Restangular.one('epgdata_chart').get().then(function successCallback(response) {
-	                $scope.data_timeline = {
-	                    "items": response.data ? response.data.items : response.items,
-	                    "groups": response.data ? response.data.groups : response.groups
-	                };
-	            }, function errorCallback(response) {});
-	        },
-
-	        template: _epgchartHtml2['default']
-	    });
+	  $stateProvider.state('epgdata_chart', {
+	    parent: 'main',
+	    url: '/epggraph',
+	    params: {},
+	
+	    //controller: ['Restangular', '$scope', 'notification', (Restangular, $scope, notification) => {
+	
+	    controller: function controller(Restangular, $scope, VisDataSet) {
+	      $scope.events = {
+	        //rangechange: $scope.onRangeChange,
+	        //rangechanged: $scope.onRangeChanged,
+	        //onload: $scope.onLoaded,
+	        select: $scope.onSelect,
+	        click: $scope.onClick
+	        //doubleClick: $scope.onDoubleClick,
+	        //contextmenu: $scope.rightClick
+	      };
+	
+	      $scope.onSelect = function (items) {
+	        // debugger;
+	        winston.info('onselect: ', items);
+	      };
+	
+	      $scope.onClick = function (items) {
+	        //debugger;
+	        winston.info('click: ', items);
+	      };
+	
+	      $scope.dragEnd = function (items) {
+	        //debugger;
+	        winston.info('drag end: ', items);
+	      };
+	
+	      $scope.onRangeChange = function (items) {
+	        //debugger;
+	        winston.info('enter onrangechange: ', items);
+	      };
+	
+	      $scope.options = {
+	        stack: false,
+	        start: new Date(),
+	        end: new Date(1000 * 60 * 60 * 24 + new Date().valueOf()),
+	        editable: true,
+	        orientation: 'top',
+	
+	        // right order
+	        groupOrder: function groupOrder(a, b) {
+	          return a.value - b.value;
+	        }
+	      };
+	
+	      $scope.events = {
+	        //rangechange: $scope.onRangeChange,
+	        //rangechanged: $scope.onRangeChanged,
+	        //onload: $scope.onLoaded,
+	        select: $scope.onSelect,
+	        click: $scope.onClick,
+	        dragEnd: $scope.dragEnd
+	        //doubleClick: $scope.onDoubleClick,
+	        //contextmenu: $scope.rightClick
+	      };
+	
+	      Restangular.one('epgdata_chart').get().then(function successCallback(response) {
+	        $scope.data_timeline = {
+	          items: response.data ? response.data.items : response.items,
+	          groups: response.data ? response.data.groups : response.groups
+	        };
+	      }, function errorCallback(response) {});
+	    },
+	
+	    template: _epgchartHtml2['default']
+	  });
 	};
-
-	;
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 162 */
+/* 165 */
 /***/ (function(module, exports) {
 
 	module.exports = "<vis-graph2d data=\"data\" options=\"options\"></vis-graph2d>\r\n<vis-timeline data=\"data_timeline\" options=\"options\" events=\"events\"></vis-timeline>\r\n\r\n";
 
 /***/ }),
-/* 163 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _expiration_graphHtml = __webpack_require__(153);
+	
+	var _expiration_graphHtml2 = _interopRequireDefault(_expiration_graphHtml);
+	
+	exports['default'] = function ($stateProvider) {
+	  $stateProvider.state('reports/expiresubscription', {
+	    parent: 'main',
+	    url: '/expiresubscription',
+	    params: {},
+	
+	    controller: function controller(Restangular, $scope, VisDataSet) {
+	      $scope.options = {
+	        style: 'bar',
+	        barChart: { width: 50, align: 'center' }, // align: left, center, right
+	        drawPoints: false,
+	        dataAxis: {
+	          icons: true
+	        },
+	        orientation: 'top',
+	        start: new Date()
+	      };
+	
+	      Restangular.one('reports/expiresubscription').get().then(function successCallback(response) {
+	        if (response.data) var res = response.data;else var res = response;
+	        $scope.options = {
+	          style: 'bar',
+	          barChart: { width: 50, align: 'center' }, // align: left, center, right
+	          drawPoints: false,
+	          dataAxis: {
+	            icons: true
+	          },
+	          orientation: 'top',
+	          start: new Date(),
+	          end: new Date().setDate(new Date(res[res.length - 1].to_date).getDate() + 185),
+	          zoomable: false
+	        };
+	        var mapData = function mapData(items) {
+	          return items.map(function (item) {
+	            return {
+	              x: new Date(item.to_date).setDate(1),
+	              y: item.total
+	            };
+	          });
+	        };
+	        $scope.sales_expiration_chart = {
+	          items: mapData(res)
+	        };
+	      });
+	    },
+	
+	    template: _expiration_graphHtml2['default']
+	  });
+	};
+	
+	module.exports = exports['default'];
 
+/***/ }),
+/* 167 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _advancedSettingsHtml = __webpack_require__(168);
+	
+	var _advancedSettingsHtml2 = _interopRequireDefault(_advancedSettingsHtml);
+	
+	function advancedsettings($stateProvider) {
+	  $stateProvider.state('advancedSettings', {
+	    parent: 'main',
+	    url: '/AdvancedSettings',
+	    headers: {
+	      "Content-Type": "application/json;charset=UTF-8"
+	    },
+	    controller: ['$http', '$scope', 'notification', function ($http, $scope, notification) {
+	      var token = localStorage.userToken || "";
+	      var getConfig = {
+	        method: 'GET',
+	        url: '../api/AdvancedSettings',
+	        headers: { 'Authorization': token }
+	      };
+	
+	      $http(getConfig).then(function successCallback(response) {
+	        if (response.status === 200) {
+	          $scope.advanced_settings = {
+	            akamai: response.data.data.akamai,
+	            auth: response.data.data.auth,
+	            flussonic: response.data.data.flussonic,
+	            nimble_drm: response.data.data.nimble_drm,
+	            nimble_token: response.data.data.nimble_token,
+	            stripe: response.data.data.stripe,
+	            verizon: response.data.data.verizon,
+	            vod: response.data.data.vod,
+	            paypal: response.data.data.paypal,
+	            wowza: response.data.data.wowza,
+	            woocomerce: response.data.data.woocomerce
+	          };
+	
+	          console.log($scope.advanced_settings);
+	        }
+	      }, function errorCallback(response) {
+	        if (response.status === 400) {
+	          notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
+	        } else {
+	          notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
+	        }
+	      });
+	
+	      $scope.updateAdvancedSettings = function () {
+	        var config = {
+	          method: 'PUT',
+	          url: '../api/AdvancedSettings',
+	          headers: { 'Authorization': token },
+	          data: $scope.advanced_settings
+	        };
+	        $http(config).then(function successCallback(response) {
+	          if (response.status === 200) {
+	            notification.log('Update Successfully', { addnCls: 'humane-flatty-success' });
+	          }
+	        }, function errorCallback(response) {
+	          if (response.status === 400) {
+	            notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
+	          } else {
+	            notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
+	          }
+	        });
+	      };
+	    }],
+	    template: _advancedSettingsHtml2['default']
+	  });
+	}
+	
+	advancedsettings.$inject = ['$stateProvider'];
+	
+	exports['default'] = advancedsettings;
+	module.exports = exports['default'];
+
+/***/ }),
+/* 168 */
+/***/ (function(module, exports) {
+
+	module.exports = "<head>\r\n    <style type=\"text/css\">\r\n        @media screen and ( max-width: 1600px ) {\r\n            .frm {\r\n                margin-left: 150px;\r\n                margin-right: 150px;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 989px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 767px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 600px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 540px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 480px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n\r\n        @media screen and ( max-width: 380px ) {\r\n            .frm {\r\n                margin-left: auto;\r\n                margin-right: auto;\r\n            }\r\n        }\r\n    </style>\r\n</head>\r\n<body>\r\n<div class=\"row list-header\">\r\n    <div class=\"col-lg-12\">\r\n        <div class=\"page-header\">\r\n            <h4>Advanced Settings</h4>\r\n        </div>\r\n    </div>\r\n</div>\r\n<div class=\"container\">\r\n    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <form ng-submit=\"updateAdvancedSettings()\">\r\n                <div class=\"form-group\">\r\n                    <h3>Akamai</h3>\r\n                    <small id=\"emailHelp\" class=\"form-text text-muted\">{{advanced_settings.akamai.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"akamaiInput\">Akamai Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"akamaiInput\"\r\n                               ng-model=\"advanced_settings.akamai.key\"\r\n                               placeholder=\"Akamai Key\">\r\n                        <br>\r\n                        <div class=\"form-group\">\r\n                            <label for=\"authInput11\">Akamai Window</label>\r\n                            <input type=\"text\" class=\"form-control\" id=\"authInput11\"\r\n                                   ng-model=\"advanced_settings.akamai.window\"\r\n                                   placeholder=\"Akamai Window\">\r\n                        </div>\r\n                        <div class=\"form-group\">\r\n                            <label for=\"akamaiSalt\">Akamai Salt</label>\r\n                            <input type=\"text\" class=\"form-control\" id=\"akamaiSalt\"\r\n                                   ng-model=\"advanced_settings.akamai.salt\"\r\n                                   placeholder=\"Akamai Salt\">\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Flussonic</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.flussonic.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"flussonicKey\">Flussonic Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"flussonicKey\"\r\n                               ng-model=\"advanced_settings.flussonic.key\"\r\n                               placeholder=\"Flussonic Key\">\r\n                        <br>\r\n                        <label for=\"flussonicKey\">Flussonic Salt</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"flussonicSalt\"\r\n                               ng-model=\"advanced_settings.flussonic.salt\"\r\n                               placeholder=\"Flussonic Salt\">\r\n                        <br>\r\n                        <label for=\"flussinoicPassword\">Flussonic Password</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"flussinoicPassword\"\r\n                               ng-model=\"advanced_settings.flussonic.password\"\r\n                               placeholder=\"Flussonic Pasword\">\r\n                        <br>\r\n                        <label for=\"flussonicWindow\">Flussonic Window</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"flussonicWindow\"\r\n                               ng-model=\"advanced_settings.flussonic.window\"\r\n                               placeholder=\"Flussonic Window\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>WooCommerce</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.woocomerce.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"flussonicKey\">WooCommerce Base URL</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"woocommerceBaseUrl\"\r\n                               ng-model=\"advanced_settings.woocomerce.base_url\"\r\n                               placeholder=\"WooCommerce Base URL\">\r\n                        <br>\r\n                        <label for=\"wConsumerSecret\">WooCommerce Consumer Secret</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"wConsumerSecret\"\r\n                               ng-model=\"advanced_settings.woocomerce.consumer_secret\"\r\n                               placeholder=\"WooCommerce Consumer Salt\">\r\n                        <br>\r\n                        <label for=\"wConsumerSecret\">WooCommerce Consumer Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"wConsumerKey\"\r\n                               ng-model=\"advanced_settings.woocomerce.consumer_key\"\r\n                               placeholder=\"WooCommerce Consumer Key\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Stripe</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.stripe.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"stripeAPIKey\">Stripe API Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"stripeAPIKey\"\r\n                               ng-model=\"advanced_settings.stripe.api_key\"\r\n                               placeholder=\"Stripe API Key\">\r\n                        <br>\r\n                        <label for=\"stripePk\">Stripe Publishable Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"stripePk\"\r\n                               ng-model=\"advanced_settings.stripe.publishable_key\"\r\n                               placeholder=\"Stripe Publishable Key\">\r\n                        <br>\r\n                        <label for=\"stripeKey\">Stripe Secret Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"stripeKey\"\r\n                               ng-model=\"advanced_settings.stripe.secret_key\"\r\n                               placeholder=\"Stripe Key\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Paypal</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.paypal.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"paypalId\">Paypal Client ID</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"paypalId\"\r\n                               ng-model=\"advanced_settings.paypal.client_id\"\r\n                               placeholder=\"Paypal Client ID\">\r\n                        <br>\r\n                        <label for=\"paypalClientId\">Paypal Production</label>\r\n                        <input type=\"checkbox\" class=\"form-control\" id=\"paypalClientId\"\r\n                               ng-model=\"advanced_settings.paypal.production\"\r\n                               placeholder=\"Paypal Production\">\r\n                        <br>\r\n                        <label for=\"paypalClientSecret\">Paypal Client Secret</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"paypalClientSecret\"\r\n                               ng-model=\"advanced_settings.paypal.client_secret\"\r\n                               placeholder=\"Paypal Client Secret\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Verizon</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.verizon.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"verizonKey\">Verizon Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"verizonKey\"\r\n                               ng-model=\"advanced_settings.verizon.key\"\r\n                               placeholder=\"Verizon Key\">\r\n                        <br>\r\n                        <label for=\"verizonProtocolAllowed\">Verizon Protocol Allowed</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"verizonProtocolAllowed\"\r\n                               ng-model=\"advanced_settings.verizon.proto_allowed\"\r\n                               placeholder=\"Verizon Protocol Allowed\">\r\n                        <br>\r\n                        <label for=\"verizonWindow\">Verizon Window</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"verizonWindow\"\r\n                               ng-model=\"advanced_settings.verizon.window\"\r\n                               placeholder=\"Verizon Window\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Wowza</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.wowza.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"womzaSs\">Wowza Shared Secret</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"womzaSs\"\r\n                               ng-model=\"advanced_settings.wowza.shared_secret\"\r\n                               placeholder=\"Womza Shared Secret\">\r\n                        <br>\r\n                        <label for=\"womzaWindow\">Wowza Window</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"womzaWindow\"\r\n                               ng-model=\"advanced_settings.wowza.window\"\r\n                               placeholder=\"Womza Window\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Nimble DRM</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.nimble_drm.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"nimbleKey\">Nimble DRM Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"nimbleKey\"\r\n                               ng-model=\"advanced_settings.nimble_drm.key\"\r\n                               placeholder=\"Nimble DRM Key\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Nimble Token</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.nimble_token.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"nimbleTKey\">Nimble Token Key</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"nimbleTKey\"\r\n                               ng-model=\"advanced_settings.nimble_token.key\"\r\n                               placeholder=\"Nimble Token Key\">\r\n                        <br>\r\n\r\n                        <label for=\"nimbleTwin\">Nimble Token Window</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"nimbleTwin\"\r\n                               ng-model=\"advanced_settings.nimble_token.window\"\r\n                               placeholder=\"Nimble Token Window\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Auth</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.auth.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"authId\">Auth Max Logins</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"authId\"\r\n                               ng-model=\"advanced_settings.auth.max_logins\"\r\n                               placeholder=\"Auth Max Logins\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n                <div class=\"form-group\">\r\n                    <h3>Vod</h3>\r\n                    <small class=\"form-text text-muted\">{{advanced_settings.vod.description}}</small>\r\n                    <br>\r\n                    <br>\r\n                    <div class=\"container\">\r\n                        <label for=\"vodConf\">Vod Transaction Duration</label>\r\n                        <input type=\"text\" class=\"form-control\" id=\"vodConf\"\r\n                               ng-model=\"advanced_settings.vod.transaction_duration\"\r\n                               placeholder=\"Vod Transaction Duration\">\r\n                        <br>\r\n                    </div>\r\n                </div>\r\n\r\n\r\n                <hr>\r\n                <button type=\"submit\" class=\"btn btn-default pull-right\">Submit</button>\r\n                <br>\r\n                <br>\r\n                <br>\r\n            </form>\r\n        </div>\r\n    </div>\r\n</div>\r\n</body>\r\n\r\n\r\n\r\n";
+
+/***/ }),
+/* 169 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var assetsDetails = admin.getEntity('assetsDetails');
-
+	
 	    assetsDetails.listView().title('<h4>Assets Details <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['edit', 'delete']).batchActions([]).fields([nga.field('assets_category_id', 'reference').targetEntity(admin.getEntity('assetsCategory')).targetField(nga.field('title')).isDetailLink(true).label('Assets Category'), nga.field('title', 'string').label('Title'), nga.field('short_description', 'text').map(function truncate(value) {
 	        if (!value) return '';
 	        return value.length > 80 ? value.substr(0, 80) + '...' : value;
 	    }).label('Short Description'), nga.field('icon_url').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').label('Icon'), nga.field('image_url').template('<img src="{{ entry.values.image_url }}" height="35" width="35" />').label('Image'), nga.field('rating', 'number').label('Rating'), nga.field('price', 'number').label('Price'), nga.field('isavailable', 'boolean').label('Is Available')]);
-
+	
 	    assetsDetails.deletionView().title('<h4>Assets Details <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    assetsDetails.creationView().title('<h4>Assets Details <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Assets</h4>').fields([nga.field('assets_category_id', 'reference').targetEntity(admin.getEntity('assetsCategory')).targetField(nga.field('title')).isDetailLink(true).label('Assets Category'), nga.field('title', 'string').attributes({ placeholder: 'Asset Title' }).validation({ required: true }).label('Title'), nga.field('short_description', 'text').attributes({ placeholder: 'Specify short description you need for the asset' }).validation({ required: true }).label('Short Description'), nga.field('long_description', 'text').attributes({ placeholder: 'Specify long description you need for the asset' }).validation({ required: true }).label('Long Description'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/hospitalityAssets/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Not larger than 150 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
@@ -19390,46 +19808,46 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('rating', 'number').attributes({ placeholder: 'Rating' }).validation({ required: true }).label('Rating'), nga.field('price', 'number').attributes({ placeholder: 'Price' }).validation({ required: true }).label('Price'), nga.field('json_actions', 'string').attributes({ placeholder: 'JSON Actions' }).validation({ required: true }).label('JSON Actions'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    assetsDetails.editionView().title('<h4>Assets Details <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([assetsDetails.creationView().fields()]);
-
+	
 	    return assetsDetails;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 164 */
+/* 170 */
 /***/ (function(module, exports) {
 
 	module.exports = "<div class=\"row\">\r\n    <div class=\"btn-group inline pull-right\">\r\n      <div class=\"btn btn-small\"><ma-submit-button class=\"pull-right\" label=\"Submit\"></ma-submit-button></div>\r\n      <div class=\"btn btn-small\"><ma-back-button class=\"pull-right\" label=\"Cancel\"></ma-back-button></div>\r\n    </div>\r\n</div>\r\n\r\n<hr>";
 
 /***/ }),
-/* 165 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var assetsCategory = admin.getEntity('assetsCategory');
-
+	
 	    assetsCategory.listView().title('<h4>Assets Category <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['edit', 'delete']).batchActions([]).fields([nga.field('assets_master_id', 'reference').targetEntity(admin.getEntity('assetsMaster')).targetField(nga.field('title')).isDetailLink(true).label('Assets Master'), nga.field('title', 'string').label('Title'), nga.field('description', 'text').map(function truncate(value) {
 	        if (!value) return '';
 	        return value.length > 80 ? value.substr(0, 80) + '...' : value;
 	    }).label('Description'), nga.field('api_url', 'string').label('Api Url'), nga.field('image_url').template('<img src="{{ entry.values.image_url }}" height="35" width="35" />').label('Image'), nga.field('order', 'number').label('Order'), nga.field('isavailable', 'boolean').label('Is Available')]);
-
+	
 	    assetsCategory.deletionView().title('<h4>Assets Category <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    assetsCategory.creationView().title('<h4>Assets Category <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Assets</h4>').fields([nga.field('assets_master_id', 'reference').targetEntity(admin.getEntity('assetsMaster')).targetField(nga.field('title')).label('Assets Master'), nga.field('title', 'string').attributes({ placeholder: 'Asset Title' }).validation({ required: true }).label('Title'), nga.field('description', 'text').attributes({ placeholder: 'Specify information you need for the asset' }).validation({ required: true }).label('Description'), nga.field('api_url', 'string').attributes({ placeholder: 'Api Url' }).validation({ required: true }).label('Api Url'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/hospitalityAssets/image_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Not larger than 600 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
@@ -19444,43 +19862,43 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('order', 'number').attributes({ placeholder: 'Order' }).validation({ required: true }).label('Order'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    assetsCategory.editionView().title('<h4>Assets Category <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([assetsCategory.creationView().fields(), nga.field('assetsDetails', 'referenced_list').label('Accets Details').targetEntity(admin.getEntity('assetsDetails')).targetReferenceField('id').targetFields([nga.field('title', 'string').label('Title'), nga.field('short_description', 'text').map(function truncate(value) {
 	        if (!value) return '';
 	        return value.length > 80 ? value.substr(0, 80) + '...' : value;
 	    }).label('Short Description'), nga.field('icon_url').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').label('Icon'), nga.field('image_url').template('<img src="{{ entry.values.image_url }}" height="35" width="35" />').label('Image'), nga.field('rating', 'number').label('Rating'), nga.field('price', 'number').label('Price')]).listActions(['edit', 'delete']), nga.field('template').label('').template('<ma-create-button entity-name="assetsDetails" class="pull-right" label="ADD DETAILS" default-values="{ assets_category_id: entry.values.id }"></ma-create-button>')]);
-
+	
 	    return assetsCategory;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 166 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var assetsMaster = admin.getEntity('assetsMaster');
-
+	
 	    assetsMaster.listView().title('<h4>Assets Master <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['edit', 'delete']).batchActions([]).fields([nga.field('title', 'string').label('Title'), nga.field('description', 'text').map(function truncate(value) {
 	        if (!value) return '';
 	        return value.length > 80 ? value.substr(0, 80) + '...' : value;
 	    }).label('Description'), nga.field('icon_url').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').label('Icon'), nga.field('image_url').template('<img src="{{ entry.values.image_url }}" height="35" width="35" />').label('Image'), nga.field('order', 'number').label('Order'), nga.field('isavailable', 'boolean').label('Is Available')]);
-
+	
 	    assetsMaster.deletionView().title('<h4>Assets Master <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    assetsMaster.creationView().title('<h4>Assets Master <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Assets</h4>').fields([nga.field('title', 'string').attributes({ placeholder: 'Asset Title' }).validation({ required: true }).label('Title'), nga.field('description', 'text').attributes({ placeholder: 'Specify information you need for the asset' }).validation({ required: true }).label('Description'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/hospitalityAssets/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Not larger than 150 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
@@ -19508,81 +19926,81 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('order', 'number').attributes({ placeholder: 'Order' }).validation({ required: true }).label('Order'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    assetsMaster.editionView().title('<h4>Assets Master <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([assetsMaster.creationView().fields()]);
-
+	
 	    return assetsMaster;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 167 */
+/* 173 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var import_channels = admin.getEntity('import_channel');
-
+	
 	    import_channels.creationView().title('<h4>Live TV <i class="fa fa-angle-right" aria-hidden="true"></i> Import Channels in CSV , M3U</h4>').fields([nga.field('filename', 'file').uploadInformation({ 'url': '/file-upload/single-file/temp/filename', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result', multiple: false }).template('<div class="row">' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.filename"></ma-file-field></div>' + '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.filename }}"/></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file types: csv , m3u</small></div>').label('File input *'), nga.field('template').label('').template('<importchannel_logs post="entry"></importchannel_logs>')]);
-
+	
 	    return import_channels;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 168 */
+/* 174 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var import_vod = admin.getEntity('import_vod');
-
+	
 	    import_vod.creationView().title('<h4>VOD <i class="fa fa-angle-right" aria-hidden="true"></i> Import VOD in CSV</h4>').fields([nga.field('filename', 'file').uploadInformation({ 'url': '/file-upload/single-file/temp/filename', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result', multiple: false }).template('<div class="row">' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.filename"></ma-file-field></div>' + '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.filename }}"/></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file types: csv</small></div>').label('File input *'), nga.field('template').label('').template('<importvod_logs post="entry"></importvod_logs>')]);
-
+	
 	    return import_vod;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 169 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var tmdbvods = admin.getEntity('tmdbvods');
-
-	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }];
-
-	    tmdbvods.listView().title('<h4>TMDB Vods <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('id').label('ID'), nga.field('title').label('Title'), nga.field('vote_count').label('Vote Count'), nga.field('release_date').label('Release Date')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['<ma-edit-button entry="entry" entity="entity" label="Import" size="xs"></ma-edit-button>']);
-
+	
+	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }, { value: { "iso_639_1": "pt", "name": "Portuguese" }, label: 'Portuguese' }];
+	
+	    tmdbvods.listView().title('<h4>TMDB Vods <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('id').label('ID'), nga.field('title').label('Title'), nga.field('backdrop_path').template('<img src="https://image.tmdb.org/t/p/w500{{ entry.values.poster_path }}" height="150" width="100" /></div>').label('Icon'), nga.field('vote_count').label('Vote Count'), nga.field('release_date').label('Release Date')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['<ma-edit-button entry="entry" entity="entity" label="Import" size="xs"></ma-edit-button>']);
+	
 	    tmdbvods.editionView().title('<h4>TMDB Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([nga.field('title', 'string').attributes({ placeholder: 'Movie Name' }).validation({ required: true }).label('Title'), nga.field('original_title', 'string').label('Original title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Movie Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('vod_vod_categories', 'reference_many').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genres').attributes({ placeholder: 'Select genre' }).singleApiCall(function (category_id) {
 	        return { 'category_id[]': category_id };
 	    }), nga.field('package_vods', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
@@ -19640,45 +20058,45 @@
 	    }).label('Expiration date'), nga.field('price', 'float').template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*Set price to 0 for movies that are not for sale</small>').validation({ required: true }).label('Price'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).map(function (value, entry) {
 	        return false;
 	    }).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').validation({ required: true }).label('Revenues'), nga.field('budget', 'number').validation({ required: true }).label('Budget'), nga.field('original_language', 'string').validation({ required: true }).defaultValue('en').label('Original language'), nga.field('spoken_languages', 'choices').choices(language_list).label('Spoken languages'), nga.field('release_date', 'date').validation({ required: true }).defaultValue('1896-12-28').label('Release date'), nga.field('status', 'string').validation({ required: true }).label('Status'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return tmdbvods;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 170 */
+/* 176 */
 /***/ (function(module, exports) {
 
 	module.exports = "<div class=\"row\">\r\n    <div class=\"btn-group inline pull-right\"> \r\n      <div class=\"btn btn-small\"><ma-filtered-list-button entity-name=\"Channels\" class=\"pull-right\" label=\"SEE ALL CHANNELS\" filter=\"{ genre_id: entry.values.id }\"></ma-filtered-list-button></div> \r\n    </div>\r\n</div>\r\n\r\n<hr>";
 
 /***/ }),
-/* 171 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var tmdbseries = admin.getEntity('tmdbseries');
-
-	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }];
-
+	
+	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }, { value: { "iso_639_1": "pt", "name": "Portuguese" }, label: 'Portuguese' }];
+	
 	    tmdbseries.listView().title('<h4>TMDB TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('id').label('ID'), nga.field('name').label('Name'), nga.field('vote_count').label('Vote Count'), nga.field('first_air_date').label('First Air Date')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['<ma-edit-button entry="entry" entity="entity" label="Import" size="xs"></ma-edit-button>']);
-
+	
 	    tmdbseries.editionView().title('<h4>TMDB TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([nga.field('title', 'string').attributes({ placeholder: 'TV Shows Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'TV Shows Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_series_categories', 'reference_many').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genres').attributes({ placeholder: 'Select genre' }).singleApiCall(function (category_id) {
 	        return { 'category_id[]': category_id };
 	    }), nga.field('tv_series_packages', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
@@ -19717,36 +20135,36 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('adult_content', 'choice').defaultValue(false).choices([{ value: true, label: 'Yes' }, { value: false, label: 'No' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Has adult content'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return tmdbseries;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 172 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var htmlContent = admin.getEntity('htmlContent');
-
+	
 	    htmlContent.listView().title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['edit', 'delete']).batchActions([]).fields([nga.field('id').label('ID'), nga.field('name').label('Name'), nga.field('description').label('Description'), nga.field('content').map(function truncate(value) {
 	        if (!value) return '';
 	        return value.length > 80 ? value.substr(0, 80) + '...' : value;
 	    }).label('Content'), nga.field('url').label('Url')]);
-
+	
 	    htmlContent.creationView().title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Template</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Name' }).validation({ required: true }).label('Name'), nga.field('description', 'string').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('content', 'wysiwyg').attributes({ placeholder: 'HTML Content' }).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Content Cannot Be Empty');
@@ -19756,130 +20174,152 @@
 	        var url = window.location.origin + '/api/htmlContentApp?name=' + entry.name;
 	        return url;
 	    }).cssClasses('hidden').label(''), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    htmlContent.editionView().actions(['list']).title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Name', readOnly: true }).validation({ required: true }).label('Name'), nga.field('description', 'string').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('content', 'wysiwyg').attributes({ placeholder: 'HTML Content' }).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Content Cannot Be Empty');
 	            }
 	        }
 	    }).label('Content *'), nga.field('url').label('URL'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    htmlContent.deletionView().title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    return htmlContent;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 173 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
-	    var VodMenuCarousel = admin.getEntity('vodMenuCarousel');
-
-	    VodMenuCarousel.listView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).actions(['create']).fields([nga.field('id').label('ID'), nga.field('vod_menu_id', 'reference').targetEntity(admin.getEntity('vodMenu')).targetField(nga.field('name')).isDetailLink(false).label('Vod Menu Name'), nga.field('name', 'string').label('Carousel Name'), nga.field('order', 'number').label('Order'), nga.field('url', 'string').label('Url'), nga.field('isavailable', 'boolean').label('Available')]).listActions(['edit', 'delete']);
-
-	    VodMenuCarousel.creationView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Create: {{ entry.values.id }}</h4>').fields([nga.field('vod_menu_id', 'reference').targetEntity(admin.getEntity('vodMenu')).targetField(nga.field('name')).attributes({ placeholder: 'Choose from dropdown list the vod menu that this carousel will belong to' }).validation({ validator: function validator(value) {
-	            if (value === null || value === '') {
-	                throw new Error('Please Select Vod Menu ID');
-	            }
-	        }
-	    }).label('Vod Menu ID *'), nga.field('name', 'string').attributes({ placeholder: 'Name' }).validation({ required: true }).label('Carousel Name'), nga.field('description', 'text').transform(function lineBreaks(value, entry) {
-	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'Description' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('order', 'number').attributes({ placeholder: 'Order' }).validation({ required: true }).label('Order'), nga.field('url', 'string').defaultValue('').validation({ required: true }).attributes({ placeholder: 'Url' }).label('Url'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    VodMenuCarousel.editionView().actions(['list']).title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([VodMenuCarousel.creationView().fields()]);
-
-	    VodMenuCarousel.deletionView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
-	    return VodMenuCarousel;
+	  var VodMenuCarousel = admin.getEntity('vodMenuCarousel');
+	
+	  VodMenuCarousel.listView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).actions(['create']).fields([nga.field('id').label('ID'), nga.field('vod_menu_id', 'reference').targetEntity(admin.getEntity('vodMenu')).targetField(nga.field('name')).isDetailLink(false).label('Vod Menu Name'), nga.field('name', 'string').label('Carousel Name'), nga.field('order', 'number').label('Order'), nga.field('url', 'string').label('Url'), nga.field('isavailable', 'boolean').label('Available')]).listActions(['edit', 'delete']);
+	
+	  VodMenuCarousel.creationView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Create: {{ entry.values.id }}</h4>').fields([nga.field('vod_menu_id', 'reference').targetEntity(admin.getEntity('vodMenu')).targetField(nga.field('name')).remoteComplete(true, {
+	    refreshDelay: 300,
+	    searchQuery: function searchQuery(search) {
+	      return { q: search };
+	    }
+	  }).attributes({
+	    placeholder: 'Choose from dropdown list the vod menu that this carousel will belong to'
+	  }).validation({
+	    validator: function validator(value) {
+	      if (value === null || value === '') {
+	        throw new Error('Please Select Vod Menu ID');
+	      }
+	    }
+	  }).label('Vod Menu ID *'), nga.field('name', 'string').attributes({ placeholder: 'Name' }).validation({ required: true }).label('Carousel Name'), nga.field('description', 'text').transform(function lineBreaks(value, entry) {
+	    return value.split('\n').join('<br/>');
+	  }).attributes({ placeholder: 'Description' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('order', 'number').attributes({ placeholder: 'Order' }).validation({ required: true }).label('Order'), nga.field('url', 'string').defaultValue('').validation({ required: true }).attributes({ placeholder: 'Url' }).label('Url'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
+	  VodMenuCarousel.editionView().actions(['list']).title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([VodMenuCarousel.creationView().fields()]);
+	
+	  VodMenuCarousel.deletionView().title('<h4>Vod Menu Carousel<i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
+	
+	  return VodMenuCarousel;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 174 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var VodMenu = admin.getEntity('vodMenu');
-
+	
 	    VodMenu.listView().title('<h4>Vod Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).actions(['create']).fields([nga.field('id').label('ID'), nga.field('name', 'string').label('Vod Menu Name'), nga.field('order', 'number').label('Order'), nga.field('pin_protected', 'boolean').label('Pin Protected'), nga.field('isavailable', 'boolean').label('Available')]).listActions(['edit', 'delete']);
-
+	
 	    VodMenu.creationView().title('<h4>Vod Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Create: {{ entry.values.id }}</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Vod Menu Name' }).validation({ required: true }).label('Vod Menu Name'), nga.field('description', 'text').transform(function lineBreaks(value, entry) {
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('order', 'number').attributes({ placeholder: 'Order' }).validation({ required: true }).label('Order'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    VodMenu.editionView().actions(['list']).title('<h4>Vod Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([VodMenu.creationView().fields(), nga.field('vodMenuCarousel', 'referenced_list').label('VOD Menu Carousel').targetEntity(admin.getEntity('vodMenuCarousel')).targetReferenceField('vod_menu_id').targetFields([nga.field('name').label('Carousel Name'), nga.field('order').label('Order'), nga.field('url').label('Url')]).listActions(['edit', 'delete']), nga.field('Add VOD Menu Carousel', 'template').label('').template('<ma-create-button entity-name="vodMenuCarousel" class="pull-right" label="Add VOD Menu Carousel" default-values="{ vod_menu_id: entry.values.id }"></ma-create-button>')]);
-
+	
 	    VodMenu.deletionView().title('<h4>Vod Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    return VodMenu;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 175 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _templatesModalImageUploadHtml = __webpack_require__(183);
+	
+	var _templatesModalImageUploadHtml2 = _interopRequireDefault(_templatesModalImageUploadHtml);
+	
 	//import foto from '../foto.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var Season = admin.getEntity('Season');
-	    Season.listView().title('<h4>Season <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<vod type="update_film" selection="selection"></vod>']).actions(['<move type="move_to_package" selection="selection"></move>', 'batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('duration', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at')]).sortDir("DESC").sortField("createdAt").filters([nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([Season.listView().fields()]);
-
+	    Season.listView().title('<h4>Season <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<vod type="update_film" selection="selection"></vod>']).actions(['<move type="move_to_package" selection="selection"></move>', 'batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('duration', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at')]).sortDir("DESC").sortField("createdAt").filters([nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([Season.listView().fields()]);
+	
 	    Season.deletionView().title('<h4>Season <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    Season.creationView().title('<h4>Season <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Season</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 	        return false;
-	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Season Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Season Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ required: true }).label('TV Shows Name'), nga.field('season_number', 'number').attributes({ placeholder: 'Season Number' }).validation({ required: true }).label('Season Number'), nga.field('director', 'string').attributes({ placeholder: 'Season Director' }).validation({ required: true }).label('Director'), nga.field('rate', 'number').attributes({ placeholder: 'Season rated. Must be greater than 0, smaller or equal to 10' }).validation({ required: true, validator: function validator(value) {
+	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Season Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Season Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ required: true }).remoteComplete(true, {
+	        refreshDelay: 300,
+	        // populate choices from the response of GET /posts?q=XXX
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).label('TV Shows Name'), nga.field('season_number', 'number').attributes({ placeholder: 'Season Number' }).validation({ required: true }).label('Season Number'), nga.field('director', 'string').attributes({ placeholder: 'Season Director' }).validation({ required: true }).label('Director'), nga.field('rate', 'number').attributes({ placeholder: 'Season rated. Must be greater than 0, smaller or equal to 10' }).validation({ required: true, validator: function validator(value) {
 	            if (value <= 0) throw new Error('Rate must be greater than 0');
 	            if (value > 10) throw new Error('Rate cannot be greater than 10');
 	        } }).label('Rate'), nga.field('description', 'text').transform(function lineBreaks(value, entry) {
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'Season Subject' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('cast', 'text').transform(function lineBreak(value, entry) {
 	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'Season actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>').validation({
+	    }).attributes({ placeholder: 'Season actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -19892,7 +20332,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>').validation({
+	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">\n                        <div class="col-xs-12 col-sm-1">\n                            <div ng-controller="modalController">\n                                <img ng-src="{{ entry.values.image_url }}"\n                                     width="45"\n                                     height="45"\n                                     ng-click="openModalImage(entry.values.image_url)">\n                            </div>\n                        </div>\n                        <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>\n                    </div>\n                    <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose image');
@@ -19906,20 +20346,26 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    Season.editionView().title('<h4>Season <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        notification.log('Changes successfully saved', { addnCls: 'humane-flatty-success' });
 	        $state.go($state.get('list'), { entity: entity.name() });
 	        return false;
-	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Season Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Season Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ required: true }).label('TV Shows Name'), nga.field('season_number', 'number').attributes({ placeholder: 'Season Number' }).validation({ required: true }).label('Season Number'), nga.field('director', 'string').attributes({ placeholder: 'Season Director' }).validation({ required: true }).label('Director'), nga.field('rate', 'number').attributes({ placeholder: 'Season rated. Must be greater than 0, smaller or equal to 10' }).validation({ required: true, validator: function validator(value) {
+	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Season Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Season Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ required: true }).remoteComplete(true, {
+	        refreshDelay: 300,
+	        // populate choices from the response of GET /posts?q=XXX
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).label('TV Shows Name'), nga.field('season_number', 'number').attributes({ placeholder: 'Season Number' }).validation({ required: true }).label('Season Number'), nga.field('director', 'string').attributes({ placeholder: 'Season Director' }).validation({ required: true }).label('Director'), nga.field('rate', 'number').attributes({ placeholder: 'Season rated. Must be greater than 0, smaller or equal to 10' }).validation({ required: true, validator: function validator(value) {
 	            if (value <= 0) throw new Error('Rate must be greater than 0');
 	            if (value > 10) throw new Error('Rate cannot be greater than 10');
 	        } }).label('Rate'), nga.field('description', 'text').transform(function lineBreaks(value, entry) {
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'Season Subject' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('cast', 'text').transform(function lineBreak(value, entry) {
 	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'Season actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>').validation({
+	    }).attributes({ placeholder: 'Season actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -19932,7 +20378,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>').validation({
+	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">\n                        <div class="col-xs-12 col-sm-1">\n                            <div ng-controller="modalController">\n                                <img ng-src="{{ entry.values.image_url }}"\n                                     width="45"\n                                     height="45"\n                                     ng-click="openModalImage(entry.values.image_url)">\n                            </div>\n                        </div>\n                        <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>\n                    </div>\n                    <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose image');
@@ -19948,25 +20394,45 @@
 	    }).label('Image *'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 	    return Season;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 176 */
+/* 182 */
+/***/ (function(module, exports) {
+
+	module.exports = "<div ng-controller=\"modalController\">\r\n    <img ng-src=\"{{ entry.values.icon_url }}\"\r\n         width=\"45\"\r\n         height=\"45\"\r\n         ng-click=\"openModalImage(entry.values.icon_url, 'thumbnail')\">\r\n</div>";
+
+/***/ }),
+/* 183 */
+/***/ (function(module, exports) {
+
+	module.exports = "<div class=\"row\">\r\n    <div class=\"col-xs-12 col-sm-1\">\r\n        <div ng-controller=\"modalController\">\r\n            <img ng-src=\"{{ entry.values.icon_url }}\"\r\n                 width=\"45\"\r\n                 height=\"45\"\r\n                 ng-click=\"openModalImage(entry.values.icon_url)\">\r\n        </div>\r\n    </div>\r\n    <div class=\"col-xs-12 col-sm-8\"><ma-file-field field=\"field\" value=\"entry.values.icon_url\"></ma-file-field></div>\r\n</div>\r\n<div class=\"row\"><small id=\"emailHelp\" class=\"form-text text-muted\">120x120 px, not larger than 200 KB</small></div>";
+
+/***/ }),
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _templatesModalImageUploadHtml = __webpack_require__(183);
+	
+	var _templatesModalImageUploadHtml2 = _interopRequireDefault(_templatesModalImageUploadHtml);
+	
 	exports['default'] = function (nga, admin) {
 	    var Series = admin.getEntity('Series');
 	    Series.listView().title('<h4>TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<vod type="update_film" selection="selection"></vod>']).actions(['<move type="move_to_package" selection="selection"></move>', 'batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('tv_series_categories').cssClasses('hidden').map(function getpckgid(value, entry) {
@@ -19983,17 +20449,29 @@
 	        return return_object;
 	    }).label('Vod in packages'), nga.field('tv_series_packages', 'reference_many').targetEntity(admin.getEntity('Packages')).perPage(-1).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).singleApiCall(function (package_id) {
 	        return { 'package_id[]': package_id };
-	    }).label('Packages'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at'), nga.field('pin_protected', 'boolean').cssClasses('hidden-xs').label('Pin Protected')]).sortDir("DESC").sortField("createdAt").filters([nga.field('not_id', 'reference').targetEntity(admin.getEntity('vodPackages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Not In Package'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('pin_protected', 'choice').choices([{ value: 0, label: 'False' }, { value: 1, label: 'True' }]).attributes({ placeholder: 'Pin Protected' }).label('Pin Protected'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([Series.listView().fields()]);
-
+	    }).label('Packages'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at'), nga.field('pin_protected', 'boolean').cssClasses('hidden-xs').label('Pin Protected')]).sortDir("DESC").sortField("createdAt").filters([nga.field('not_id', 'reference').targetEntity(admin.getEntity('vodPackages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Not In Package'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('pin_protected', 'choice').choices([{ value: 0, label: 'False' }, { value: 1, label: 'True' }]).attributes({ placeholder: 'Pin Protected' }).label('Pin Protected'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([Series.listView().fields()]);
+	
 	    Series.deletionView().title('<h4>TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    Series.creationView().title('<h4>TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> Create: TV Shows</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 	        return false;
-	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'TV Shows Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'TV Shows Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_series_categories', 'reference_many').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genres').attributes({ placeholder: 'Select genre' }).singleApiCall(function (category_id) {
+	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'TV Shows Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'TV Shows Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_series_categories', 'reference_many').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).remoteComplete(true, {
+	        refreshDelay: 300,
+	        // populate choices from the response of GET /posts?q=XXX
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).label('Genres').attributes({ placeholder: 'Select genre' }).singleApiCall(function (category_id) {
 	        return { 'category_id[]': category_id };
-	    }), nga.field('tv_series_packages', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
+	    }), nga.field('tv_series_packages', 'reference_many').targetEntity(admin.getEntity('Packages')).remoteComplete(true, {
+	        refreshDelay: 300,
+	        // populate choices from the response of GET /posts?q=XXX
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
 	        return { 'package_id[]': package_id };
 	    }), nga.field('director', 'string').attributes({ placeholder: 'TV Shows Director' }).validation({ required: true }).label('Director'), nga.field('rate', 'number').attributes({ placeholder: 'TV Shows rated. Must be greater than 0, smaller or equal to 10' }).validation({ required: true, validator: function validator(value) {
 	            if (value <= 0) throw new Error('Rate must be greater than 0');
@@ -20002,7 +20480,7 @@
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'TV Shows Subject' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('cast', 'text').transform(function lineBreak(value, entry) {
 	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'TV Shows actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>').validation({
+	    }).attributes({ placeholder: 'TV Shows actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -20029,7 +20507,7 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('adult_content', 'choice').defaultValue(false).choices([{ value: true, label: 'Yes' }, { value: false, label: 'No' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Has adult content'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    Series.editionView().title('<h4>TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        notification.log('Changes successfully saved', { addnCls: 'humane-flatty-success' });
@@ -20085,63 +20563,63 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('adult_content', 'choice').defaultValue(false).choices([{ value: true, label: 'Yes' }, { value: false, label: 'No' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Has adult content'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return Series;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 177 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var ResellersUsers = admin.getEntity('ResellersUsers');
 	    ResellersUsers.listView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).label('Group'), nga.field('username', 'string').label('Username'), nga.field('email', 'email').cssClasses('hidden-xs').label('Email'), nga.field('telephone', 'string').cssClasses('hidden-xs').label('Telephone'), nga.field('isavailable', 'boolean').label('Is Available')]).listActions(['edit']).exportFields([ResellersUsers.listView().fields()]);
-
+	
 	    ResellersUsers.creationView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Create: User </h4>').fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).validation({ required: true }).attributes({ placeholder: 'Select group' }).label('Group'), nga.field('username', 'string').attributes({ placeholder: 'Username must be at least 3 character long' }).validation({ required: true, minlength: 3 }).label('Username'), nga.field('hashedpassword', 'password').attributes({ placeholder: 'Password must be at least 4 character long' }).validation({ required: true, minlength: 4 }).label('Password'), nga.field('email', 'email').attributes({ placeholder: 'Email' }).validation({ required: true }).label('Email'), nga.field('telephone', 'string').attributes({ placeholder: 'Telephone' }).validation({ required: true }).label('Telephone'), nga.field('third_party_api_token', 'string').label('Third party token'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    ResellersUsers.editionView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['back']).fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).validation({ required: true }).attributes({ placeholder: 'Select group' }).isDetailLink(false).editable(false).label('Group'), nga.field('username', 'string').attributes({ placeholder: 'Username must be at least 3 character long' }).validation({ required: true, minlength: 3 }).label('Username'), nga.field('hashedpassword', 'password').attributes({ placeholder: 'Password must be at least 4 character long' }).validation({ required: true, minlength: 4 }).label('Password'), nga.field('email', 'email').attributes({ placeholder: 'Email' }).validation({ required: true }).label('Email'), nga.field('telephone', 'string').attributes({ placeholder: 'Telephone' }).validation({ required: true }).label('Telephone'), nga.field('third_party_api_token', 'string').label('Third party token'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return ResellersUsers;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 178 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var ResellersLoginData = admin.getEntity('ResellersLoginData');
 	    ResellersLoginData.listView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname').map(function (value, entry) {
 	        return entry.firstname + ' ' + entry.lastname;
 	    })).cssClasses('hidden-xs').label('Customer'), nga.field('username').isDetailLink(true).label('Username'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).cssClasses('hidden-xs').label('Channel Stream Source'), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).cssClasses('hidden-xs').label('VOD Stream Source'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('activity_timeout').cssClasses('hidden-xs').label('Activity Time Out'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Locked'), nga.field('get_messages', 'boolean').label('Get messages'), nga.field('show_adult', 'boolean').label('Show adult'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']);
-
+	
 	    ResellersLoginData.creationView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Login Account</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
@@ -20156,7 +20634,7 @@
 	        }
 	    }).perPage(5) // limit the number of results to 5
 	    .attributes({ placeholder: 'Select Customer' }).label('Customer').validation({ required: true }), nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters' }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' }).label('Channel Stream Source').perPage(-1).validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' }).label('VOD Stream Source').perPage(-1).validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Must contain 4 numbers', title: 'Must contain 4 numbers' }).validation({ required: true, pattern: '(?=.*\\d)[0-9]{4}' }).label('Pin'), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out (sec)'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select client timezone depending on country' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    ResellersLoginData.editionView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['back']).fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname', 'template').map(function (v, e) {
 	        return e.firstname + ' ' + e.lastname;
 	    })).attributes({ placeholder: 'Select Customer' }).label('Customer').perPage(1000).validation({ required: true }), nga.field('username', 'string').attributes({ placeholder: 'Username', readOnly: true }).label('Username').validation({ required: true }), nga.field('password', 'password').attributes({ placeholder: 'Password' }).label('Password').validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Pin' }).validation({ required: true }).label('Pin'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Select Channel Stream Source' }).label('Channel Stream Source').validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Select Vod Stream Source' }).label('VOD Stream Source').validation({ required: true }), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select Timezone' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('Subscriptions', 'referenced_list').label('Subscription').targetEntity(admin.getEntity('Subscriptions')).targetReferenceField('login_id').targetFields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).isDetailLink(false).label('Package'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_type_id').map(function truncate(value) {
@@ -20192,41 +20670,55 @@
 	    nga.field('livetvlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatelivetvtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label(''), nga.field('vodlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatevodtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label('')
 	    //./hidden field
 	    ]);
-
+	
 	    return ResellersLoginData;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 179 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _templatesModalImageUploadHtml = __webpack_require__(183);
+	
+	var _templatesModalImageUploadHtml2 = _interopRequireDefault(_templatesModalImageUploadHtml);
+	
 	//import foto from '../foto.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var VodEpisode = admin.getEntity('VodEpisode');
-	    VodEpisode.listView().title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<vod type="update_film" selection="selection"></vod>']).actions(['batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('duration', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at'), nga.field('pin_protected', 'boolean').cssClasses('hidden-xs').label('Pin Protected')]).sortDir("DESC").sortField("createdAt").filters([nga.field('tv_show_title').label('Tv show'), nga.field('season_number', 'number').label('Season number'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('pin_protected', 'choice').choices([{ value: 0, label: 'False' }, { value: 1, label: 'True' }]).attributes({ placeholder: 'Pin Protected' }).label('Pin Protected'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([VodEpisode.listView().fields()]);
-
+	    VodEpisode.listView().title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<vod type="update_film" selection="selection"></vod>']).actions(['batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('duration', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at'), nga.field('pin_protected', 'boolean').cssClasses('hidden-xs').label('Pin Protected')]).sortDir("DESC").sortField("createdAt").filters([nga.field('tv_show_title').label('Tv show'), nga.field('season_number', 'number').label('Season number'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('pin_protected', 'choice').choices([{ value: 0, label: 'False' }, { value: 1, label: 'True' }]).attributes({ placeholder: 'Pin Protected' }).label('Pin Protected'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('is_available', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([VodEpisode.listView().fields()]);
+	
 	    VodEpisode.deletionView().title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    VodEpisode.creationView().title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Episode</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 	        return false;
-	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Episode Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Episode Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ validator: function validator(value) {
+	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Episode Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Episode Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).remoteComplete(true, {
+	        refreshDelay: 300,
+	        // populate choices from the response of GET /posts?q=XXX
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select TV Shows Name');
 	            }
@@ -20238,7 +20730,7 @@
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'Episode Subject' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('cast', 'text').transform(function lineBreak(value, entry) {
 	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'Episode actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('vod_preview_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_preview_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_preview_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Not larger than 1MB</small></div>').defaultValue('').validation({
+	    }).attributes({ placeholder: 'Episode actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('vod_preview_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url', 'apifilename': 'result' }).template('<div class="row">\n                            <div class="col-xs-12 col-sm-1">\n                                <div ng-controller="modalController">\n                                    <img ng-src="{{ entry.values.vod_preview_url }}"\n                                         width="45"\n                                         height="45"\n                                         ng-click="openModalImage(entry.values.vod_preview_url)">\n                                </div>\n                            </div>\n                            <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_preview_url"></ma-file-field></div>\n                        </div>\n                      <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').defaultValue('').validation({
 	        validator: function validator(value) {
 	            var vod_preview_url = document.getElementById('vod_preview_url');
 	            if (vod_preview_url.value.length > 0) {
@@ -20247,7 +20739,7 @@
 	                }
 	            }
 	        }
-	    }).label('Video scrubbing url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>').validation({
+	    }).label('Video scrubbing url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -20260,7 +20752,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>').validation({
+	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">\n                            <div class="col-xs-12 col-sm-1">\n                                <div ng-controller="modalController">\n                                    <img ng-src="{{ entry.values.image_url }}"\n                                         width="45"\n                                         height="45"\n                                         ng-click="openModalImage(entry.values.image_url)">\n                                </div>\n                            </div>\n                            <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>\n                        </div>\n                      <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose image');
@@ -20274,7 +20766,7 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('adult_content', 'choice').defaultValue(false).choices([{ value: true, label: 'Yes' }, { value: false, label: 'No' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Has adult content'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').validation({ required: true }).defaultValue(new Date()).label('Expiration date'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    VodEpisode.editionView().title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        notification.log('Changes successfully saved', { addnCls: 'humane-flatty-success' });
@@ -20282,7 +20774,12 @@
 	        return false;
 	    }]).fields([
 	    //creation view fields
-	    nga.field('title', 'string').attributes({ placeholder: 'Episode Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Episode Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_season.tv_sery.tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ validator: function validator(value) {
+	    nga.field('title', 'string').attributes({ placeholder: 'Episode Name' }).validation({ required: true }).label('Title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Episode Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('tv_season.tv_sery.tv_show_id', 'reference').targetEntity(admin.getEntity('Series')).targetField(nga.field('title')).remoteComplete(true, {
+	        refreshDelay: 300,
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' }).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select TV Shows Name');
 	            }
@@ -20294,7 +20791,7 @@
 	        return value.split("\n").join("<br/>");
 	    }).attributes({ placeholder: 'Episode Subject' }).validation({ required: true, maxlength: 1000 }).label('Description'), nga.field('cast', 'text').transform(function lineBreak(value, entry) {
 	        return value.split("\n").join("<br/>");
-	    }).attributes({ placeholder: 'Episode actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('vod_preview_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_preview_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_preview_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Not larger than 1MB</small></div>').defaultValue('').validation({
+	    }).attributes({ placeholder: 'Episode actors' }).validation({ required: true, maxlength: 1000 }).label('Starring'), nga.field('trailer_url', 'string').defaultValue('').attributes({ placeholder: 'Trailer url' }).label('Trailer url'), nga.field('vod_preview_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url', 'apifilename': 'result' }).template('<div class="row">\n                            <div class="col-xs-12 col-sm-1">\n                                <div ng-controller="modalController">\n                                    <img ng-src="{{ entry.values.vod_preview_url }}"\n                                         width="45"\n                                         height="45"\n                                         ng-click="openModalImage(entry.values.vod_preview_url)">\n                                </div>\n                            </div>\n                            <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_preview_url"></ma-file-field></div>\n                        </div>\n                      <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').defaultValue('').validation({
 	        validator: function validator(value) {
 	            var vod_preview_url = document.getElementById('vod_preview_url');
 	            if (vod_preview_url.value.length > 0) {
@@ -20303,7 +20800,7 @@
 	                }
 	            }
 	        }
-	    }).label('Video scrubbing url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>').validation({
+	    }).label('Video scrubbing url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -20316,7 +20813,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>').validation({
+	    }).label('Icon *'), nga.field('image_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vod/image_url', 'apifilename': 'result' }).template('<div class="row">\n                            <div class="col-xs-12 col-sm-1">\n                                <div ng-controller="modalController">\n                                    <img ng-src="{{ entry.values.image_url }}"\n                                         width="45"\n                                         height="45"\n                                         ng-click="openModalImage(entry.values.image_url)">\n                                </div>\n                            </div>\n                            <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>\n                        </div>\n                      <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose image');
@@ -20336,28 +20833,28 @@
 	        entry.values.tv_episode_subtitles.unshift(no_sub_object);
 	        return entry.values.tv_episode_subtitles;
 	    }).label('Default subtitles'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('tv_episode_subtitles', 'referenced_list').label('Subtitles').targetEntity(admin.getEntity('tv_episode_subtitles')).targetReferenceField('tv_episode_id').targetFields([nga.field('title').label('Language')]).listActions(['edit', 'delete']), nga.field('ADD SUBTITLES', 'template').label('').template('<ma-create-button entity-name="tv_episode_subtitles" class="pull-right" label="ADD SUBTITLES" default-values="{ tv_episode_id: entry.values.id }"></ma-create-button>'), nga.field('tv_episode_url', 'referenced_list').label('Stream url Sources').targetEntity(admin.getEntity('tv_episode_stream')).targetReferenceField('tv_episode_id').targetFields([nga.field('tv_episode_url').label('Episode URL')]).listActions(['edit', 'delete']), nga.field('ADD STREAM', 'template').label('').template('<ma-create-button entity-name="tv_episode_stream" class="pull-right" label="ADD STREAM" default-values="{ tv_episode_id: entry.values.id }"></ma-create-button>')]);
-
+	
 	    return VodEpisode;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 180 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var tv_episode_subtitles = admin.getEntity('tv_episode_subtitles');
 	    tv_episode_subtitles.listView().title('<h4>Episode Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('tv_episode_id', 'reference').targetEntity(admin.getEntity('VodEpisode')).targetField(nga.field('title')).label('Episode'), nga.field('title', 'string').label('Title'), nga.field('subtitle_url', 'string').map(function truncate(value) {
@@ -20366,39 +20863,39 @@
 	        }
 	        return value.length > 25 ? value.substr(0, 25) + '...' : value;
 	    }).label('Subtitle Url')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([tv_episode_subtitles.listView().fields()]);
-
+	
 	    tv_episode_subtitles.deletionView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{entry.values.title}}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    tv_episode_subtitles.creationView().title('<h4>Episode Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Episode Subtitles</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'VodEpisode', id: entry.values.tv_episode_id });
-
+	
 	        return false;
 	    }]).fields([nga.field('tv_episode_id', 'reference').targetEntity(admin.getEntity('VodEpisode')).targetField(nga.field('title')).attributes({ placeholder: 'Select Episode from dropdown list' }).validation({ required: true }).perPage(-1).label('Episode'), nga.field('title').attributes({ placeholder: 'Specify the subtitles title' }).validation({ required: true }).label('Title'), nga.field('subtitle_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/subtitles/subtitle_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.subtitle_url"></ma-file-field></div>' + '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.subtitle_url }}"/></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Please, make sure the subtitle file is correctly encoded</small></div>').label('File input *').validation({ required: true }).label('URL'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    tv_episode_subtitles.editionView().title('<h4>Episode Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.tv_episode_id }}</h4>').actions(['list', 'delete']).fields([tv_episode_subtitles.creationView().fields()]);
-
+	
 	    return tv_episode_subtitles;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 181 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var tv_episode_stream = admin.getEntity('tv_episode_stream');
 	    tv_episode_stream.listView().title('<h4>Episode Streams <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('tv_episode_id', 'reference').targetEntity(admin.getEntity('VodEpisode')).targetField(nga.field('title')).label('Episode'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).label('Stream Source'), nga.field('tv_episode_url', 'string')
@@ -20409,9 +20906,9 @@
 	    //            return value.length > 25 ? value.substr(0, 25) + '...' : value;
 	    //      	})
 	    .label('Url'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').label('Encryption'), nga.field('token_url', 'string').label('Token Url')]).listActions(['edit']).exportFields([tv_episode_stream.listView().fields()]);
-
+	
 	    tv_episode_stream.deletionView().title('<h4>Episode Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> Episode Streams').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    tv_episode_stream.creationView().title('<h4>Episode Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Episode Stream</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'VodEpisode', id: entry.values.tv_episode_id });
@@ -20447,34 +20944,34 @@
 	            }
 	        }
 	    }).label('DRM Platform *'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    tv_episode_stream.editionView().title('<h4>Episode Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.tv_episode_id }}</h4>').actions(['list', 'delete']).fields([tv_episode_stream.creationView().fields()]);
-
+	
 	    return tv_episode_stream;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 182 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var Submenu = admin.getEntity('Submenu');
 	    var appids = { 1: 'Android Set Top Box', 2: 'Android Smart Phone', 3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV', 6: 'Apple TV' };
-
+	
 	    Submenu.listView().title('<h4>Submenu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="42" width="45" />').cssClasses('hidden-xs').label('Icon'), nga.field('title', 'string').isDetailLink(true).label('Title'), nga.field('url').map(function truncate(value) {
 	        if (!value) {
 	            return '';
@@ -20488,7 +20985,7 @@
 	        });
 	        return returnobj;
 	    }).template('<span ng-repeat="theappid in entry.values.appid track by $index" class="label label-default">{{theappid}}</span>').label('Applications IDs'), nga.field('isavailable', 'boolean').label('Available')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit', 'delete']).exportFields([Submenu.listView().fields()]);
-
+	
 	    Submenu.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('list'), { entity: entity.name() });
@@ -20522,73 +21019,41 @@
 	            }
 	        }
 	    }).label('Parent ID *'), nga.field('menu_description').attributes({ placeholder: 'Menu Description' }).validation({ required: true }).label('Menu Description'), nga.field('menu_level').defaultValue(2).cssClasses('hidden').label(''), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    Submenu.editionView().title('<h4>Submenu <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([Submenu.creationView().fields()]);
-
+	
 	    return Submenu;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 183 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	exports['default'] = function (nga, admin) {
-	    var AdvancedSettings = admin.getEntity('AdvancedSettings');
-
-	    AdvancedSettings.listView().title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('id').label('ID'), nga.field('parameter_id').label('Parameter ID'), nga.field('parameter_value').label('Parameter'), nga.field('parameter1_value').label('Parameter 1'), nga.field('parameter2_value').label('Parameter 2'), nga.field('parameter3_value').label('Parameter 3'), nga.field('duration').label('Duration'), nga.field('description', 'text').label('Description')]).listActions(['edit']);
-
-	    AdvancedSettings.editionView().title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([nga.field('parameter_id').attributes({ readOnly: true }).validation({ required: true }).label('Parameter ID'), nga.field('parameter_value').validation({ required: true }).label('Parameter'), nga.field('parameter1_value').label('Parameter 1'), nga.field('parameter2_value').label('Parameter 2'), nga.field('parameter3_value').label('Parameter 3'), nga.field('duration', 'number').label('Duration'), nga.field('description', 'text').attributes({ placeholder: 'Usage Description', readOnly: true }).validation({ maxlength: 1000 }).label('Description'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    AdvancedSettings.editionView().actions(['list']).title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([AdvancedSettings.creationView().fields()]);
-
-	    AdvancedSettings.deletionView().title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
-	    return AdvancedSettings;
-	};
-
-	module.exports = exports['default'];
-
-/***/ }),
-/* 184 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
-	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var company_settings = admin.getEntity('company_settings');
-	    company_settings.listView().title('<h4>Company <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('company_name', 'string').label('Company name'), nga.field('locale', 'string').label('Language'), nga.field('expire_date', 'date').label('Expire Date')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([company_settings.listView().fields()]);
-
+	    company_settings.listView().title('<h4>Company <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'number').label('ID'), nga.field('company_name', 'string').label('Company name'), nga.field('locale', 'string').label('Language'), nga.field('id', 'reference').targetEntity(admin.getEntity('company_settings_list_company_data')).targetField(nga.field('total_accounts')).label('Total Accounts'), nga.field('id', 'reference').targetEntity(admin.getEntity('company_settings_list_company_data')).targetField(nga.field('total_channels')).label('Total Channels'), nga.field('id', 'reference').targetEntity(admin.getEntity('company_settings_list_company_data')).targetField(nga.field('total_vod')).label('Total Vods'), nga.field('id', 'reference').targetEntity(admin.getEntity('company_settings_list_company_data')).targetField(nga.field('total_assets')).label('Total Assets'), nga.field('expire_date', 'date').label('Expire Date')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([company_settings.listView().fields()]);
+	
 	    company_settings.creationView().title('<h4>Company Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Settings </h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        notification.log('Successfully created', { addnCls: 'humane-flatty-success' });
 	        $state.go($state.get('edit'), { entity: 'company_settings', id: entry.values.id });
 	        return false;
-	    }]).fields([nga.field('company_name', 'string').attributes({ placeholder: 'Company Name' }).validation({ required: true }).label('Company name').template('<div>' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('company_url', 'string').validation({ required: true }).attributes({ placeholder: 'Company website' }), nga.field('email_address').validation({ required: true }).label('Email Address').template('<div>' + '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>' + '</div>').attributes({ placeholder: 'Address' }), nga.field('email_username').validation({ required: true }).label('Email Username').template('<div>' + '<ma-input-field field="field" value="entry.values.email_username"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Username for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Username' }), nga.field('email_password', 'password').validation({ required: true }).label('Email Password').template('<div>' + '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Password' }), nga.field('template').label('').template(_edit_buttonHtml2['default']),
-
+	    }]).fields([nga.field('company_name', 'string').attributes({ placeholder: 'Company Name' }).validation({ required: true }).label('Company name').template('<div>' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('company_url', 'string').validation({ required: true }).attributes({ placeholder: 'Company website' }), nga.field('email').validation({ required: true }).label('Owner Email').template('<div>' + '<ma-input-field field="field" value="entry.values.email"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address of the owner.</small>' + '</div>').attributes({ placeholder: 'Email' }), nga.field('email_address').validation({ required: true }).label('Email Address').template('<div>' + '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>' + '</div>').attributes({ placeholder: 'Address' }), nga.field('email_username').validation({ required: true }).label('Email Username').template('<div>' + '<ma-input-field field="field" value="entry.values.email_username"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Username for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Username' }), nga.field('email_password', 'password').validation({ required: true }).label('Email Password').template('<div>' + '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Password' }), nga.field('template').label('').template(_edit_buttonHtml2['default']),
+	
 	    //hidden field for creation view
 	    nga.field('company_logo', 'file').label('').defaultValue('/files/settings/mago.png').cssClasses('hidden').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.company_logo }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo', 'apifilename': 'result' }).validation({ required: true, validator: function validator() {
 	            var company_logo = document.getElementById('company_logo');
@@ -20665,7 +21130,7 @@
 	    .cssClasses('hidden').label('').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.smtp_host"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Smtp host and port (smtp_host:port)</small>' + '</div>').attributes({ placeholder: 'smtp.gmail.com:465' }), nga.field('smtp_secure', 'choice').defaultValue(true).cssClasses('hidden').choices([{ value: false, label: 'Disable secure connection with Smtp server' }, { value: true, label: 'Enable secure connection with Smtp server' }])
 	    // .validation({ required: true})
 	    .template('<div class="form-group">' + '<ma-choice-field field="field" value="entry.values.smtp_secure"></ma-choice-field>' + '<small id="emailHelp" class="form-text text-muted">Consider your Smtp host configurations for this setting </small>' + '</div>').label(''), nga.field('analytics_id', 'string').defaultValue('').cssClasses('hidden').attributes({ placeholder: 'Analytics ID' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.analytics_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Google analytics ID to monitor audience and system logs.</small>' + '</div>').label(''), nga.field('new_encryption_key', 'string').attributes({ placeholder: 'Current encryption key' }).defaultValue('0123456789abcdef').cssClasses('hidden').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.new_encryption_key"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Current key. Used to decrypt the authentification token sent by the device</small>' + '</div>').label(''), nga.field('old_encryption_key', 'string').attributes({ placeholder: 'Previous encryption key' }).defaultValue('0123456789abcdef').cssClasses('hidden').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.old_encryption_key"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Previous encryption key. If key transition is checked and the new key fails, attempt to use this key for authetification </small>' + '</div>').label(''), nga.field('key_transition', 'string').defaultValue(false).cssClasses('hidden').label('')]);
-
+	
 	    company_settings.editionView().title('<h4>Company Setting <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('company_name', 'string').validation({ required: true }).label('Company name').template('<div>' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('company_logo', 'file').label('Company logo').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.company_logo }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo', 'apifilename': 'result' }).validation({ required: true, validator: function validator() {
 	            var company_logo = document.getElementById('company_logo');
 	            if (company_logo.value.length > 0) {
@@ -20715,34 +21180,59 @@
 	            }
 	        }
 	    }), nga.field('background_video_url', 'string').validation({ required: false }).attributes({ placeholder: 'Background Video Url' }).label('Background Video Url'), nga.field('background_video_duration', 'number').validation({ required: false }).attributes({ placeholder: 'Background Video Duration' }).label('Background Video Duration'), nga.field('assets_url', 'string').validation({ required: true }).label('Assets URL').template('<div>' + '<ma-input-field field="field" value="entry.values.assets_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">URL to provide images through a CDN.</small>' + '</div>').attributes({ placeholder: 'Assets URL' }), nga.field('ip_service_url', 'string').validation({ required: true }).label('IP service URL').template('<div>' + '<ma-input-field field="field" value="entry.values.ip_service_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Service providing with device timezone.</small>' + '</div>').attributes({ placeholder: 'IP service URL' }), nga.field('ip_service_key', 'text').validation({ required: true }).label('IP service key'), nga.field('firebase_key', 'text').validation({ required: true }).label('Firebase key'), nga.field('help_page', 'string').validation({ required: true }).label('Help and Support website').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.help_page"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Configure application help page (By default /help_and_support)</small>' + '</div>'), nga.field('online_payment_url', 'string').validation({ required: true }).label('Online payment web page').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.online_payment_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Configure web page for online payments from application</small>' + '</div>'), nga.field('vod_subset_nr', 'number').defaultValue(200).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.vod_subset_nr"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Number of movies sent in each vod request</small>' + '</div>').label('Vod movies / request'), nga.field('activity_timeout', 'number').defaultValue(10800).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.activity_timeout"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Number of seconds to wait before screen goes black due to inactivity</small>' + '</div>').label('Inactivity Timeout'), nga.field('channel_log_time', 'number').defaultValue(6).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.channel_log_time"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Number of seconds to wait before sending log due to channel stream buffering</small>' + '</div>').label('Channel log time'), nga.field('email_address').validation({ required: true }).label('Email Address').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>' + '</div>').attributes({ placeholder: 'Address' }), nga.field('email_username').validation({ required: true }).label('Email Username').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_username"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Username for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Username' }), nga.field('email_password', 'password').validation({ required: true }).label('Email Password').template('<div class="form-group">' + '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Password' }), nga.field('smtp_host').validation({ required: true }).label('Smtp host').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.smtp_host"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Smtp host and port (smtp_host:port)</small>' + '</div>').attributes({ placeholder: 'smtp.gmail.com:465' }), nga.field('smtp_secure', 'choice').defaultValue(true).choices([{ value: false, label: 'Disable secure connection with Smtp server' }, { value: true, label: 'Enable secure connection with Smtp server' }]).validation({ required: true }).template('<div class="form-group">' + '<ma-choice-field field="field" value="entry.values.smtp_secure"></ma-choice-field>' + '<small id="emailHelp" class="form-text text-muted">Consider your Smtp host configurations for this setting </small>' + '</div>').label('Secure connection'), nga.field('analytics_id', 'string').attributes({ placeholder: 'Analytics ID' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.analytics_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Google analytics ID to monitor audience and system logs.</small>' + '</div>').label('Analytics ID'), nga.field('new_encryption_key', 'string').attributes({ placeholder: 'Current encryption key' }).defaultValue('0123456789abcdef').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.new_encryption_key"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Current key. Used to decrypt the authentification token sent by the device</small>' + '</div>').label('Current encryption key'), nga.field('old_encryption_key', 'string').attributes({ placeholder: 'Previous encryption key' }).defaultValue('0123456789abcdef').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.old_encryption_key"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Previous encryption key. If key transition is checked and the new key fails, attempt to use this key for authetification </small>' + '</div>').label('Previous encryption key'), nga.field('key_transition', 'string').defaultValue(false).label('Key transition'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return company_settings;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 185 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
+	
+	exports['default'] = function (nga, admin) {
+	    var company_settings_list_company_data = admin.getEntity('company_settings_list_company_data');
+	    company_settings_list_company_data.listView().title('<h4>Company <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id').label('ID'), nga.field('total_accounts').label('total_accounts'), nga.field('total_channels').label('total_channels'), nga.field('total_vod').label('total_vod'), nga.field('total_assets').label('total_assets')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]);
+	
+	    return company_settings_list_company_data;
+	};
+	
+	module.exports = exports['default'];
 
+/***/ }),
+/* 193 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
+	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var PlayerSettings = admin.getEntity('PlayerSettings');
 	    PlayerSettings.listView().batchActions([]).fields([nga.field('activity_timeout', 'number').attributes({ placeholder: 'Activity Timeout' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.activity_timeout"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">If there is no activity for this time then application will return to main menu. Default value 3 hr</small>' + '</div>').label('Activity Time Out'), nga.field('log_event_interval', 'number').attributes({ placeholder: 'Log event interval' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.log_event_interval"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Frequency to send audience logs.</small>' + '</div>').label('Log event interval'), nga.field('channel_log_time', 'number').attributes({ placeholder: 'Channel log time' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.channel_log_time"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Timeout to define a channel as not able to play.</small>' + '</div>').label('Channel log time'), nga.field('vod_subset_nr', 'number').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.vod_subset_nr"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Number of movies sent in each vod request</small>' + '</div>').label('Vod movies / request'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    PlayerSettings.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Player Settings</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done(); // stop the progress bar
 	        notification.log('Element #' + entry._identifierValue + ' successfully edited.', { addnCls: 'humane-flatty-success' }); // add a notification
@@ -20750,33 +21240,33 @@
 	        $state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 	        return false;
 	    }]).fields([PlayerSettings.listView().fields()]);
-
+	
 	    return PlayerSettings;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 186 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var ImagesSettings = admin.getEntity('ImagesSettings');
-	    ImagesSettings.listView().batchActions([]).fields([nga.field('box_logo_url', 'file').label('Box Logo *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px,not larger than 600 KB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url', 'apifilename': 'result' }).validation({
+	    ImagesSettings.listView().batchActions([]).fields([nga.field('box_logo_url', 'file').label('Box Logo *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.box_logo_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.box_logo_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px,not larger than 600 KB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
 	            if (value === null) {
 	                throw new Error('Please, choose Box Logo');
@@ -20789,7 +21279,7 @@
 	                }
 	            }
 	        }
-	    }), nga.field('box_background_url', 'file').label('Box Background *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1.3 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url', 'apifilename': 'result' }).validation({
+	    }), nga.field('box_background_url', 'file').label('Box Background *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.box_background_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.box_background_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1.3 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose Box Background');
@@ -20802,9 +21292,9 @@
 	                }
 	            }
 	        }
-	    }), nga.field('mobile_background_url', 'file').label('Landscape Background Mobile *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">540x960 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url', 'apifilename': 'result' }).validation({
+	    }), nga.field('mobile_background_url', 'file').label('Landscape Background Mobile *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.mobile_background_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.mobile_background_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">540x960 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
-
+	
 	            if (value == null) {
 	                throw new Error('Please, choose Landscape Background Mobile');
 	            } else {
@@ -20816,9 +21306,9 @@
 	                }
 	            }
 	        }
-	    }), nga.field('portrait_background_url', 'file').label('Portrait Background Mobile').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.portrait_background_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.portrait_background_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">432x768 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/portrait_background_url', 'apifilename': 'result' }).validation({
+	    }), nga.field('portrait_background_url', 'file').label('Portrait Background Mobile').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.portrait_background_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.portrait_background_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.portrait_background_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">432x768 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/portrait_background_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
-
+	
 	            if (value == null) {
 	                throw new Error('Please, choose Portrait Background Mobile');
 	            } else {
@@ -20830,9 +21320,9 @@
 	                }
 	            }
 	        }
-	    }), nga.field('mobile_logo_url', 'file').label('Mobile Logo *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px, not larger than 600 KB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url', 'apifilename': 'result' }).validation({
+	    }), nga.field('mobile_logo_url', 'file').label('Mobile Logo *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.mobile_logo_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.mobile_logo_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px, not larger than 600 KB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
-
+	
 	            if (value == null) {
 	                throw new Error('Please, choose Mobile Logo');
 	            } else {
@@ -20844,9 +21334,9 @@
 	                }
 	            }
 	        }
-	    }), nga.field('vod_background_url', 'file').label('VOD Background *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url', 'apifilename': 'result' }).validation({
+	    }), nga.field('vod_background_url', 'file').label('VOD Background *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.vod_background_url }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.vod_background_url)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
-
+	
 	            if (value == null) {
 	                throw new Error('Please, choose VOD Background');
 	            } else {
@@ -20858,7 +21348,7 @@
 	                }
 	            }
 	        }
-	    }), nga.field('background_video_url', 'string').validation({ required: false }).attributes({ placeholder: 'Background Video Url' }).label('Background Video Url'), nga.field('background_video_duration', 'number').validation({ required: false }).attributes({ placeholder: 'Background Video Duration' }).label('Background Video Duration'), nga.field('company_name', 'string').validation({ required: true }).label('Company name').template('<div>' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('company_logo', 'file').label('Company logo *').template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.company_logo }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo', 'apifilename': 'result' }).validation({
+	    }), nga.field('background_video_url', 'string').validation({ required: false }).attributes({ placeholder: 'Background Video Url' }).label('Background Video Url'), nga.field('background_video_duration', 'number').validation({ required: false }).attributes({ placeholder: 'Background Video Duration' }).label('Background Video Duration'), nga.field('company_name', 'string').validation({ required: true }).label('Company name').template('<div>' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('company_logo', 'file').label('Company logo *').template('<div class="row">\n                                <div class="col-xs-12 col-sm-1">\n                                    <div ng-controller="modalController">\n                                        <img ng-src="{{ entry.values.company_logo }}"\n                                             width="45"\n                                             height="45"\n                                             ng-click="openModalImage(entry.values.company_logo)">\n                                    </div>\n                                </div>\n                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>\n                               </div>\n                            <div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>').uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo', 'apifilename': 'result' }).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose Company logo');
@@ -20872,7 +21362,7 @@
 	            }
 	        }
 	    }), nga.field('locale', 'string').validation({ required: true }).label('Locale').template('<div>' + '<ma-input-field field="field" value="entry.values.locale"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">User interface language (not in use).</small>' + '</div>'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    ImagesSettings.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Images and Logos</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done(); // stop the progress bar
 	        notification.log('Element #' + entry._identifierValue + ' successfully edited.', { addnCls: 'humane-flatty-success' }); // add a notification
@@ -20880,34 +21370,34 @@
 	        $state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 	        return false;
 	    }]).fields([ImagesSettings.listView().fields()]);
-
+	
 	    return ImagesSettings;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 187 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var ApiKeys = admin.getEntity('ApiKeys');
 	    ApiKeys.listView().batchActions([]).fields([nga.field('new_encryption_key').validation({ required: true, minlength: 16, maxlength: 16 }).label('New Encryption Key').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.new_encryption_key"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Key used to encrypt/decrypt token. 16 characters long</small>' + '</div>'), nga.field('key_transition', 'boolean').validation({ required: true }).label('Key Transition'), nga.field('firebase_key', 'text').validation({ required: true }).label('Firebase key'), nga.field('akamai_token_key', 'string').label('Akamai  token key'), nga.field('flussonic_token_key', 'string').label('Flussonic token key'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    ApiKeys.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Api Keys</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done(); // stop the progress bar
 	        notification.log('Element #' + entry._identifierValue + ' successfully edited.', { addnCls: 'humane-flatty-success' }); // add a notification
@@ -20915,34 +21405,34 @@
 	        $state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 	        return false;
 	    }]).fields([ApiKeys.listView().fields()]);
-
+	
 	    return ApiKeys;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 188 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var URL = admin.getEntity('URL');
 	    URL.listView().batchActions([]).fields([nga.field('help_page', 'string').validation({ required: true }).label('Help and Support website').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.help_page"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Configure application help page (By default /help_and_support)</small>' + '</div>'), nga.field('online_payment_url', 'string').validation({ required: true }).label('Online payment web page').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.online_payment_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Configure web page for online payments from application</small>' + '</div>'), nga.field('assets_url', 'string').validation({ required: true }).label('Assets URL').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.assets_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">URL to provide images through a CDN.</small>' + '</div>').attributes({ placeholder: 'Assets URL' }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    URL.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> URLs</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done(); // stop the progress bar
 	        notification.log('Element #' + entry._identifierValue + ' successfully edited.', { addnCls: 'humane-flatty-success' }); // add a notification
@@ -20950,34 +21440,34 @@
 	        $state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 	        return false;
 	    }]).fields([URL.listView().fields()]);
-
+	
 	    return URL;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 189 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var EmailSettings = admin.getEntity('EmailSettings');
 	    EmailSettings.listView().batchActions([]).fields([nga.field('smtp_host').validation({ required: true }).label('Smtp host').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.smtp_host"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Smtp host and port (smtp_host:port)</small>' + '</div>').attributes({ placeholder: 'smtp.gmail.com:465' }), nga.field('email_username').validation({ required: true }).label('Email Username').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_username"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Username for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Username' }), nga.field('email_password', 'password').validation({ required: true }).label('Email Password').template('<div class="form-group">' + '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Password' }), nga.field('smtp_secure', 'choice').defaultValue(true).choices([{ value: false, label: 'Disable secure connection with Smtp server' }, { value: true, label: 'Enable secure connection with Smtp server' }]).validation({ required: true }).template('<div class="form-group">' + '<ma-choice-field field="field" value="entry.values.smtp_secure"></ma-choice-field>' + '<small id="emailHelp" class="form-text text-muted">Consider your Smtp host configurations for this setting </small>' + '</div>').label('Secure connection'), nga.field('email_address').validation({ required: true }).label('Email Address').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>' + '</div>').attributes({ placeholder: 'Address' }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    EmailSettings.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Email Settings</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done(); // stop the progress bar
 	        notification.log('Element #' + entry._identifierValue + ' successfully edited.', { addnCls: 'humane-flatty-success' }); // add a notification
@@ -20985,56 +21475,56 @@
 	        $state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 	        return false;
 	    }]).fields([EmailSettings.listView().fields()]);
-
+	
 	    return EmailSettings;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 190 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var search_customer = admin.getEntity('search_customer');
-
+	
 	    search_customer.listView().title('<h4>Search Customers <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('username').label('Username'), nga.field('customer_datum.firstname').label('Firstname'), nga.field('customer_datum.lastname').label('Lastname'), nga.field('customer_datum.email').label('Email'), nga.field('customer_datum.address').label('Address'), nga.field('subscription_status').label('Subscription Status'), nga.field('').label('').template('<ma-create-button entity-name="MySubscription" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true), nga.field('firstname').label('firstname')]);
 	    return search_customer;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 191 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var mysubscription = admin.getEntity('MySubscription');
-
+	
 	    mysubscription.creationView().title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Subscription</h4>').fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Choose Username from dropdown list' }).validation({ required: true }).perPage(-1).remoteComplete(true, {
 	        refreshDelay: 300,
 	        // populate choices from the response of GET /posts?q=XXX
@@ -21048,78 +21538,78 @@
 	        window.location.replace('#/MySales/list?search=%7B"distributorname":"' + localStorage.userName + '"%7D');
 	        return false;
 	    }]);
-
+	
 	    return mysubscription;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 192 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var emailTemplate = admin.getEntity('EmailTemplate');
-
+	
 	    emailTemplate.listView().title('<h4>Email Template <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['edit', 'delete']).batchActions([]).fields([nga.field('id').label('ID'), nga.field('template_id', 'choice').choices([{ value: 'code-pin-email', label: 'Email Template for Forgot Pin' }, { value: 'new-account', label: 'Email Template for New Account' }, { value: 'new-email', label: 'Email Template for New Email' }, { value: 'reset-password-email', label: 'Email Template for Reset Password' }, { value: 'weather-widget', label: 'Weather Widget' }, { value: 'invoice-info', label: 'Invoice Information' }, { value: 'user-invite-email', label: 'User Invite Email' }
 	    // { value: 'reset-password-confirm-email', label: '' },
 	    // { value: 'reset-password-email', label: '' },
 	    // { value: 'reset-password-enter-password', label: '' },
 	    // { value: 'salesreport-invoice', label: '' },
 	    ]).label('Template ID'), nga.field('title', 'string').label('Title'), nga.field('language', 'string').label('Language'), nga.field('content', 'text').label('Content')]);
-
+	
 	    emailTemplate.creationView().title('<h4>Email Template <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Template</h4>').fields([nga.field('template_id', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'code-pin-email', label: 'Email Template for Forgot Pin' }, { value: 'new-account', label: 'Email Template for New Account' }, { value: 'new-email', label: 'Email Template for New Email' }, { value: 'reset-password-email', label: 'Email Template for Reset Password' }, { value: 'weather-widget', label: 'Weather Widget' }, { value: 'invoice-info', label: 'Invoice Information' }, { value: 'user-invite-email', label: 'User Invite Email' }
 	    // { value: 'reset-password-confirm-email', label: '' },
 	    // { value: 'reset-password-email', label: '' },
 	    // { value: 'reset-password-enter-password', label: '' },
 	    // { value: 'salesreport-invoice', label: '' },
-	    ]).validation({ required: true }).label('Template ID'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('language', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'eng', label: 'English' }, { value: 'fre', label: 'French' }, { value: 'spa', label: 'Spanish' }, { value: 'sqi', label: 'Albanian' }]).validation({ required: true }).label('Language'), nga.field('content', 'text').attributes({ placeholder: 'Content' }).validation({ required: true }).label('Content'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	    ]).validation({ required: true }).label('Template ID'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('language', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'eng', label: 'English' }, { value: 'fre', label: 'French' }, { value: 'spa', label: 'Spanish' }, { value: 'sqi', label: 'Albanian' }, { value: 'pt', label: 'Portuguese' }]).validation({ required: true }).label('Language'), nga.field('content', 'text').attributes({ placeholder: 'Content' }).validation({ required: true }).label('Content'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
 	    emailTemplate.editionView().actions(['list']).title('<h4>Email Template <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>').fields([nga.field('template_id', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'code-pin-email', label: 'Email Template for Forgot Pin' }, { value: 'new-account', label: 'Email Template for New Account' }, { value: 'new-email', label: 'Email Template for New Email' }, { value: 'reset-password-email', label: 'Email Template for Reset Password' }, { value: 'weather-widget', label: 'Weather Widget' }, { value: 'invoice-info', label: 'Invoice Information' }, { value: 'user-invite-email', label: 'User Invite Email' }
 	    // { value: 'reset-password-confirm-email', label: '' },
 	    // { value: 'reset-password-email', label: '' },
 	    // { value: 'reset-password-enter-password', label: '' },
 	    // { value: 'salesreport-invoice', label: '' },
-	    ]).validation({ required: true }).label('Template ID'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('language', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'eng', label: 'English' }, { value: 'fre', label: 'French' }, { value: 'spa', label: 'Spanish' }, { value: 'sqi', label: 'Albanian' }]).validation({ required: true }).label('Language'), nga.field('content', 'text').attributes({ placeholder: 'Content' }).validation({ required: true }).label('Content'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	    ]).validation({ required: true }).label('Template ID'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('language', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).choices([{ value: 'eng', label: 'English' }, { value: 'fre', label: 'French' }, { value: 'spa', label: 'Spanish' }, { value: 'sqi', label: 'Albanian' }, { value: 'pt', label: 'Portuguese' }]).validation({ required: true }).label('Language'), nga.field('content', 'text').attributes({ placeholder: 'Content' }).validation({ required: true }).label('Content'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
 	    emailTemplate.deletionView().title('<h4>Email Template <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    return emailTemplate;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 193 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var newcustomer = admin.getEntity('NewCustomer');
-
+	
 	    newcustomer.creationView()
 	    // .url(function(entityId) {
 	    //     return 'NewCustomer'; // Can be absolute or relative
@@ -21130,31 +21620,31 @@
 	        window.location.replace('#/MySales/list?search=%7B"distributorname":"' + localStorage.userName + '"%7D');
 	        return false;
 	    }]).fields([nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters' }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).attributes({ placeholder: ' Select from the dropdown list one of the groups you created' }).label('Group').perPage(-1).validation({ required: true }), nga.field('firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return newcustomer;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 194 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var mysales = admin.getEntity('MySales');
-
+	
 	    mysales.listView()
 	    // .url(function() {
 	    //     return 'MySales/list';
@@ -21164,7 +21654,7 @@
 	    //     .attributes({ placeholder: 'Distributor' })
 	    //     .label('Distributor'),
 	    nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('name', 'reference').targetEntity(admin.getEntity('Combos')).attributes({ placeholder: 'Product' }).perPage(-1).targetField(nga.field('name')).label('Product'), nga.field('active', 'choice').choices([{ value: 'active', label: 'Active sales' }, { value: 'cancelled', label: 'Canceled sales' }, { value: 'all', label: 'All sales' }]).attributes({ placeholder: 'Sale active' }).label('Sale status')]).exportFields([mysales.listView().fields()]);
-
+	
 	    mysales.editionView().title('<h4>Transaction <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('id', 'number').editable(false).label('ID'), nga.field('transaction_id', 'string').label('Transaction ID').editable(false),
 	    /*
 	    nga.field('active', 'boolean')
@@ -21174,131 +21664,169 @@
 	        .label('Cancel Sale'),
 	    */
 	    nga.field('cancelation_reason', 'string').label('Cancelation Reason').editable(true).validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return mysales;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 195 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
 	exports['default'] = function (nga, admin) {
-	    var channels = admin.getEntity('Channels');
-
-	    channels.listView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> List </h4>').batchActions([]).fields([nga.field('channel_number', 'string').label('Number'), nga.field('title', 'string').isDetailLink(false).label('Title'), nga.field('epg_map_id', 'string').label('EPG MAP ID'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).isDetailLink(false).label('Genres'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('packages_channels').cssClasses('hidden').map(function getpckgid(value, entry) {
-	        var return_object = [];
-	        for (var i = 0; i < value.length; i++) {
-	            return_object[i] = value[i].package_id;
+	  var channels = admin.getEntity('Channels');
+	
+	  channels.listView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> List </h4>').batchActions([]).fields([nga.field('channel_number', 'string').label('Number'), nga.field('title', 'string').isDetailLink(false).label('Title'), nga.field('epg_map_id', 'string').label('EPG MAP ID'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).isDetailLink(false).label('Genres'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('packages_channels').cssClasses('hidden').map(function getpckgid(value, entry) {
+	    var return_object = [];
+	    for (var i = 0; i < value.length; i++) {
+	      return_object[i] = value[i].package_id;
+	    }
+	    return return_object;
+	  }).label('Packages Channels'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).singleApiCall(function (package_id) {
+	    return { 'package_id[]': package_id };
+	  }).label('Packages'), nga.field('description', 'text').cssClasses('hidden-xs').label('Description'), nga.field('isavailable', 'boolean').label('Available'), nga.field('pin_protected', 'boolean').label('Pin Protected')]).sortDir('ASC').sortField('channel_number').filters([nga.field('isavailable', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([channels.listView().fields()]);
+	
+	  channels.deletionView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
+	
+	  channels.creationView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
+	    // stop the progress bar
+	    progression.done();
+	    // add a notification
+	    $state.go($state.get('edit'), {
+	      entity: entity.name(),
+	      id: entry._identifierValue
+	    });
+	    // cancel the default action (redirect to the edition view)
+	    return false;
+	  }]).onSubmitError(['error', 'form', 'progression', 'notification', function (error, form, progression, notification) {
+	    progression.done(); // stop the progress bar
+	    return false;
+	  }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Channel name' }).validation({ required: true }).label('Title'), nga.field('epg_map_id', 'string').template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>').label('EPG MAP ID'), nga.field('channel_number', 'number').attributes({ placeholder: 'Must be number' }).validation({ required: true }).label('Number'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).remoteComplete(true, {
+	    refreshDelay: 300,
+	    searchQuery: function searchQuery(search) {
+	      return { q: search };
+	    }
+	  }).validation({
+	    validator: function validator(value) {
+	      if (value === null || value === '') {
+	        throw new Error('Please Select Genre');
+	      }
+	    }
+	  }).attributes({
+	    placeholder: 'Choose from dropdown list one of the genres you already created'
+	  }).label('Genre *'), nga.field('description', 'text').attributes({
+	    placeholder: 'You can specify data you need to know for the channel in this field'
+	  }).validation({ required: true }).label('Description'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('pin_protected', 'boolean').validation({ required: true }).label('Pin Protected'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [1, 2] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
+	    return { 'package_id[]': package_id };
+	  }), nga.field('icon_url', 'file').uploadInformation({
+	    url: '/file-upload/single-file/channels/icon_url',
+	    apifilename: 'result'
+	  }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 100 KB</small></div>').validation({
+	    validator: function validator(value) {
+	      if (value == null) {
+	        throw new Error('Please, choose icon');
+	      } else {
+	        var icon_url = document.getElementById('icon_url');
+	        if (icon_url.value.length > 0) {
+	          if (icon_url.files[0].size > 102400) {
+	            throw new Error('Your Icon is too Big, not larger than 100 KB');
+	          }
 	        }
-	        return return_object;
-	    }).label('Packages Channels'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).singleApiCall(function (package_id) {
-	        return { 'package_id[]': package_id };
-	    }).label('Packages'), nga.field('description', 'text').cssClasses('hidden-xs').label('Description'), nga.field('isavailable', 'boolean').label('Available'), nga.field('pin_protected', 'boolean').label('Pin Protected')]).sortDir("ASC").sortField("channel_number").filters([nga.field('isavailable', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([channels.listView().fields()]);
-
-	    channels.deletionView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
-	    channels.creationView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
-	        // stop the progress bar
-	        progression.done();
-	        // add a notification
-	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
-	        // cancel the default action (redirect to the edition view)
-	        return false;
-	    }]).onSubmitError(['error', 'form', 'progression', 'notification', function (error, form, progression, notification) {
-	        progression.done(); // stop the progress bar
-	        return false;
-	    }]).fields([nga.field('title', 'string').attributes({ placeholder: 'Channel name' }).validation({ required: true }).label('Title'), nga.field('epg_map_id', 'string').template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>').label('EPG MAP ID'), nga.field('channel_number', 'number').attributes({ placeholder: 'Must be number' }).validation({ required: true }).label('Number'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).validation({ validator: function validator(value) {
-	            if (value === null || value === '') {
-	                throw new Error('Please Select Genre');
-	            }
+	      }
+	    }
+	  }).label('Icon *'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
+	  channels.editionView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).fields([nga.field('title', 'string').attributes({ placeholder: 'Channel name' }).validation({ required: true }).label('Title'), nga.field('epg_map_id', 'string').template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>').label('EPG MAP ID'), nga.field('channel_number', 'number').attributes({ placeholder: 'Must be number' }).validation({ required: true }).label('Number'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).remoteComplete(true, {
+	    refreshDelay: 300,
+	    searchQuery: function searchQuery(search) {
+	      return { q: search };
+	    }
+	  }).validation({
+	    validator: function validator(value) {
+	      if (value === null || value === '') {
+	        throw new Error('Please Select Genre');
+	      }
+	    }
+	  }).attributes({
+	    placeholder: 'Choose from dropdown list one of the genres you already created'
+	  }).label('Genre *'), nga.field('description', 'text').attributes({
+	    placeholder: 'You can specify data you need to know for the channel in this field'
+	  }).validation({ required: true }).label('Description'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('pin_protected', 'boolean').validation({ required: true }).label('Pin Protected'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [1, 2] }).targetField(nga.field('package_name')).remoteComplete(true, {
+	    refreshDelay: 300,
+	    searchQuery: function searchQuery(search) {
+	      return { q: search };
+	    }
+	  }).label('Packages').attributes({ placeholder: 'Select packages' }).map(function getpckgid(value, entry) {
+	    var return_object = [];
+	    for (var i = 0; i < value.length; i++) {
+	      return_object[i] = value[i].package_id;
+	    }
+	    return return_object;
+	  }).singleApiCall(function (package_id) {
+	    return { 'package_id[]': package_id };
+	  }), nga.field('icon_url', 'file').uploadInformation({
+	    url: '/file-upload/single-file/channels/icon_url',
+	    apifilename: 'result'
+	  }).template('<div class="row">\n            <div class="col-xs-12 col-sm-1">\n                <div ng-controller="modalController">\n                  <img ng-src="{{ entry.values.icon_url }}"\n                       alt="thumbnail"\n                       width="45"\n                       height="45"\n                       ng-click="openModalImage(entry.values.icon_url, \'thumbnail\')">\n                </div> \n            </div>\n            <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>\n            </div>\n            <div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 100 KB</small></div>').validation({
+	    validator: function validator(value) {
+	      if (value == null) {
+	        throw new Error('Please, choose icon');
+	      } else {
+	        var icon_url = document.getElementById('icon_url');
+	        if (icon_url.value.length > 0) {
+	          if (icon_url.files[0].size > 102400) {
+	            throw new Error('Your Icon is too Big, not larger than 100 KB');
+	          }
 	        }
-	    }).attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' }).label('Genre *'), nga.field('description', 'text').attributes({ placeholder: 'You can specify data you need to know for the channel in this field' }).validation({ required: true }).label('Description'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('pin_protected', 'boolean').validation({ required: true }).label('Pin Protected'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [1, 2] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).singleApiCall(function (package_id) {
-	        return { 'package_id[]': package_id };
-	    }), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/channels/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 100 KB</small></div>').validation({
-	        validator: function validator(value) {
-	            if (value == null) {
-	                throw new Error('Please, choose icon');
-	            } else {
-	                var icon_url = document.getElementById('icon_url');
-	                if (icon_url.value.length > 0) {
-	                    if (icon_url.files[0].size > 102400) {
-	                        throw new Error('Your Icon is too Big, not larger than 100 KB');
-	                    }
-	                }
-	            }
-	        }
-	    }).label('Icon *'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    channels.editionView().title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).fields([nga.field('title', 'string').attributes({ placeholder: 'Channel name' }).validation({ required: true }).label('Title'), nga.field('epg_map_id', 'string').template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>').label('EPG MAP ID'), nga.field('channel_number', 'number').attributes({ placeholder: 'Must be number' }).validation({ required: true }).label('Number'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).validation({ validator: function validator(value) {
-	            if (value === null || value === '') {
-	                throw new Error('Please Select Genre');
-	            }
-	        }
-	    }).attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' }).label('Genre *'), nga.field('description', 'text').attributes({ placeholder: 'You can specify data you need to know for the channel in this field' }).validation({ required: true }).label('Description'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('pin_protected', 'boolean').validation({ required: true }).label('Pin Protected'), nga.field('packages_channels', 'reference_many').targetEntity(admin.getEntity('Packages')).permanentFilters({ package_type_id: [1, 2] }).targetField(nga.field('package_name')).label('Packages').attributes({ placeholder: 'Select packages' }).map(function getpckgid(value, entry) {
-	        var return_object = [];
-	        for (var i = 0; i < value.length; i++) {
-	            return_object[i] = value[i].package_id;
-	        }
-	        return return_object;
-	    }).singleApiCall(function (package_id) {
-	        return { 'package_id[]': package_id };
-	    }), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/channels/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 100 KB</small></div>').validation({
-	        validator: function validator(value) {
-	            if (value == null) {
-	                throw new Error('Please, choose icon');
-	            } else {
-	                var icon_url = document.getElementById('icon_url');
-	                if (icon_url.value.length > 0) {
-	                    if (icon_url.files[0].size > 102400) {
-	                        throw new Error('Your Icon is too Big, not larger than 100 KB');
-	                    }
-	                }
-	            }
-	        }
-	    }).label('Icon *'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('ChannelStreams', 'referenced_list').label('Channel Streams').targetEntity(admin.getEntity('ChannelStreams')).targetReferenceField('channel_id').targetFields([nga.field('stream_url')
-	    // .map(function truncate(value) {
-	    // 	if (!value) {
-	    // 		return '';
-	    // 	}
-	    // 	return value.length > 25 ? value.substr(0, 25) + '...' : value;
-	    // })
-	    .label('Stream Url'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).cssClasses('hidden-xs').label('Stream Source'), nga.field('stream_format').cssClasses('hidden-xs').label('Stream Format'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').cssClasses('hidden-xs').label('Encryption'), nga.field('stream_mode', 'string').cssClasses('hidden-xs').label('Stream Mode')]).listActions(['edit', 'delete']), nga.field('template').label('').template('<ma-create-button entity-name="ChannelStreams" class="pull-right" label="ADD STREAM" default-values="{ channel_id: entry.values.id }"></ma-create-button>')]);
-
-	    return channels;
+	      }
+	    }
+	  }).label('Icon *'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('ChannelStreams', 'referenced_list').label('Channel Streams').targetEntity(admin.getEntity('ChannelStreams')).targetReferenceField('channel_id').targetFields([nga.field('stream_url')
+	  // .map(function truncate(value) {
+	  // 	if (!value) {
+	  // 		return '';
+	  // 	}
+	  // 	return value.length > 25 ? value.substr(0, 25) + '...' : value;
+	  // })
+	  .label('Stream Url'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).cssClasses('hidden-xs').label('Stream Source'), nga.field('stream_format').cssClasses('hidden-xs').label('Stream Format'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').cssClasses('hidden-xs').label('Encryption'), nga.field('stream_mode', 'string').cssClasses('hidden-xs').label('Stream Mode')]).listActions(['edit', 'delete']), nga.field('template').label('').template('<ma-create-button entity-name="ChannelStreams" class="pull-right" label="ADD STREAM" default-values="{ channel_id: entry.values.id }"></ma-create-button>')]);
+	
+	  return channels;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 196 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var channelstream = admin.getEntity('ChannelStreams');
 	    channelstream.listView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('channel_number')).label('Nr'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('title')).isDetailLink(false).label('Channel'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).label('Stream Source'), nga.field('stream_url', 'string')
@@ -21314,9 +21842,9 @@
 	        }
 	        return value.length > 25 ? value.substr(0, 25) + '...' : value;
 	    }).label('Token Url'), nga.field('encryption_url', 'string').label('Encryption Url'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').label('Encryption'), nga.field('stream_format', 'choice').choices([{ value: 0, label: 'MPEG Dash' }, { value: 1, label: 'Smooth Streaming' }, { value: 2, label: 'HLS' }, { value: 3, label: 'OTHER' }]).validation({ required: true }).label('Stream Format')]).listActions(['edit']).exportFields([channelstream.listView().fields()]);
-
+	
 	    channelstream.deletionView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> Streams').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    channelstream.creationView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel Stream</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'Channels', id: entry.values.channel_id });
@@ -21368,112 +21896,112 @@
 	            }
 	        }
 	    }).label('DRM Platform *'), nga.field('template').label('').template(_edit_buttonHtml2['default']),
-
+	
 	    //hidden from UI
 	    nga.field('is_octoshape', 'boolean').defaultValue(false).validation({ required: false }).cssClasses('hidden').label('')]);
-
+	
 	    channelstream.editionView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.channel_id }}</h4>').actions(['list', 'delete']).fields([channelstream.creationView().fields()]);
-
+	
 	    return channelstream;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 197 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var channelstreamsource = admin.getEntity('ChannelStreamSources');
 	    channelstreamsource.listView().title('<h4>Channel Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('stream_source', 'string').label('Stream Source')]).listActions(['edit']).exportFields([channelstreamsource.listView().fields()]);
-
+	
 	    channelstreamsource.creationView().title('<h4>Channel Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel Stream Source</h4>').fields([nga.field('stream_source', 'string').attributes({ placeholder: 'Stream Source' }).validation({ required: true }).label('Stream Source'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    channelstreamsource.editionView().title('<h4>Channel Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.stream_source }}</h4>').actions(['list']).fields([channelstreamsource.creationView().fields(), nga.field('ChannelStreams', 'referenced_list').label('Channels').targetEntity(admin.getEntity('ChannelStreams')).targetReferenceField('stream_source_id').targetFields([nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('channel_number')).label('Nr'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('icon_url').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')).cssClasses('hidden-xs').label('Icon'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('title')).label('Channel'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).label('Stream Source'), nga.field('stream_url', 'string').map(function truncate(value) {
 	        if (!value) {
 	            return '';
 	        }
 	        return value.length > 25 ? value.substr(0, 25) + '...' : value;
 	    }).label('Stream Url')]).listActions(['edit']).perPage(15)]);
-
+	
 	    return channelstreamsource;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 198 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var combo = admin.getEntity('Combos');
 	    combo.listView().title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'string').isDetailLink(false).label('ID'), nga.field('product_id', 'string').isDetailLink(false).label('Product ID'), nga.field('name', 'string').isDetailLink(false).label('Name'), nga.field('duration').cssClasses('hidden-xs').label('Duration'), nga.field('value', 'number').cssClasses('hidden-xs').label('Value'), nga.field('isavailable', 'boolean').label('Available')]).listActions(['edit']).exportFields([combo.listView().fields()]);
-
+	
 	    combo.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 	        return false;
 	    }]).title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Product</h4>').fields([nga.field('product_id', 'string').attributes({ placeholder: 'Product ID' }).validation({ required: true }).label('Product ID'), nga.field('name', 'string').attributes({ placeholder: ' Name of your product' }).validation({ required: true }).label('Name'), nga.field('duration').attributes({ placeholder: 'Duration of this product in days' }).validation({ required: true }).label('Duration'), nga.field('value', 'number').attributes({ placeholder: 'Price of the product' }).validation({ required: true }).label('Value'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    combo.editionView().actions(['list']).title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.name }}</h4>').fields([combo.creationView().fields(), nga.field('', 'referenced_list').label('Packages').targetEntity(admin.getEntity('comboPackages')).targetReferenceField('combo_id').targetFields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).label('Package'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_type').map(function getpckdes(value, entry) {
 	        return entry["package_type.description"];
 	    })).label('Package Type')]).listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>']), nga.field('ADD PACKAGE', 'template').label('').template('<ma-create-button entity-name="comboPackages" class="pull-right" label="ADD PACKAGE" default-values="{ combo_id: entry.values.id }"></ma-create-button>')]);
-
+	
 	    return combo;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 199 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var combopackages = admin.getEntity('comboPackages');
 	    combopackages.listView().title('<h4>Combo Packages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).label('Package'), nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('name')).label('Combo')]).listActions(['edit']).exportFields([combopackages.listView().fields()]);
-
+	
 	    combopackages.deletionView().title('<h4>Combo Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.package.package_name }} </span> from <span style ="color:red;"> {{ entry.values.combo.name }} </span></h4>').fields([nga.field('combo', 'template').template(function (entry, value) {
 	        return entry.values.combo.name;
 	    }), nga.field('package', 'template').template(function (entry, value) {
 	        return entry.values['package'].package_name;
 	    })]).actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    combopackages.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'Combos', id: entry.values.combo_id });
@@ -21481,30 +22009,30 @@
 	    }]).title('<h4>Link Package with Combo/Plan</h4>').fields([nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('name')).perPage(-1).validation({ required: true }).label('Product'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name').map(function getpckdes(value, entry) {
 	        return entry["package_name"] + ' - ' + entry["package_type.description"];
 	    })).perPage(-1).validation({ required: true }).attributes({ placeholder: 'Select packages' }).label('Package'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    combopackages.editionView().title('<h4>Combo Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.combo_id }}</h4>').actions(['list']).fields([combopackages.creationView().fields()]);
-
+	
 	    return combopackages;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 200 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var customerdata = admin.getEntity('CustomerData');
 	    customerdata.listView().title('<h4>Customer Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).cssClasses('hidden-xs').label('Group'), nga.field('firstname', 'string').label('Firstname'), nga.field('lastname', 'string').label('Lastname'), nga.field('email', 'email').cssClasses('hidden-xs').label('Email'), nga.field('address', 'string').map(function truncate(value) {
@@ -21513,7 +22041,7 @@
 	        }
 	        return value.length > 15 ? value.substr(0, 15) + '...' : value;
 	    }).cssClasses('hidden-xs').label('Address'), nga.field('city', 'string').cssClasses('hidden-xs').label('City'), nga.field('country').cssClasses('hidden-xs').label('Country'), nga.field('telephone', 'string').cssClasses('hidden-xs').label('Telephone')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([customerdata.listView().fields()]);
-
+	
 	    customerdata.creationView().title('<h4>Customer Data <i class="fa fa-angle-right" aria-hidden="true"></i> Create Customer</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
@@ -21524,65 +22052,69 @@
 	            }
 	        }
 	    }), nga.field('firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('zip_code', 'string').attributes({ placeholder: 'Customer zip code', maxlength: 10 }).label('Zip code'), nga.field('telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    customerdata.editionView().title('<h4>Customer Data<i class="fa fa-chevron-right" aria-hidden="true"></i>Edit: {{ entry.values.firstname }} {{ entry.values.lastname }} </h4>').actions(['list']).fields([customerdata.creationView().fields(), nga.field('LoginData', 'referenced_list').label('Login Data').targetEntity(admin.getEntity('LoginData')).targetReferenceField('customer_id').targetFields([nga.field('username').label('Username'), nga.field('force_upgrade', 'boolean').label('Forced Upgrade'), nga.field('account_lock', 'boolean').label('Account Lock'), nga.field('auto_timezone', 'boolean').label('Auto TimeZone'), nga.field('pin').label('Pin')]).listActions(['edit']), nga.field('ADD ACCOUNT', 'template').label('').template('<ma-create-button entity-name="LoginData" class="pull-right" label="ADD ACCOUNT" default-values="{ customer_id: entry.values.id }"></ma-create-button>')]);
-
+	
 	    return customerdata;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 201 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var customergroup = admin.getEntity('CustomerGroups');
-
+	
 	    customergroup.listView().title('<h4>Customer Group <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('description').label('Description')]).listActions(['edit']).exportFields([customergroup.listView().fields()]);
-
+	
 	    customergroup.creationView().title('<h4>Customer Group <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Customer Group</h4>').fields([nga.field('description').attributes({ placeholder: 'Name the group to identify customers types(for example staff)' }).validation({ required: true }).label('Description'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    customergroup.editionView().title('<h4>Customer Group <i class="fa fa-chevron-right" aria-hidden="true"></i>Edit: {{ entry.values.description }} </h4>').actions(['list']).fields([customergroup.creationView().fields()]);
-
+	
 	    return customergroup;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 202 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var devicemenu = admin.getEntity('DeviceMenus');
 	    var appids = { 1: 'Android Set Top Box', 2: 'Android Smart Phone', 3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV', 6: 'Apple TV' };
-
-	    devicemenu.listView().title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="42" width="45" />').cssClasses('hidden-xs').label('Icon'), nga.field('title', 'string').isDetailLink(true).label('Title'), nga.field('url').map(function truncate(value) {
+	
+	    devicemenu.listView().title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('title', 'string').isDetailLink(true).label('Title'), nga.field('url').map(function truncate(value) {
 	        if (!value) {
 	            return '';
 	        }
@@ -21595,7 +22127,7 @@
 	        });
 	        return returnobj;
 	    }).template('<span ng-repeat="theappid in entry.values.appid track by $index" class="label label-default">{{theappid}}</span>').label('Applications IDs'), nga.field('is_guest_menu', 'boolean').label('Guest menu'), nga.field('isavailable', 'boolean').label('Available')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit', 'delete']).exportFields([devicemenu.listView().fields()]);
-
+	
 	    devicemenu.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('list'), { entity: entity.name() });
@@ -21631,7 +22163,7 @@
 	            }
 	        }
 	    }).label('Applications IDs *'), nga.field('position', 'string').attributes({ placeholder: 'Position of this menu item in main menu ex:if you place number 1 this menu item will be the first one in main menu' }).validation({ required: true }).label('Position'), nga.field('is_guest_menu', 'choice').defaultValue(false).choices([{ value: true, label: 'Create for guests only' }, { value: false, label: 'Create for clients only' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Guest menu'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('menu_description').attributes({ placeholder: 'Menu Description' }).validation({ required: true }).label('Menu Description'), nga.field('menu_level').defaultValue(1).cssClasses('hidden').label(''), nga.field('parent_id').defaultValue(0).cssClasses('hidden').label(''), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    devicemenu.editionView().title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([nga.field('title', 'string').attributes({ placeholder: 'Name of main menu item (for example Live TV)' }).validation({ required: true }).label('Title'), nga.field('url', 'string').attributes({ placeholder: 'In case you are adding an external application (for example youtube) fill the application url.' }).label('Url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/device_menu/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 600 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
@@ -21656,70 +22188,72 @@
 	            }
 	        }
 	    }).label('Applications IDs *'), nga.field('position', 'string').attributes({ placeholder: 'Position of this menu item in main menu ex:if you place number 1 this menu item will be the first one in main menu' }).validation({ required: true }).label('Position'), nga.field('is_guest_menu', 'choice').defaultValue(false).choices([{ value: true, label: 'Create for guests only' }, { value: false, label: 'Create for clients only' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Guest menu'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('menu_description').attributes({ placeholder: 'Menu Description' }).validation({ required: true }).label('Menu Description'), nga.field('menu_level').defaultValue(1).cssClasses('hidden').label(''), nga.field('parent_id').defaultValue(0).cssClasses('hidden').label(''), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    return devicemenu;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 203 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var systemmenu = admin.getEntity('SystemMenu');
-
+	
 	    systemmenu.listView().title('<h4>System Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'string').label('Menu Code'), nga.field('title', 'string').label('Menu Title').map(function deepth(value, entry) {
 	        if (entry.parent_menu_code !== 'root') value = "--" + value;
 	        return value;
 	    }), nga.field('menu_order', 'number').label('Menu Order'), nga.field('link', 'string').label('Link'), nga.field('isavailable', 'boolean').label('Available')]).listActions(['edit']).exportFields([systemmenu.listView().fields()]);
-
+	
 	    systemmenu.creationView().title('<h4>system Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Sytem Menu</h4>').fields([nga.field('parent_menu_code', 'reference').targetEntity(admin.getEntity('SystemMenu')).targetField(nga.field('menu_name')).attributes({ placeholder: 'Leave empty for root menu' }).permanentFilters({
 	        root: true // display only the published posts
 	    }).label('Parent Menu Code'), nga.field('id', 'string').label('Menu Code'), nga.field('title', 'string').label('Menu Title'), nga.field('menu_order', 'number').label('Menu Order'), nga.field('entity_name', 'string').label('System Entity Name'), nga.field('icon', 'string').label('Icon'), nga.field('link', 'string').label('Link'), nga.field('template', 'string').label('Template'), nga.field('isavailable', 'boolean').label('Available').defaultValue(true).validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    systemmenu.editionView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([systemmenu.creationView().fields()]);
-
+	
 	    return systemmenu;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 204 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 		var devices = admin.getEntity('Devices');
-		devices.listView().title('<h4>Devices <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<sendpush type="softwareupdate" selection="selection"></sendpush>', '<sendpush type="deletedata" selection="selection"></sendpush>', '<sendpush type="deletesharedpreferences" selection="selection"></sendpush>']).actions(['batch', 'export', 'filter']).fields([nga.field('username').label('Username'), nga.field('device_ip', 'string').map(function truncate(value) {
+		devices.listView().title('<h4>Devices <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions(['<sendpush type="softwareupdate" selection="selection"></sendpush>', '<sendpush type="deletedata" selection="selection"></sendpush>', '<sendpush type="deletesharedpreferences" selection="selection"></sendpush>']).actions(['batch', 'export', 'filter']).fields([nga.field('id').label('ID'), nga.field('username').label('Username'), nga.field('device_ip', 'string').map(function truncate(value) {
 			if (!value) {
 				return '';
 			}
 			return value.length > 14 ? value.substr(0, 14) + '...' : value;
+		}).template(function (entry) {
+			return '<a target="_blank" href="https://tools.keycdn.com/geo?host=' + entry.values.device_ip + '">{{entry.values.device_ip}}</a>';
 		}).label('IP'), nga.field('device_mac_address', 'string').label('Ethernet'), nga.field('device_wifimac_address', 'string').label('WiFi'), nga.field('ntype').map(function app(value) {
 			if (value == 1) {
 				return 'Wifi';
@@ -21746,32 +22280,32 @@
 			}
 			return value.length > 14 ? value.substr(0, 14) + '...' : value;
 		}).label('Device Brand'), nga.field('device_active', 'boolean').label('Device Active'), nga.field('api_version', 'string').label('Api Version')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true), nga.field('appid', 'choice').choices([{ value: 1, label: 'Box' }, { value: 2, label: 'Android' }, { value: 3, label: 'Ios' }, { value: 4, label: 'Stv' }, { value: 5, label: 'Samsung' }]).attributes({ placeholder: 'App Id' }).label('App ID'), nga.field('app_version').attributes({ placeholder: 'App Version' }).label('App Version'), nga.field('api_version').attributes({ placeholder: 'Api Version' }).label('Api Version'), nga.field('ntype', 'choice').choices([{ value: 1, label: 'Wifi' }, { value: 2, label: 'Ethernet' }, { value: 3, label: 'GPRS' }]).attributes({ placeholder: 'Ntype' }).label('Ntype'), nga.field('device_active', 'boolean').filterChoices([{ value: true, label: 'Active' }, { value: false, label: 'Not Active' }]).label('Device Active'), nga.field('hdmi').attributes({ placeholder: 'HDMI' }).label('HDMI'), nga.field('username').attributes({ placeholder: 'Username' }).label('Username')]).sortField('appid').sortDir('ASC').listActions(['edit']).exportFields([devices.listView().fields()]);
-
+	
 		devices.creationView().title('<h4>Devices <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Device</h4>').fields([nga.field('username').attributes({ placeholder: 'Username' }).validation({ required: true }).editable(false).label('Username'), nga.field('googleappid', 'string').editable(false).attributes({ placeholder: 'Google App Id' }).label('Google App ID'), nga.field('device_active', 'boolean').validation({ required: true }).label('Device Active'), nga.field('device_mac_address', 'string').attributes({ placeholder: 'Device Mac Address' }).validation({ required: true }).editable(false).label('Device Mac Address'), nga.field('device_wifimac_address', 'string').attributes({ placeholder: 'Device Wifi Mac Address' }).validation({ required: true }).editable(false).label('Device Wifi Mac Address'), nga.field('device_ip', 'string').attributes({ placeholder: 'Device IP' }).validation({ required: true }).editable(false).label('Device IP'), nga.field('device_id', 'string').attributes({ placeholder: 'Device ID' }).validation({ required: true }).editable(false).label('Device ID'), nga.field('ntype', 'string').attributes({ placeholder: 'Ntype' }).validation({ required: true }).editable(false).label('Ntype'), nga.field('appid', 'string').attributes({ placeholder: 'App ID' }).validation({ required: true }).editable(false).label('App ID'), nga.field('api_version', 'string').attributes({ placeholder: 'Api Version' }).validation({ required: true }).editable(false).label('Api Version'), nga.field('firmware', 'string').editable(false).label('Firmware'), nga.field('os').editable(false).label('Os'), nga.field('screen_resolution').editable(false).label('Screen Resolution'), nga.field('hdmi').editable(false).label('HDMI'), nga.field('device_brand').editable(false).label('Device Brand'), nga.field('app_version', 'string').editable(false).validation({ required: true }).label('App Version'), nga.field('createdAt', 'datetime').editable(false).label('First Login'), nga.field('updatedAt', 'datetime').editable(false).label('Last Login'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 		devices.editionView().title('<h4>Devices <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([devices.creationView().fields()]);
-
+	
 		return devices;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 205 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	        value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	        var epgdata = admin.getEntity('EpgData');
 	        epgdata.listView().title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions(['filter', 'batch', 'export', 'create']).fields([nga.field('channel_number').cssClasses('hidden-xs').label('Nr'), nga.field('title', 'string').label('Title'), nga.field('episode_title', 'string').label('Episode title'), nga.field('short_name', 'string').cssClasses('hidden-xs').label('Short Name'), nga.field('event_category', 'string').label('Category'), nga.field('event_rating', 'number').attributes({ min: 1, max: 10 }).label('Rating'), nga.field('event_language', 'string').label('Language'), nga.field('short_description').label('Short Description'), nga.field('long_description', 'text').map(function truncate(value) {
@@ -21790,7 +22324,7 @@
 	                var value2 = value.toString();
 	                return value2;
 	        }).attributes({ placeholder: 'Program End' }).label('Program End')]).listActions(['edit']).exportFields([epgdata.listView().fields()]);
-
+	
 	        epgdata.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	                progression.done();
 	                $state.go($state.get('list'), { entity: entity.name() });
@@ -21808,30 +22342,30 @@
 	                        return "-";
 	                } else return value;
 	        }).label('Language'), nga.field('program_start', 'datetime').attributes({ placeholder: 'Program Start' }).validation({ required: true }).label('Program Start'), nga.field('program_end', 'datetime').attributes({ placeholder: 'Program End' }).validation({ required: true }).label('Program End'), nga.field('duration_seconds', 'number').attributes({ placeholder: 'Duration' }).validation({ required: true }).label('Duration'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	        epgdata.editionView().title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([epgdata.creationView().fields()]);
-
+	
 	        return epgdata;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 206 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _epg_logsHtml = __webpack_require__(207);
-
+	
+	var _epg_logsHtml = __webpack_require__(215);
+	
 	var _epg_logsHtml2 = _interopRequireDefault(_epg_logsHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var epgImport = admin.getEntity('epgimport');
 	    epgImport.listView().title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions(['create']).fields([nga.field('channel_number').cssClasses('hidden-xs').label('Nr'), nga.field('title', 'string').label('Title'), nga.field('short_name', 'string').cssClasses('hidden-xs').label('Short Name'), nga.field('short_description').label('Short Description'), nga.field('program_start', 'datetime').cssClasses('hidden-xs').label('Program Start'), nga.field('program_end', 'datetime').cssClasses('hidden-xs').label('Program End'), nga.field('duration_seconds', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('timezone', 'number').map(function truncate(value) {
@@ -21839,7 +22373,7 @@
 	            return "No Timezone";
 	        }
 	    }).cssClasses('hidden-xs').label('Timezone')]).batchActions([]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]);
-
+	
 	    epgImport.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        return false;
 	    }]).title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Import EPG</h4>').fields([nga.field('channel_number', 'string').attributes({ placeholder: 'Channel number' }).validation({ required: false }).label('Enter channel number'), nga.field('delete_existing', 'boolean').attributes({ placeholder: 'deleteorappend' }).validation({ required: true }).label('Delete existing data'), nga.field('timezone', 'number').attributes({ placeholder: 0 }).validation({
@@ -21848,51 +22382,59 @@
 	            if (value < -12 || value > 12) throw new Error('Timezone should be in the range of [-12:12]');
 	        }
 	    }).label('Generated with timezone:'), nga.field('encoding', 'choice').attributes({ placeholder: 'utf-8' }).choices([{ value: 'ascii', label: 'ascii' }, { value: 'utf-8', label: 'utf-8' }, { value: 'ISO-8859-1', label: 'latin1 ' }]).label('Epg file encoding'), nga.field('epg_file', 'file').uploadInformation({ 'url': '/file-upload/single-file/epg/epg_file', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result', multiple: true }).template('<div class="row">' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.epg_file"></ma-file-field></div>' + '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.epg_file }}"/></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file types: csv and xml</small></div>').label('File input *'), nga.field('epg_url', 'string').attributes({ placeholder: 'Url of the epg file' }).validation({ required: false }).label('Enter the url for the epg file'), nga.field('template').label('').template(_epg_logsHtml2['default'])]);
-
+	
 	    return epgImport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 207 */
+/* 215 */
 /***/ (function(module, exports) {
 
 	module.exports = "<!DOCTYPE html>\r\n<html >\r\n<head>\r\n    <title>Simple Invoicing - Built with AngularJS</title>\r\n    <meta charset='utf-8'>\r\n    <meta name=\"description\" content=\"AngularJS and Angular Code Example for creating Invoices and Invoicing Application\">\r\n    <script src=\"https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js\"></script>\r\n    <script type=\"text/javascript\" src=\"js/main.js\"></script>\r\n</head>\r\n<body>\r\n\r\n<div class=\"container\" ng-app=\"myApp\" ng-controller=\"logsCtrl\">\r\n    <div class=\"row\">\r\n        <div class=\"btn-group inline pull-right\">\r\n            <div class=\"btn btn-small\"><see-logs post=\"entry\" class=\"pull-right\" data-method=\"ctrlFn\"></see-logs></div>\r\n            <div class=\"btn btn-small\"><ma-back-button class=\"pull-right\" label=\"Cancel\"></ma-back-button></div>\r\n        </div>\r\n    </div>\r\n    <hr><br/><br/><br/><br/>\r\n\r\n    <div class=\"row\">\r\n        <table class=\"table\">\r\n            <thead>\r\n            <tr>\r\n                <th style=\"border-bottom: none;\">{{records1[0]}}</th>\r\n                <th style=\"border-bottom: none;\">{{records1[1]}}</th>\r\n                <th style=\"border-bottom: none;\">{{records1[2]}}</th>\r\n                <th style=\"border-bottom: none;\">{{records1[3]}}</th>\r\n            </tr>\r\n            </thead>\r\n            <tbody>\r\n            <tr ng-repeat=\"x in records.message\">\r\n                <td>{{x.file_name}}</td>\r\n                <td>{{x.saved_records}}</td>\r\n                <td>{{x.non_saved_records}}</td>\r\n                <td>{{x.error_log}}</td>\r\n            </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n</div>\r\n\r\n</body>\r\n</html>";
 
 /***/ }),
-/* 208 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _templatesModalImageUploadHtml = __webpack_require__(183);
+	
+	var _templatesModalImageUploadHtml2 = _interopRequireDefault(_templatesModalImageUploadHtml);
+	
 	exports['default'] = function (nga, admin) {
 	    var genre = admin.getEntity('Genres');
-	    genre.listView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'string').isDetailLink(true).label('ID'), nga.field('description', 'string').label('Description'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').label('Available'), nga.field('channels').map(function total(value, entry) {
+	    genre.listView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'string').isDetailLink(true).label('ID'), nga.field('description', 'string').label('Description'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('is_available', 'boolean').label('Available'), nga.field('channels').map(function total(value, entry) {
 	        var obj = [];
 	        for (var i = value.length - 1; i >= 0; i--) {
 	            obj[i] = value[i].total;
 	            return obj[i];
 	        }
 	    }).label('Number of Channels')]).listActions(['edit', 'delete']).exportFields([genre.listView().fields()]);
-
+	
 	    genre.deletionView().title('<h4>Genre <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.description }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
-	    genre.creationView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Genre</h4>').fields([nga.field('description', 'string').attributes({ placeholder: 'Name of the channel genre/category' }).validation({ required: true }).label('Description'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/genre/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
+	
+	    genre.creationView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Genre</h4>').fields([nga.field('description', 'string').attributes({ placeholder: 'Name of the channel genre/category' }).validation({ required: true }).label('Description'), nga.field('is_available', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/genre/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -21906,36 +22448,36 @@
 	            }
 	        }
 	    }).label('Icon *'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    genre.editionView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>').actions(['list']).fields([genre.creationView().fields(), nga.field('', 'referenced_list').label('Channel').targetEntity(admin.getEntity('Channels')).targetReferenceField('genre_id').targetFields([nga.field('channel_number').label('Nr'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').label('Icon'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title')]).listActions(['edit']), nga.field('template').label('').template(_filter_genre_btnHtml2['default'])]);
-
+	
+	    genre.editionView().title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>').actions(['list']).fields([genre.creationView().fields(), nga.field('', 'referenced_list').label('Channel').targetEntity(admin.getEntity('Channels')).targetReferenceField('genre_id').targetFields([nga.field('channel_number').label('Nr'), nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).label('Icon'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title')]).listActions(['edit']), nga.field('template').label('').template(_filter_genre_btnHtml2['default'])]);
+	
 	    return genre;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 209 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var logindata = admin.getEntity('LoginData');
 	    logindata.listView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname').map(function (value, entry) {
 	        return entry.firstname + ' ' + entry.lastname;
 	    })).isDetailLink(false).cssClasses('hidden-xs').label('Customer'), nga.field('username').isDetailLink(false).label('Username'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).cssClasses('hidden-xs').label('Channel Stream Source'), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).isDetailLink(false).cssClasses('hidden-xs').label('VOD Stream Source'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('activity_timeout').cssClasses('hidden-xs').label('Activity Time Out'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Locked'), nga.field('get_messages', 'boolean').label('Get messages'), nga.field('show_adult', 'boolean').label('Show adult'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone')]).filters([nga.field('username', 'string').label('Search for client account'), nga.field('q').label('').template('<div class="input-group"><type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']);
-
+	
 	    logindata.creationView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Login Account</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
@@ -21970,7 +22512,7 @@
 	            }
 	        }
 	    }).label('Timezone *'), nga.field('player', 'choice').choices([{ value: 'default', label: 'Default Player' }, { value: 'exoplayer', label: 'Exoplayer' }]).attributes({ placeholder: 'Player' }).defaultValue('default').validation({ required: true }).label('Player'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    logindata.editionView().title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname', 'template').map(function (v, e) {
 	        return e.firstname + ' ' + e.lastname;
 	    })).attributes({ placeholder: 'Select Customer' }).label('Customer *').perPage(1000).validation({ validator: function validator(value) {
@@ -22026,58 +22568,67 @@
 	    nga.field('livetvlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatelivetvtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label(''), nga.field('vodlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatevodtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label('')
 	    //./hidden field
 	    ]);
-
+	
 	    return logindata;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 210 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//part of customization for mettre
-
+	
 	exports['default'] = function (nga, admin) {
 	    var CustomerAccount = admin.getEntity('CustomerAccount');
-
+	
 	    CustomerAccount.listView().title('<h4>Customer Account <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('customer_datum.firstname').map(function (value, entry) {
 	        return entry['customer_datum.firstname'] + ' ' + entry['customer_datum.lastname'];
-	    }).isDetailLink(false).label('Customer'), nga.field('username').isDetailLink(false).label('Username'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).cssClasses('hidden-xs').label('Channel Stream Source'), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).isDetailLink(false).cssClasses('hidden-xs').label('VOD Stream Source'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('activity_timeout').cssClasses('hidden-xs').label('Activity Time Out'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Locked'), nga.field('get_messages', 'boolean').label('Get messages'), nga.field('show_adult', 'boolean').label('Show adult'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone')]).filters([nga.field('username', 'string').label('Search for client account'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']);
-
+	    }).isDetailLink(false).label('Customer'), nga.field('username').isDetailLink(false).label('Username'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).isDetailLink(false).cssClasses('hidden-xs').label('Channel Stream Source'), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).isDetailLink(false).cssClasses('hidden-xs').label('VOD Stream Source'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('activity_timeout').cssClasses('hidden-xs').label('Activity Time Out'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Locked'), nga.field('get_messages', 'boolean').label('Get messages'), nga.field('show_adult', 'boolean').label('Show adult'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone'), nga.field('customer_datum.email', 'email').cssClasses('hidden-xs').label('Email')]).filters([nga.field('username', 'string').label('Search for client account'), nga.field('customer_datum.email', 'email').label('Search for client email'), nga.field('customer_datum.firstname').map(function (value, entry) {
+	        return entry['customer_datum.firstname'] + ' ' + entry['customer_datum.lastname'];
+	    }).label('Search for client name'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']);
+	
 	    CustomerAccount.creationView().title('<h4>Customer Account <i class="fa fa-angle-right" aria-hidden="true"></i> Create Customer and Account</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('list'), { entity: entity.name() });
 	        return false;
 	    }]).fields([
 	    //Customer Data Fields
-	    nga.field('group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).attributes({ placeholder: ' Select from the dropdown list one of the groups you created' }).label('Group').perPage(-1).validation({ required: true }), nga.field('firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'),
-
+	    nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters' }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).remoteComplete(true, {
+	        refreshDelay: 300,
+	        searchQuery: function searchQuery(search) {
+	            return { q: search };
+	        }
+	    }).attributes({ placeholder: ' Select from the dropdown list one of the groups you created' }).label('Group').perPage(-1).validation({ required: true }), nga.field('firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'),
+	
 	    //Login Data Fields
-	    nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters' }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('mac_address', 'string').attributes({ maxlength: 12 }).label('Sale mac address'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' }).label('Channel Stream Source').perPage(-1).validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' }).label('VOD Stream Source').perPage(-1).validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Must contain 4 numbers', title: 'Must contain 4 numbers' }).validation({ required: true, pattern: '(?=.*\\d)[0-9]{4}' }).label('Pin'), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out (sec)'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select client timezone depending on country' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
+	    nga.field('mac_address', 'string').attributes({ maxlength: 12 }).label('Sale mac address'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' }).label('Channel Stream Source').perPage(-1).validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' }).label('VOD Stream Source').perPage(-1).validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Must contain 4 numbers', title: 'Must contain 4 numbers' }).validation({ required: true, pattern: '(?=.*\\d)[0-9]{4}' }).label('Pin'), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out (sec)'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select client timezone depending on country' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
 	    CustomerAccount.editionView().title('<h4>Customer Account <i class="fa fa-angle-right" aria-hidden="true"></i>  Edit: {{ entry.values.username }}</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('list'), { entity: entity.name() });
 	        return false;
 	    }]).actions(['list']).fields([
 	    //Customer Data Fields
-	    nga.field('customer_datum.group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).attributes({ placeholder: ' Select from the dropdown list one of the groups you created' }).label('Group').perPage(-1).validation({ required: true }), nga.field('customer_datum.firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('customer_datum.lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('customer_datum.email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('customer_datum.address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('customer_datum.city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('customer_datum.country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('customer_datum.telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'),
-
+	    nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters', readOnly: true }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('customer_datum.group_id', 'reference').targetEntity(admin.getEntity('CustomerGroups')).targetField(nga.field('description')).attributes({ placeholder: ' Select from the dropdown list one of the groups you created' }).label('Group').perPage(-1).validation({ required: true }), nga.field('customer_datum.firstname', 'string').attributes({ placeholder: 'Customer Firstname' }).validation({ required: true }).label('Firstname'), nga.field('customer_datum.lastname', 'string').attributes({ placeholder: 'Customer Lastname' }).validation({ required: true }).label('Lastname'), nga.field('customer_datum.email', 'email').attributes({ placeholder: 'Customer email' }).validation({ required: true }).label('Email'), nga.field('customer_datum.address', 'string').attributes({ placeholder: 'Customer address (for example house number, street or other information)' }).validation({ required: true }).label('Address'), nga.field('customer_datum.city', 'string').attributes({ placeholder: 'Part of customer address' }).validation({ required: true }).label('City'), nga.field('customer_datum.country', 'choice').choices([{ value: ' Afghanistan', label: ' Afghanistan' }, { value: ' Albania', label: ' Albania' }, { value: ' Algeria', label: ' Algeria' }, { value: ' Andorra', label: ' Andorra' }, { value: ' Angola', label: ' Angola' }, { value: ' Antigua and Barbuda', label: ' Antigua and Barbuda' }, { value: ' Argentina', label: ' Argentina' }, { value: ' Armenia', label: ' Armenia' }, { value: ' Australia', label: ' Australia' }, { value: ' Austria', label: ' Austria' }, { value: ' Azerbaijan', label: ' Azerbaijan' }, { value: ' Bahamas', label: ' Bahamas' }, { value: ' Bahrain', label: ' Bahrain' }, { value: ' Bangladesh', label: ' Bangladesh' }, { value: ' Barbados', label: ' Barbados' }, { value: ' Belarus', label: ' Belarus' }, { value: ' Belgium', label: ' Belgium' }, { value: ' Belize', label: ' Belize' }, { value: ' Benin', label: ' Benin' }, { value: ' Bhutan', label: ' Bhutan' }, { value: ' Bolivia', label: ' Bolivia' }, { value: ' Bosnia and Herzegovina', label: ' Bosnia and Herzegovina' }, { value: ' Botswana', label: ' Botswana' }, { value: ' Brazil', label: ' Brazil' }, { value: ' Brunei Darussalam', label: ' Brunei Darussalam' }, { value: ' Bulgaria', label: ' Bulgaria' }, { value: ' Burkina Faso', label: ' Burkina Faso' }, { value: ' Burundi', label: ' Burundi' }, { value: ' Cabo Verde', label: ' Cabo Verde' }, { value: ' Cambodia', label: ' Cambodia' }, { value: ' Cameroon', label: ' Cameroon' }, { value: ' Canada', label: ' Canada' }, { value: ' Central African Republic', label: ' Central African Republic' }, { value: ' Chad', label: ' Chad' }, { value: ' Chile', label: ' Chile' }, { value: ' China', label: ' China' }, { value: ' Colombia', label: ' Colombia' }, { value: ' Comoros', label: ' Comoros' }, { value: ' Congo', label: ' Congo ' }, { value: ' Costa Rica', label: ' Costa Rica' }, { value: ' Côte D Ivoire', label: ' Côte D Ivoire' }, { value: ' Croatia', label: ' Croatia' }, { value: ' Cuba', label: ' Cuba' }, { value: ' Cyprus', label: ' Cyprus' }, { value: ' Czech Republic', label: ' Czech Republic' }, { value: ' (North Korea)', label: '(North Korea)' }, { value: ' Congo', label: ' Congo' }, { value: ' Denmark', label: ' Denmark' }, { value: ' Djibouti', label: ' Djibouti' }, { value: ' Dominica', label: ' Dominica' }, { value: ' Dominican Republic', label: ' Dominican Republic' }, { value: ' Ecuador', label: ' Ecuador' }, { value: ' Egypt', label: ' Egypt' }, { value: ' El Salvador', label: ' El Salvador' }, { value: ' Equatorial Guinea', label: ' Equatorial Guinea' }, { value: ' Eritrea', label: ' Eritrea' }, { value: 'Estonia', label: ' Estonia' }, { value: ' Ethiopia', label: ' Ethiopia' }, { value: ' Fiji', label: ' Fiji' }, { value: ' Finland', label: ' Finland' }, { value: ' France', label: ' France' }, { value: ' Gabon', label: ' Gabon ' }, { value: ' Gambia', label: ' Gambia ' }, { value: ' Georgia', label: ' Georgia' }, { value: ' Germany', label: ' Germany ' }, { value: ' Ghana', label: ' Ghana ' }, { value: ' Greece', label: ' Greece ' }, { value: ' Grenada', label: ' Grenada' }, { value: ' Guatemala', label: ' Guatemala' }, { value: ' Guinea', label: ' Guinea' }, { value: ' Guinea-Bissau', label: ' Guinea-Bissau' }, { value: ' Guyana', label: ' Guyana' }, { value: ' Haiti', label: ' Haiti ' }, { value: ' Honduras', label: ' Honduras' }, { value: ' Hungary', label: ' Hungary' }, { value: ' Iceland', label: ' Iceland ' }, { value: ' India', label: ' India ' }, { value: ' Indonesia', label: ' Indonesia' }, { value: ' Iran', label: ' Iran ' }, { value: ' Iraq', label: ' Iraq' }, { value: ' Ireland', label: ' Ireland ' }, { value: ' Israel', label: ' Israel' }, { value: ' Italy', label: ' Italy' }, { value: ' Jamaica', label: ' Jamaica' }, { value: ' Japan', label: ' Japan ' }, { value: ' Jordan', label: ' Jordan' }, { value: ' Kazakhstan', label: ' Kazakhstan ' }, { value: ' Kenya', label: ' Kenya ' }, { value: ' Kiribati', label: ' Kiribati' }, { value: ' Kuwait', label: ' Kuwait' }, { value: ' Kyrgyzstan', label: ' Kyrgyzstan' }, { value: ' Lao', label: ' Lao' }, { value: ' Latvia', label: ' Latvia' }, { value: ' Lebanon', label: ' Lebanon' }, { value: ' Lesotho', label: ' Lesotho' }, { value: ' Liberia', label: ' Liberia' }, { value: ' Libya', label: ' Libya ' }, { value: ' Liechtenstein', label: ' Liechtenstein' }, { value: ' Lithuania', label: ' Lithuania ' }, { value: ' Luxembourg', label: ' Luxembourg' }, { value: ' Macedonia', label: ' Macedonia ' }, { value: ' Madagascar', label: ' Madagascar' }, { value: ' Malawi', label: ' Malawi ' }, { value: ' Malaysia', label: ' Malaysia' }, { value: ' Maldives', label: ' Maldives ' }, { value: ' Mali', label: ' Mali' }, { value: ' Malta', label: ' Malta' }, { value: ' Marshall Islands', label: ' Marshall Islands ' }, { value: ' Mauritania', label: ' Mauritania' }, { value: ' Mauritius', label: ' Mauritius' }, { value: ' Mexico', label: ' Mexico' }, { value: ' Micronesia', label: ' Micronesia' }, { value: ' Monaco', label: ' Monaco' }, { value: ' Mongolia', label: ' Mongolia' }, { value: ' Montenegro', label: ' Montenegro' }, { value: ' Morocco', label: ' Morocco' }, { value: ' Mozambique', label: ' Mozambique' }, { value: ' Myanmar', label: ' Myanmar' }, { value: ' Namibia', label: ' Namibia ' }, { value: ' Nauru', label: ' Nauru ' }, { value: ' Nepal', label: ' Nepal ' }, { value: ' Netherlands', label: ' Netherlands' }, { value: ' New Zealand', label: ' New Zealand' }, { value: ' Nicaragua', label: ' Nicaragua ' }, { value: ' Niger', label: ' Niger  ' }, { value: ' Nigeria', label: ' Nigeria ' }, { value: ' Norway', label: ' Norway ' }, { value: ' Oman', label: ' Oman ' }, { value: ' Pakistan', label: ' Pakistan ' }, { value: ' Palau', label: ' Palau ' }, { value: ' Panama', label: ' Panama ' }, { value: ' Papua New Guinea', label: ' Papua New Guinea ' }, { value: ' Paraguay', label: ' Paraguay ' }, { value: ' Peru', label: ' Peru' }, { value: ' Philippines', label: ' Philippines ' }, { value: ' Poland', label: ' Poland ' }, { value: ' Portugal', label: ' Portugal ' }, { value: ' Qatar', label: ' Qatar  ' }, { value: ' Republic of Korea (South Korea)', label: ' Republic of Korea (South Korea) ' }, { value: ' Republic of Moldova', label: ' Republic of Moldova ' }, { value: ' Romania', label: ' Romania' }, { value: ' Russian Federation', label: ' Russian Federation ' }, { value: ' Rwanda', label: ' Rwanda ' }, { value: ' Saint Kitts and Nevis', label: ' Saint Kitts and Nevis' }, { value: ' Saint Lucia', label: ' Saint Lucia ' }, { value: ' Saint Vincent and the Grenadines', label: ' Saint Vincent and the Grenadines ' }, { value: ' Samoa', label: ' Samoa ' }, { value: ' San Marino', label: ' San Marino' }, { value: ' Sao Tome and Principe', label: ' Sao Tome and Principe  ' }, { value: ' Saudi Arabia', label: ' Saudi Arabia ' }, { value: ' Senegal', label: ' Senegal' }, { value: ' Serbia', label: ' Serbia ' }, { value: ' Seychelles', label: ' Seychelles ' }, { value: ' Sierra Leone', label: ' Sierra Leone ' }, { value: ' Singapore', label: ' Singapore  ' }, { value: ' Slovakia', label: ' Slovakia  ' }, { value: ' Slovenia', label: ' Slovenia  ' }, { value: ' Solomon Islands', label: ' Solomon Islands' }, { value: ' Somalia', label: ' Somalia ' }, { value: ' South Africa', label: ' South Africa ' }, { value: ' South Sudan', label: ' South Sudan ' }, { value: ' Spain', label: ' Spain    ' }, { value: ' Sri Lanka', label: ' Sri Lanka ' }, { value: ' Sudan', label: ' Sudan    ' }, { value: ' Suriname', label: ' Suriname  ' }, { value: ' Swaziland', label: ' Swaziland  ' }, { value: ' Sweden', label: ' Sweden  ' }, { value: ' Switzerland', label: ' Switzerland ' }, { value: ' Syrian Arab Republic', label: ' Syrian Arab Republic  ' }, { value: ' Tajikistan', label: ' Tajikistan' }, { value: ' Thailand', label: ' Thailand ' }, { value: ' Timor-Leste', label: ' Timor-Leste ' }, { value: ' Togo', label: ' Togo  ' }, { value: ' Tonga', label: ' Tonga ' }, { value: ' Trinidad and Tobago', label: ' Trinidad and Tobago ' }, { value: ' Tunisia', label: ' Tunisia ' }, { value: ' Turkey', label: ' Turkey  ' }, { value: ' Turkmenistan', label: ' Turkmenistan ' }, { value: ' Tuvalu', label: ' Tuvalu  ' }, { value: ' Uganda', label: ' Uganda  ' }, { value: ' Ukraine', label: ' Ukraine  ' }, { value: ' United Arab Emirates', label: ' United Arab Emirates  ' }, { value: ' United Kingdom', label: ' United Kingdom' }, { value: ' United Republic of Tanzania', label: ' United Republic of Tanzania ' }, { value: ' United States of America', label: ' United States of America   ' }, { value: ' Uruguay', label: ' Uruguay ' }, { value: ' Uzbekistan', label: ' Uzbekistan ' }, { value: ' Vanuatu', label: ' Vanuatu ' }, { value: ' Venezuela', label: ' Venezuela  ' }, { value: ' Vietnam', label: ' Vietnam' }, { value: ' Yemen', label: ' Yemen ' }, { value: ' Zambia', label: ' Zambia ' }, { value: ' Zimbabwe', label: ' Zimbabwe ' }]).attributes({ placeholder: 'Part of customer address. Please select from dropdown list.' }).validation({ required: true }).label('Country'), nga.field('customer_datum.telephone').attributes({ placeholder: 'Customer phone number' }).validation({ required: true }).label('Telephone'),
+	
 	    //Login Data Fields
-	    nga.field('username', 'string').attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters', readOnly: true }).label('Username').validation({ required: true, pattern: '^[a-z\\d]{2,}$' }), nga.field('password', 'password').attributes({ placeholder: '4 or more characters', title: '4 or more characters' }).label('Password').validation({ required: true, pattern: '.{4,}' }), nga.field('mac_address', 'string').attributes({ maxlength: 12 }).label('Sale mac address'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' }).label('Channel Stream Source').perPage(-1).validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' }).label('VOD Stream Source').perPage(-1).validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Must contain 4 numbers', title: 'Must contain 4 numbers' }).validation({ required: true, pattern: '(?=.*\\d)[0-9]{4}' }).label('Pin'), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out (sec)'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select client timezone depending on country' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('Subscriptions', 'referenced_list').label('Subscription').targetEntity(admin.getEntity('Subscriptions')).targetReferenceField('login_id').targetFields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).isDetailLink(false).label('Package'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_type_id').map(function truncate(value) {
+	
+	    nga.field('mac_address', 'string').attributes({ maxlength: 12 }).label('Sale mac address'), nga.field('channel_stream_source_id', 'reference').targetEntity(admin.getEntity('ChannelStreamSources')).targetField(nga.field('stream_source')).attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' }).label('Channel Stream Source').perPage(-1).validation({ required: true }), nga.field('vod_stream_source', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' }).label('VOD Stream Source').perPage(-1).validation({ required: true }), nga.field('pin', 'string').attributes({ placeholder: 'Must contain 4 numbers', title: 'Must contain 4 numbers' }).validation({ required: true, pattern: '(?=.*\\d)[0-9]{4}' }).label('Pin'), nga.field('activity_timeout', 'string').attributes({ placeholder: 'Activity time out' }).validation({ required: true }).defaultValue(10800).label('Activity Time Out (sec)'), nga.field('timezone', 'choice').choices([{ value: -12, label: '(UTC-12:00) International Date Line West' }, { value: -11, label: '(UTC-11:00) Samoa' }, { value: -10, label: '(UTC-10:00) Hawaii' }, { value: -9, label: '(UTC-9:00) Alaska' }, { value: -8, label: '(UTC-8:00) Pacific Time (US & Canada)' }, { value: -7, label: '(UTC-7:00) Arizona, La Paz, Mazatlan' }, { value: -6, label: '(UTC-6:00) Central America, Monterrey, Mexico City ' }, { value: -5, label: '(UTC-5:00) Bogota, Lima, Quito, Indiana' }, { value: -4, label: '(UTC-4:00) Atlantic Time (Canada), Manaus ' }, { value: -3, label: '(UTC-3:00) Brasilia, Buenos Aires, Cayenne' }, { value: -2, label: '(UTC-2:00) Mid-Atlantic' }, { value: -1, label: '(UTC-1:00) Azores, Cape Verde Is.' }, { value: 0, label: '(UTC 0:00) Dublin, Lisbon, London, Reykjavik' }, { value: +1, label: '(UTC+1:00) Amsterdam, Berlin, Rome, Paris, Prague, Skopje ' }, { value: +2, label: '(UTC+2:00) Athens, Istanbul, Cairo, Helsinki, Kyiv, Vilnius ' }, { value: +3, label: '(UTC+3:00) Baghdad, Kuwait, Moscow, St. Petersburg, Nairobi' }, { value: +4, label: '(UTC+4:00) Abu Dhabi, Baku, Muscat' }, { value: +5, label: '(UTC+5:00) Ekaterinburg, Karachi, Tashkent' }, { value: +6, label: '(UTC+6:00) Astana, Dhaka, Novosibirsk' }, { value: +7, label: '(UTC+7:00) Bangkok, Hanoi, Jakarta' }, { value: +8, label: '(UTC+8:00) Beijing, Hong Kong, Kuala Lumpur, Perth, Taipei' }, { value: +9, label: '(UTC+9:00) Sapporo, Tokyo, Seoul' }, { value: +10, label: '(UTC+10:00) Brisbane, Melbourne, Sydney' }, { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' }, { value: +12, label: '(UTC+12:00) Auckland, Fiji' }]).attributes({ placeholder: 'Select client timezone depending on country' }).validation({ required: true }).label('Timezone'), nga.field('get_messages', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Get messages'), nga.field('get_ads', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Receive ads'), nga.field('show_adult', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Show adult content'), nga.field('auto_timezone', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Auto Timezone'), nga.field('account_lock', 'choice').defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).label('Account Locked').validation({ required: true }), nga.field('beta_user', 'choice').attributes({ placeholder: 'Choose from dropdown list' }).defaultValue(false).choices([{ value: false, label: 'Disabled' }, { value: true, label: 'Enabled' }]).label('Is tester').validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('Subscriptions', 'referenced_list').label('Subscription').targetEntity(admin.getEntity('Subscriptions')).targetReferenceField('login_id').targetFields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).isDetailLink(false).label('Package'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_type_id').map(function truncate(value) {
 	        if (value === 1) {
 	            return 'Live big screen';
 	        } else if (value === 2) {
@@ -22118,45 +22669,45 @@
 	            return 'Samsung';
 	        }
 	    }).cssClasses('hidden-xs').label('App ID'), nga.field('app_version').cssClasses('hidden-xs').label('App Version'), nga.field('ntype').cssClasses('hidden-xs').label('Ntype'), nga.field('updatedAt', 'date').cssClasses('hidden-xs').label('Last Updated'), nga.field('device_brand').cssClasses('hidden-xs').label('Device Brand'), nga.field('device_active', 'boolean').label('Device Active')]).sortField('appid').sortDir('ASC').listActions(['edit']), nga.field('Salesreports', 'referenced_list').label('Sale Reports').targetEntity(nga.entity('Salesreports')).targetReferenceField('login_data_id').targetFields([nga.field('user_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).cssClasses('hidden-xs').label('User'), nga.field('on_behalf_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).cssClasses('hidden-xs').label('On Behalf of'), nga.field('saledate', 'date').cssClasses('hidden-xs').label('Sale Date'), nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('name')).isDetailLink(false).label('Product')]).listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button>']), nga.field('custom_action').label('').template('<show-invoice post="entry" class="pull-right"></show-invoice>')]);
-
+	
 	    return CustomerAccount;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 211 */
+/* 219 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_package_btnHtml = __webpack_require__(212);
-
+	
+	var _filter_package_btnHtml = __webpack_require__(220);
+	
 	var _filter_package_btnHtml2 = _interopRequireDefault(_filter_package_btnHtml);
-
-	var _drag_drop_packageDrag_and_drop_templateHtml = __webpack_require__(213);
-
+	
+	var _drag_drop_packageDrag_and_drop_templateHtml = __webpack_require__(221);
+	
 	var _drag_drop_packageDrag_and_drop_templateHtml2 = _interopRequireDefault(_drag_drop_packageDrag_and_drop_templateHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var livepackages = admin.getEntity('livepackages');
-
+	
 	    livepackages.listView().title('<h4>All Packages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').permanentFilters({ package_type_id: [1, 2] }).batchActions([]).fields([nga.field('package_name').isDetailLink(false).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).isDetailLink(false).cssClasses('hidden-xs').label('Package Type')]).listActions(['edit']).exportFields([livepackages.listView().fields()]);
-
+	
 	    livepackages.creationView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>').fields([nga.field('package_name', 'string').attributes({ placeholder: 'Name the package you are creating' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).attributes({ placeholder: 'Choose the Package Type from dropdown list' }).validation({ required: true }).permanentFilters({ package_type_id: [1, 2] }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    livepackages.editionView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).validation({ required: true }).attributes({ placeholder: 'Select Package Type' }).permanentFilters({ package_type_id: [1, 2] }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('', 'template').label('').template(_drag_drop_packageDrag_and_drop_templateHtml2['default'])]);
-
+	
+	    livepackages.editionView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type.description', 'string').attributes({ readOnly: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('', 'template').label('').template(_drag_drop_packageDrag_and_drop_templateHtml2['default'])]);
+	
 	    // nga.field('packagechannels', 'referenced_list')
 	    //     .label('Channels')
 	    //     .targetEntity(admin.getEntity('packagechannels'))
@@ -22192,160 +22743,160 @@
 	    //     .template(filter_package_btn),
 	    return livepackages;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 212 */
+/* 220 */
 /***/ (function(module, exports) {
 
 	module.exports = "<div class=\"row\">\r\n    <div class=\"btn-group inline pull-right\"> \r\n      <div class=\"btn btn-small\"><ma-filtered-list-button entity-name=\"packagechannels\" class=\"pull-right\" label=\"SEE ALL CHANNELS\" filter=\"{ package_id: entry.values.id }\"></ma-filtered-list-button></div> \r\n      <div class=\"btn btn-small\"><ma-create-button entity-name=\"packagechannels\" class=\"pull-right\" label=\"ADD CHANNEL\" default-values=\"{ package_id: entry.values.id }\"></ma-create-button></div> \r\n    </div>\r\n</div>\r\n\r\n<hr>";
 
 /***/ }),
-/* 213 */
+/* 221 */
 /***/ (function(module, exports) {
 
 	module.exports = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <title>Drag &amp; Drop Lists for angular.js</title>\r\n</head>\r\n<body ng-app=\"myApp\">\r\n\r\n<div ng-controller=\"dragdropctrl\">\r\n    <div class=\"multiDemo row\">\r\n\r\n        <p class=\"text-center bg-default paragraph\">You can select or multiselect Channels from Available list to Selected list and back.</p>\r\n\r\n        <div class=\"col-md-12\">\r\n            <div class=\"row\">\r\n\r\n                <div ng-repeat=\"list in models\" class=\"col-md-6\">\r\n                    <div class=\"panel panel-default\">\r\n                        <div class=\"panel-heading\">\r\n                            <h3 class=\"panel-title text-center\">{{list.listName}}</h3>\r\n                        </div>\r\n                        <div class=\"panel-body\">\r\n                            <input type=\"text\" id=\"usr\" ng-model=\"searchText\" placeholder=\"Search Channel by name or by number...\" />\r\n                            <ul dnd-list dnd-drop=\"onDrop(list, item, index)\">\r\n                                <li ng-repeat=\"item in list.items | filter:searchText\"\r\n                                    dnd-draggable=\"getSelectedItemsIncluding(list, item)\"\r\n                                    dnd-dragstart=\"onDragstart(list, event)\"\r\n                                    dnd-moved=\"onMoved(list)\"\r\n                                    dnd-dragend=\"list.dragging = false\"\r\n                                    dnd-selected=\"item.selected = !item.selected\"\r\n                                    ng-class=\"{'selected': item.selected}\"\r\n                                    ng-hide=\"list.dragging && item.selected\"\r\n                                >\r\n                                    <div style=\"display: none;\">{{item.id}}</div> &nbsp;{{item.nr}}&nbsp;-&nbsp;{{item.label}}\r\n                                </li>\r\n                            </ul>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n            </div><!--row-->\r\n            <div class=\"row\">\r\n                <div class=\"btn-group inline pull-right\">\r\n                    <div class=\"btn btn-small\"><see-drag post=\"entry\" class=\"pull-right\" data-method=\"ctrlFn\"></see-drag></div>\r\n                    <!--<div class=\"btn btn-small\"><ma-filtered-list-button entity-name=\"packagechannels\" class=\"pull-right\" label=\"SEE ALL CHANNELS\" filter=\"{ package_id: entry.values.id }\"></ma-filtered-list-button></div>-->\r\n                </div>\r\n            </div><!--row-->\r\n            <hr><br/><br/><br/><br/>\r\n        </div><!--col-md-12-->\r\n    </div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n</div>\r\n</body>\r\n</html>";
 
 /***/ }),
-/* 214 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_package_btnHtml = __webpack_require__(212);
-
+	
+	var _filter_package_btnHtml = __webpack_require__(220);
+	
 	var _filter_package_btnHtml2 = _interopRequireDefault(_filter_package_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var packages = admin.getEntity('Packages');
-
+	
 	    packages.listView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('package_name').isDetailLink(false).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).cssClasses('hidden-xs').isDetailLink(false).label('Package Type')]).listActions(['edit']).exportFields([packages.listView().fields()]);
-
-	    packages.creationView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>').fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).attributes({ placeholder: 'Select Package Type' }).validation({ required: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    packages.editionView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).validation({ required: true }).attributes({ placeholder: 'Select Package Type' }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
+	    packages.creationView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>').fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).attributes({ placeholder: 'Select Package Type', readOnly: true }).validation({ required: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
+	    packages.editionView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type.description', 'string').attributes({ readOnly: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
 	    return packages;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 215 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_package_btnHtml = __webpack_require__(212);
-
+	
+	var _filter_package_btnHtml = __webpack_require__(220);
+	
 	var _filter_package_btnHtml2 = _interopRequireDefault(_filter_package_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var vpackages = admin.getEntity('vodPackages');
-
+	
 	    vpackages.listView().actions(['list', '<ma-create-button entity-name="vodPackages" class="pull-right"></ma-create-button>']).title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').permanentFilters({ package_type_id: [3, 4] }).batchActions([]).fields([nga.field('package_name').isDetailLink(false).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).isDetailLink(false).cssClasses('hidden-xs').label('Package Type')]).listActions(['edit']).exportFields([vpackages.listView().fields()]);
-
+	
 	    vpackages.creationView().title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 	        return false;
 	    }]).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).permanentFilters({ package_type_id: [3, 4] }).attributes({ placeholder: 'Select Package Type' }).validation({ required: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    vpackages.editionView().title('<h4>Vod Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type_id', 'reference').targetEntity(admin.getEntity('packagetypes')).targetField(nga.field('description')).validation({ required: true }).permanentFilters({ package_type_id: [3, 4] }).attributes({ placeholder: 'Select Package Type' }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('Vod films', 'referenced_list').label('Vods').targetEntity(admin.getEntity('Vods')).targetReferenceField('package_id').targetFields([nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('title', 'string').label('Title'), nga.field('category_id', 'reference').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genre'), nga.field('rate', 'number').attributes({ placeholder: 'Rate' }).validation({ required: true }).label('Rate'), nga.field('duration').validation({ required: true }).attributes({ placeholder: 'Duration' }).label('Duration'), nga.field('isavailable', 'boolean').label('Available')])
+	
+	    vpackages.editionView().title('<h4>Vod Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.package_name }}</h4>').actions(['list']).fields([nga.field('package_name', 'string').attributes({ placeholder: 'Package Name' }).validation({ required: true }).label('Package Name'), nga.field('package_type.description', 'string').attributes({ readOnly: true }).label('Package Type'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('Vod films', 'referenced_list').label('Vods').targetEntity(admin.getEntity('Vods')).targetReferenceField('package_id').targetFields([nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('title', 'string').label('Title'), nga.field('category_id', 'reference').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genre'), nga.field('rate', 'number').attributes({ placeholder: 'Rate' }).validation({ required: true }).label('Rate'), nga.field('duration').validation({ required: true }).attributes({ placeholder: 'Duration' }).label('Duration'), nga.field('isavailable', 'boolean').label('Available')])
 	    //.listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
 	    .perPage(15), nga.field('template').label('').template('<div class="row">' + '<div class="btn-group inline pull-right"> ' + '<div class="btn btn-small"><ma-filtered-list-button entity-name="Vods" class="pull-right" label="SEE ALL VODS" filter="{ vod_id: entry.values.id }"></ma-filtered-list-button></div> ' +
 	    //'<div class="btn btn-small"><ma-create-button entity-name="vodPackages" class="pull-right" label="ADD VOD" default-values="{ package_id: entry.values.id }"></ma-create-button></div> '+
 	    '</div>' + '</div>')]);
-
+	
 	    return vpackages;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 216 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var mychann = admin.getEntity('mychannels');
 	    mychann.listView().title('<h4>My  Channels <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).label('Username'), nga.field('title', 'string').label('Title'), nga.field('channel_number').label('Channel Nr'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).label('Genre'), nga.field('description', 'string').label('Description'), nga.field('isavailable', 'boolean').label('Is Available')]).listActions(['edit', 'delete']).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]);
-
+	
 	    mychann.creationView().title('<h4>My  Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create</h4>').fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).perPage(-1).attributes({ placeholder: 'Select Account from dropdown list' }).label('Username'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).label('Title'), nga.field('channel_number').attributes({ placeholder: 'Channel Nr' }).label('Channel Nr'), nga.field('stream_url', 'string').attributes({ placeholder: 'Stream Url' }).label('Stream Url'), nga.field('genre_id', 'reference').targetEntity(admin.getEntity('Genres')).targetField(nga.field('description')).validation({ required: true }).attributes({ placeholder: 'Select genre' }).label('Genre'), nga.field('description', 'string').attributes({ placeholder: 'Description' }).label('Description'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    mychann.deletionView().title('<h4>User Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    mychann.editionView().title('<h4>My  Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create</h4>').fields([mychann.creationView().fields()]);
-
+	
 	    return mychann;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 217 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 		var packageschannels = admin.getEntity('packagechannels');
 		packageschannels.listView().title('<h4>Package Channels <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']).fields([nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('channel_number')).label('Nr'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')).label('Icon'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('title')).label('Channels'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('genre.description')).label('Genres'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('isavailable', 'boolean')).label('Available')]).listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>']).exportFields([packageschannels.listView().fields()]);
-
+	
 		packageschannels.deletionView().title('<h4>Package Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.channel.title }} </span> from <span style ="color:red;"> {{ entry.values.package.package_name }} </span></h4>').fields([nga.field('channel', 'template').template(function (entry, value) {
-
+	
 			return entry.values.channel.title;
 		}), nga.field('package', 'template').template(function (entry, value) {
-
+	
 			return entry.values['package'].package_name;
 		})]).actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 		packageschannels.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 			progression.done();
 			$state.go($state.get('edit'), { entity: 'Packages', id: entry.values.package_id });
@@ -22353,66 +22904,66 @@
 		}]).title('<h4>Package Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package Channels</h4>').fields([nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).validation({ required: true }).label('Packages'), nga.field('channel_id', 'reference').targetEntity(admin.getEntity('Channels')).targetField(nga.field('title', 'template').map(function (v, e) {
 			return e.channel_number + ' - ' + e.title;
 		})).validation({ required: true }).attributes({ placeholder: 'Select Channel' }).perPage(1000).label('Channels'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 		packageschannels.editionView().title('<h4>Package Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.channel_id }}</h4>').actions(['list']).fields([packageschannels.creationView().fields()]);
-
+	
 		return packageschannels;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 218 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var packagetype = admin.getEntity('packagetypes');
 	    packagetype.listView().title('<h4>Package Types <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('description', 'string').label('Description')]).listActions(['edit']).exportFields([packagetype.listView().fields()]);
-
+	
 	    packagetype.creationView().title('<h4>Package Types <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package Type</h4>').fields([nga.field('description', 'string').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    packagetype.editionView().title('<h4>Package Types <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>').actions(['list']).fields([packagetype.creationView().fields()]);
-
+	
 	    return packagetype;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 219 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 			value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 			var salesreport = admin.getEntity('Salesreports');
-
+	
 			salesreport.listView().title('<h4>Sale report <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button><download-invoice post="entry"></download-invoice>']).batchActions([]).fields([nga.field('id', 'number').cssClasses('hidden-xs').label('ID'), nga.field('user_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).label('Sales Agent'), nga.field('login_data_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).isDetailLink(false).label('Username'), nga.field('login_data_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('customer_datum.firstname').map(function (value, entry) {
 					return entry['customer_datum.firstname'] + ' ' + entry['customer_datum.lastname'];
 			})).isDetailLink(false).label('Full Name'), nga.field('transaction_id', 'string').label('Transaction ID').editable(false), nga.field('saledate', 'date').cssClasses('hidden-xs').label('Sale Date'), nga.field('combo.name', 'string').label('Products'), nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('value')).isDetailLink(false).label('Value'), nga.field('active', 'boolean').label('Active sale'), nga.field('cancelation_date', 'date').cssClasses('hidden-xs').label('Cancelation Date'), nga.field('cancelation_user', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).label('Cancelation User'), nga.field('cancelation_reason', 'text').cssClasses('hidden-xs').label('Cancelation Reason')]).filters([nga.field('user_username').attributes({ placeholder: 'Client' }).label('Client'), nga.field('distributorname').attributes({ placeholder: 'Distributor' }).label('Distributor'), nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('name', 'reference').targetEntity(admin.getEntity('Combos')).attributes({ placeholder: 'Product' }).perPage(-1).targetField(nga.field('name')).label('Product'), nga.field('active', 'choice').choices([{ value: 'active', label: 'Active sales' }, { value: 'cancelled', label: 'Canceled sales' }, { value: 'all', label: 'All sales' }]).attributes({ placeholder: 'Sale active' }).label('Sale status')]).exportFields([salesreport.listView().fields()]);
-
+	
 			salesreport.editionView().title('<h4>Transaction <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('id', 'number').editable(false).label('ID'), nga.field('transaction_id', 'string').label('Transaction ID').editable(false),
 			/*
 	  nga.field('active', 'boolean')
@@ -22422,133 +22973,139 @@
 	  	.label('Cancel Sale'),
 	  */
 			nga.field('cancelation_reason', 'string').label('Cancelation Reason').editable(true).validation({ required: true }), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 			return salesreport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 220 */
+/* 228 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var salesreport = admin.getEntity('sales_by_product');
 	    salesreport.listView().title('<h4>Sales by product <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('combo.name', 'string').label('Product '), nga.field('count', 'number').cssClasses('hidden-xs').label('Sales Total'), nga.field('saledate', 'date').cssClasses('hidden-xs').label('Last sold on'), nga.field('combo.duration', 'string').label('Duration (days)'), nga.field('combo.value', 'string').label('Product price')]).filters([nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('active', 'choice').choices([{ value: 'active', label: 'Active sales' }, { value: 'cancelled', label: 'Canceled sales' }, { value: 'all', label: 'All sales' }]).attributes({ placeholder: 'Sale active' }).label('Sale status')]).exportFields([salesreport.listView().fields()]);
-
+	
 	    return salesreport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 221 */
+/* 229 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var salesreport = admin.getEntity('sales_by_date');
 	    salesreport.listView().title('<h4>Sales per day <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('saledate', 'date').cssClasses('hidden-xs').label('Day'), nga.field('count', 'number').cssClasses('hidden-xs').label('Sale no.'), nga.field('combo.total_value', 'number').cssClasses('hidden-xs').label('Total earnings')]).filters([nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('name', 'reference').targetEntity(admin.getEntity('Combos')).attributes({ placeholder: 'Product' }).perPage(-1).targetField(nga.field('name')).label('Product'), nga.field('active', 'choice').choices([{ value: 'active', label: 'Active sales' }, { value: 'cancelled', label: 'Canceled sales' }, { value: 'all', label: 'All sales' }]).attributes({ placeholder: 'Sale active' }).label('Sale status')]).exportFields([salesreport.listView().fields()]);
-
+	
 	    return salesreport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 222 */
+/* 230 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var salesreport = admin.getEntity('sales_by_month');
 	    salesreport.listView().title('<h4>Sales by month <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('saledate', 'date').cssClasses('hidden-xs').label('Month/year'), nga.field('count', 'number').cssClasses('hidden-xs').label('Sale no.'), nga.field('combo.total_value', 'number').cssClasses('hidden-xs').label('Total earnings')]).filters([nga.field('distributorname').attributes({ placeholder: 'Distributor' }).label('Distributor'), nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('name', 'reference').targetEntity(admin.getEntity('Combos')).attributes({ placeholder: 'Product' }).perPage(-1).targetField(nga.field('name')).label('Product'), nga.field('active', 'choice').choices([{ value: 'active', label: 'Active sales' }, { value: 'cancelled', label: 'Canceled sales' }, { value: 'all', label: 'All sales' }]).attributes({ placeholder: 'Sale active' }).label('Sale status')]).exportFields([salesreport.listView().fields()]);
-
+	
 	    return salesreport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 223 */
+/* 231 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 	    var salesreport = admin.getEntity('sales_monthly_expiration');
 	    salesreport.listView().title('<h4>Subscription expirations by month<i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('enddate', 'date').cssClasses('hidden-xs').label('Month/year'), nga.field('count', 'number').cssClasses('hidden-xs').label('Sale no.')]).filters([nga.field('username', 'string').attributes({ placeholder: 'Client' }), nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date')]).exportFields([salesreport.listView().fields()]);
-
+	
 	    return salesreport;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 224 */
-/***/ (function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	    value: true
-	});
-
-	exports['default'] = function (nga, admin) {
-	    var salesreport = admin.getEntity('sales_by_expiration');
-	    salesreport.listView().title('<h4>Expirations list <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('login_datum.username', 'string').label('Client'), nga.field('end_date', 'date').cssClasses('hidden-xs').label('Expiration date')]).filters([nga.field('username', 'string').attributes({ placeholder: 'Client' }), nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('next', 'string').attributes({ placeholder: 30 }).label('Expires in (days)')]).exportFields([salesreport.listView().fields()]);
-
-	    return salesreport;
-	};
-
-	module.exports = exports['default'];
-
-/***/ }),
-/* 225 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _expiration_graphHtml = __webpack_require__(153);
+	
+	var _expiration_graphHtml2 = _interopRequireDefault(_expiration_graphHtml);
+	
+	exports['default'] = function (nga, admin) {
+	  var salesreport = admin.getEntity('sales_by_expiration');
+	  salesreport.listView().title('<h4>Expirations list <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('login_datum.username', 'string').label('Client'), nga.field('end_date', 'date').cssClasses('hidden-xs').label('Expiration date')]).filters([nga.field('username', 'string').attributes({ placeholder: 'Client' }), nga.field('startsaledate', 'date').attributes({ placeholder: 'From date' }).label('From date'), nga.field('endsaledate', 'date').attributes({ placeholder: 'To date' }).label('To date'), nga.field('next', 'string').attributes({ placeholder: 30 }).label('Expires in (days)')]).exportFields([salesreport.listView().fields()]);
+	
+	  return salesreport;
+	};
+	
+	module.exports = exports['default'];
 
+/***/ }),
+/* 233 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import set from './setting.html';
-
+	
 	exports['default'] = function (nga, admin) {
 		var settings = admin.getEntity('Settings');
 		settings.listView().batchActions([]).fields([nga.field('smtp_host').validation({ required: true }).label('Smtp host').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.smtp_host"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Smtp host and port (smtp_host:port)</small>' + '</div>').attributes({ placeholder: 'smtp.gmail.com:465' }), nga.field('email_username').validation({ required: true }).label('Email Username').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_username"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Username for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Username' }), nga.field('email_password', 'password').validation({ required: true }).label('Email Password').template('<div class="form-group">' + '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>' + '</div>').attributes({ placeholder: 'Password' }), nga.field('smtp_secure', 'choice').defaultValue(true).choices([{ value: false, label: 'Disable secure connection with Smtp server' }, { value: true, label: 'Enable secure connection with Smtp server' }]).validation({ required: true }).template('<div class="form-group">' + '<ma-choice-field field="field" value="entry.values.smtp_secure"></ma-choice-field>' + '<small id="emailHelp" class="form-text text-muted">Consider your Smtp host configurations for this setting </small>' + '</div>').label('Secure connection'), nga.field('email_address').validation({ required: true }).label('Email Address').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>' + '</div>').attributes({ placeholder: 'Address' }), nga.field('analytics_id', 'string').attributes({ placeholder: 'Analytics ID' }).template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.analytics_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Google analytics ID to monitor audience and system logs.</small>' + '</div>').label('Analytics ID'), nga.field('company_name', 'string').validation({ required: true }).label('Company name').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>' + '</div>'), nga.field('locale', 'string').validation({ required: true }).label('Locale').template('<div class="form-group">' + '<ma-input-field field="field" value="entry.values.locale"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">User interface language (not in use).</small>' + '</div>'), nga.field('allow_guest_login', 'boolean').label('').template('<form ng-app="myApp" ng-controller="checkboxController">' + '<div class="form-check">' + '<label class="toggle">' + '<input type="checkbox" name="toggle" ng-change="setValueForGuest(checkboxModel.checkbox_value)" ng-model="checkboxModel.checkbox_value"' +
 		/*'ng-true-value="true" ng-false-value="false"*/'> <span class="label-text">Allow Guest Login</span>' + '</label>' + '</div>' + '</form>'), nga.field('template').label('').template(_edit_buttonHtml2['default']),
-
+	
 		//HIDDEN FROM UI
 		nga.field('updatedAt', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('menulastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatemenulastchange', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label(''), nga.field('livetvlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatelivetvtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label(''), nga.field('vodlastchange', 'datetime').cssClasses('hidden').editable(false).label(''), nga.field('updatevodtimestamp', 'boolean').cssClasses('hidden').editable(true).validation({ required: false }).label(''), nga.field('googlegcmapi').template('<div class="form-group" style="display: none;">' + '<ma-input-field field="field" value="entry.values.googlegcmapi"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Google GCM API code for push messages to android devices.</small>' + '</div>').label(''), nga.field('applekeyid').template('<div class="form-group" style="display: none;">' + '<ma-input-field field="field" value="entry.values.applekeyid"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Apple key id for push messages to apple devices.</small>' + '</div>').label(''), nga.field('appleteamid').template('<div class="form-group" style="display: none;">' + '<ma-input-field field="field" value="entry.values.appleteamid"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>' + '</div>').label(''), nga.field('applecertificate', 'text').template('<div class="form-group" style="display: none;">' + '<ma-text-field field="field" value="entry.values.applecertificate"></ma-text-field>' + '<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>' + '</div>').label('')]);
-
+	
 		//./HIDDEN FROM UI
 		settings.editionView().title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Company Settings</h4>').actions(['']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 			progression.done(); // stop the progress bar
@@ -22557,28 +23114,28 @@
 			$state.go($state.current, {}, { reload: true }); // cancel the default action (redirect to the edition view)
 			return false;
 		}]).fields([settings.listView().fields()]);
-
+	
 		return settings;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 226 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 		var subscription = admin.getEntity('Subscriptions');
 		subscription.listView().title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).isDetailLink(false).label('Login'), nga.field('package_id', 'reference').targetEntity(admin.getEntity('Packages')).targetField(nga.field('package_name')).isDetailLink(false).label('Packages'), nga.field('start_date', 'date').template(function (entry, values) {
@@ -22600,13 +23157,13 @@
 				return ng_vlera_end.fontcolor("red").bold();
 			}
 		}).label('End date')]).listActions(['edit']).filters([nga.field('q').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').label('').pinned(true)]).exportFields([subscription.listView().fields()]);
-
+	
 		subscription.deletionView().title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.package.package_name }} </span> from <span style ="color:red;"> {{ entry.values.login_datum.username }} </span></h4>').fields([nga.field('login_datum', 'template').template(function (entry, value) {
 			return entry.values.login_datum.username;
 		}), nga.field('package', 'template').template(function (entry, value) {
 			return entry.values['package'].package_name;
 		})]).actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 		subscription.creationView().title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Subscription</h4>').fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Choose Username from dropdown list' }).validation({ validator: function validator(value) {
 				if (value === null || value === '') {
 					throw new Error('Please Select Username');
@@ -22624,12 +23181,19 @@
 					throw new Error('Please Select Combo');
 				}
 			}
-		}).perPage(-1).label('Combo *'), nga.field('on_behalf_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).label('On Behalf Id'), nga.field('start_date', 'date').attributes({ placeholder: 'Start date' }).validation({ required: true }).defaultValue(new Date()).label('Start date'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
+		}).perPage(-1).label('Combo *'), nga.field('on_behalf_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).remoteComplete(true, {
+			refreshDelay: 300,
+			// populate choices from the response of GET /posts?q=XXX
+			searchQuery: function searchQuery(search) {
+				return { q: search };
+			}
+		}).perPage(10) // limit the number of results to 10
+		.label('On Behalf Id'), nga.field('start_date', 'date').attributes({ placeholder: 'Start date' }).validation({ required: true }).defaultValue(new Date()).label('Start date'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 			progression.done();
-			$state.go($state.get('edit'), { entity: 'LoginData', id: entry.values.user });
+			$state.go($state.get('edit'), { entity: 'CustomerAccount', id: entry.values.user });
 			return false;
 		}]);
-
+	
 		subscription.editionView().title('<h4>Subscriptions: Edit subscription date <i class="fa fa-angle-right" aria-hidden="true"></i></h4>').fields([nga.field('login_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Select Account' }).validation({ validator: function validator(value) {
 				if (value === null || value === '') {
 					throw new Error('Please Select Username');
@@ -22646,28 +23210,28 @@
 			$state.go($state.get('list'), { entity: entity.name() });
 			return false;
 		}]);
-
+	
 		return subscription;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 227 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 		var user = admin.getEntity('Users');
 		user.listView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).actions(['<roles post="entry"></roles>', 'filter', 'export', '<invite type="invite_users" selection="selection"></invite>']).fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).label('Group'), nga.field('company_id', 'reference').targetEntity(admin.getEntity('Settings')).targetField(nga.field('company_name')).attributes({ placeholder: 'Choose company from dropdown list' }).perPage(-1).label('Company'), nga.field('username', 'string').label('Username'), nga.field('email', 'email').cssClasses('hidden-xs').label('Email'), nga.field('telephone', 'string').cssClasses('hidden-xs').label('Telephone'), nga.field('updatedAt', 'date').label('UpdatedAt'), nga.field('last_login_ip', 'string').map(function truncate(value) {
@@ -22676,7 +23240,7 @@
 			}
 			return value.length > 14 ? value.substr(0, 14) + '...' : value;
 		}).label('Last Login IP'), nga.field('isavailable', 'boolean').label('Is Available')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true), nga.field('company_id', 'reference').targetEntity(admin.getEntity('Settings')).targetField(nga.field('company_name')).label('Company'), nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).label('Group')]).listActions(['edit', '<approve-invitation size="xs" review="entry"></approve-invitation>']).exportFields([user.listView().fields()]);
-
+	
 		user.creationView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Create: User </h4>').fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).validation({ validator: function validator(value) {
 				if (value === null || value === '') {
 					throw new Error('Please Select Group');
@@ -22685,7 +23249,7 @@
 		}).permanentFilters({ exclude_group: 'superadmin' }).attributes({ placeholder: 'Select group' }).label('Group *'), nga.field('username', 'string').attributes({ placeholder: 'Username must be at least 3 character long' }).validation({ required: true, minlength: 3 }).label('Username'), nga.field('hashedpassword', 'password').attributes({ placeholder: 'Password must be at least 4 character long' }).validation({ required: true, minlength: 4 }).label('Password'), nga.field('email', 'email').attributes({ placeholder: 'Email' }).validation({ required: true }).label('Email'), nga.field('telephone', 'string').attributes({ placeholder: 'Telephone' }).validation({ required: true }).label('Telephone'), nga.field('jwtoken', 'string').attributes({ placeholder: 'Api Key', readOnly: true }).defaultValue('').label('Api Key'), nga.field('template').label('').template('<generate post="entry"></generate>'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default']),
 		//hidden from UI
 		nga.field('third_party_api_token', 'string').cssClasses('hidden').attributes({ placeholder: 'Third party token' }).defaultValue('').label('')]);
-
+	
 		user.editionView().title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('group_id', 'reference').targetEntity(admin.getEntity('Groups')).targetField(nga.field('name')).validation({ validator: function validator(value) {
 				if (value === null || value === '') {
 					throw new Error('Please Select Group');
@@ -22694,80 +23258,82 @@
 		}).permanentFilters({ exclude_group: 'superadmin' }).attributes({ placeholder: 'Select group' }).label('Group *'), nga.field('username', 'string').attributes({ placeholder: 'Username must be at least 3 character long', readOnly: true }).validation({ required: true, minlength: 3 }).label('Username'), nga.field('hashedpassword', 'password').attributes({ placeholder: 'Password must be at least 4 character long' }).validation({ required: true, minlength: 4 }).label('Password'), nga.field('email', 'email').attributes({ placeholder: 'Email' }).validation({ required: true }).label('Email'), nga.field('telephone', 'string').attributes({ placeholder: 'Telephone' }).validation({ required: true }).label('Telephone'), nga.field('jwtoken', 'string').attributes({ placeholder: 'Api Key', readOnly: true }).defaultValue('').label('Api Key'), nga.field('template').label('').template('<generate post="entry"></generate>'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default']),
 		//hidden from UI
 		nga.field('third_party_api_token', 'string').cssClasses('hidden').attributes({ placeholder: 'Third party token' }).defaultValue('').label('')]);
-
+	
 		return user;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 228 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
-			value: true
+	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
-			var groups = admin.getEntity('Groups');
-			groups.listView().title('<h4>User Groups <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions(['create']).batchActions([]).fields([nga.field('name', 'string').label('Name'), nga.field('code', 'string').label('Role'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Available')]).listActions(['edit']);
-
-			groups.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
-					progression.done();
-					$state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
-					return false;
-			}]).title('<h4>User groups <i class="fa fa-angle-right" aria-hidden="true"></i> Create: User groups</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Group name' }).validation({ required: true }).label('Group name'), nga.field('code', 'choice').choices([{ value: 'superadmin', label: 'superadmin' }, { value: 'admin', label: 'admin' }, { value: 'finance', label: 'finance' }, { value: 'sales', label: 'sales' }, { value: 'cc', label: 'cc' }, { value: 'content_management', label: 'content management' }, { value: 'marketing', label: 'marketing' }, { value: 'IT', label: 'IT' }, { value: 'audit', label: 'audit' }, { value: 'resellers', label: 'resellers' }, { value: 'guest', label: 'guest' }]).attributes({ placeholder: 'Group code' }).validation({ required: true }).label('Group code'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-			groups.editionView().title('<h4>User group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.name }}</h4>').actions(['list']).fields([groups.creationView().fields(), nga.field('', 'referenced_list').label('User permissions').targetEntity(admin.getEntity('Grouprights')).targetReferenceField('group_id').targetFields([nga.field('api_group_name', 'string').label('Api Group'), nga.field('description', 'string').label('Description'), nga.field('grouprights.id', 'template').label('Permitions ').template('<allow-menu size="xs" review="entry"></allow-menu>')])]);
-
-			return groups;
+	  var groups = admin.getEntity('Groups');
+	  groups.listView().title('<h4>User Groups <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions(['create']).batchActions([]).fields([nga.field('name', 'string').label('Name'), nga.field('code', 'string').label('Role'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Available')]).permanentFilters({
+	    filter_reserved_groups: true
+	  }).listActions(['edit']);
+	
+	  groups.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
+	    progression.done();
+	    $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
+	    return false;
+	  }]).title('<h4>User groups <i class="fa fa-angle-right" aria-hidden="true"></i> Create: User groups</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Group name' }).validation({ required: true }).label('Group name'), nga.field('code', 'choice').choices([{ value: 'finance', label: 'finance' }, { value: 'sales', label: 'sales' }, { value: 'cc', label: 'cc' }, { value: 'content_management', label: 'content management' }, { value: 'marketing', label: 'marketing' }, { value: 'IT', label: 'IT' }, { value: 'audit', label: 'audit' }, { value: 'resellers', label: 'resellers' }, { value: 'guest', label: 'guest' }]).attributes({ placeholder: 'Group code' }).validation({ required: true }).label('Group code'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	
+	  groups.editionView().title('<h4>User group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.name }}</h4>').actions(['list']).fields([groups.creationView().fields(), nga.field('', 'referenced_list').label('User permissions').targetEntity(admin.getEntity('Grouprights')).targetReferenceField('group_id').targetFields([nga.field('api_group_name', 'string').label('Api Group'), nga.field('description', 'string').label('Description'), nga.field('grouprights.id', 'template').label('Permitions ').template('<allow-menu size="xs" review="entry"></allow-menu>')])]);
+	
+	  return groups;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 229 */
+/* 237 */
 /***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 			value: true
 	});
-
+	
 	exports['default'] = function (nga, admin) {
 			var grouprights = admin.getEntity('Grouprights');
 			grouprights.listView().title('<h4>User Groups <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('api_url', 'string').label('Api Name'), nga.field('description', 'string').label('Description'), nga.field('permitions', 'string').label('Permitions')]);
-
+	
 			return grouprights;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 230 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 		var app_management = admin.getEntity('appmanagement');
 		app_management.listView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('appid', 'string').label('App ID'), nga.field('app_version').cssClasses('hidden-xs').label('App Version'), nga.field('title').cssClasses('hidden-xs').label('Title'), nga.field('description').label('Description'), nga.field('url').label('Url'), nga.field('upgrade_min_api', 'string').label('Min Upgrade Api'), nga.field('upgrade_min_app_version', 'string').label('Min Upgrade App Version'), nga.field('beta_version').map(function app(value) {
@@ -22777,7 +23343,7 @@
 				return 'Live';
 			}
 		}).label('Beta Version'), nga.field('isavailable', 'boolean').label('Is Available')]).listActions(['edit']).exportFields([app_management.listView().fields()]);
-
+	
 		app_management.creationView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> Create: APP</h4>').fields([nga.field('appid', 'string').attributes({ placeholder: 'App ID' }).validation({ required: true }).label('App ID'), nga.field('app_version').attributes({ placeholder: 'App Version' }).validation({ required: true }).label('App Version'), nga.field('title').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('description').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('url', 'file').uploadInformation({ 'url': '/file-upload/single-file/apk/url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file extension: apk.</small></div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected filename format: x_yz.apk</small></div>').validation({
 			validator: function validator(value) {
 				if (value == null) {
@@ -22785,34 +23351,34 @@
 				}
 			}
 		}), nga.field('upgrade_min_api', 'string').attributes({ placeholder: 'Upgrade Min API' }).validation({ required: true }).label('Min Upgrade Api'), nga.field('upgrade_min_app_version', 'string').attributes({ placeholder: 'Upgrade Min App Version' }).validation({ required: true }).label('Min Upgrade App Version'), nga.field('beta_version', 'choice').validation({ required: true }).choices([{ value: ' 0', label: ' Live' }, { value: ' 1', label: ' Beta' }]).label('Beta Version'), nga.field('isavailable', 'boolean').validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 		app_management.editionView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([app_management.creationView().fields()]);
-
+	
 		return app_management;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 231 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 			value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 			var message = admin.getEntity('messages');
 			message.listView().batchActions(['sendmessage', '<my-custom-directive selection="selection"></my-custom-directive>']).title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('username').label('Username'), nga.field('title').label('Title'), nga.field('message').map(function truncate(value) {
@@ -22821,7 +23387,7 @@
 					}
 					return value.length > 14 ? value.substr(0, 14) + '...' : value;
 			}).label('Messages'), nga.field('action').label('Action'), nga.field('createdAt', 'datetime').label('Created at')]).listActions(['edit']).exportFields([message.listView().fields()]);
-
+	
 			message.creationView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>').actions(['list']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 					// redirect to the list view
 					$state.go($state.current, {}, { reload: true }).then($state.go($state.get('list'), { entity: entity.name() })); // cancel the default action (redirect to the edition view)
@@ -22836,38 +23402,38 @@
 					}
 			}).perPage(10) // limit the number of results to 10
 			.label('Username'), nga.field('appid', 'choices').attributes({ placeholder: 'Send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('timetolive', 'number').attributes({ placeholder: 'ttl' }).validation({ required: true }).label('Time to live in sec'), nga.field('title', 'string').attributes({ placeholder: 'Info message' }).validation({ required: true }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Message'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 			message.editionView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i></h4>').actions(['list']).fields([nga.field('username').validation({ required: true }).label('Username'), nga.field('googleappid').attributes({ placeholder: 'Google app id' }).label('Google App ID'), nga.field('title').label('Title'), nga.field('action').label('Action'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Messages'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 			return message;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 232 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var commands = admin.getEntity('commands');
 	    commands.listView().title('<h4>Commands <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('login_datum.username').label('Username'), nga.field('googleappid').label('Device'), nga.field('command').label('Action'), nga.field('status').label('Status'), nga.field('createdAt', 'datetime').label('Time sent')]).filters([nga.field('username').label('User'), nga.field('command').label('Action'), nga.field('status', 'choice').choices([{ value: 'sent', label: 'Outbox commands' }, { value: 'success', label: 'Executed commands' }, { value: 'failure', label: 'Failed commands' }])]).listActions([]);
-
+	
 	    commands.creationView().title('<h4>Commands <i class="fa fa-angle-right" aria-hidden="true"></i> Send: command</h4>').fields([nga.field('type', 'choice').choices(function (entry) {
 	        var types = [{ value: 'one', label: 'One User' }, { value: 'all', label: 'All User' }];
 	        return types;
@@ -22879,47 +23445,47 @@
 	        }
 	    }).perPage(10) // limit the number of results to 10
 	    .label('Username'), nga.field('appid', 'choices').attributes({ placeholder: 'Send to device type' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('command', 'choice').choices([{ value: 'file_replace', label: 'Replace file' }, { value: 'SOFTWARE_INSTALL', label: 'Software Installation' }, { value: 'DELETE_SHP', label: 'Delete shared preferences' }, { value: 'DELETE_DATA', label: 'Clear data' }, { value: 'debuggerd', label: 'Available free space' }, { value: 'pwd', label: 'Current directory name' }, { value: 'date', label: 'Current date and time' }, { label: 'Show Username', value: 'show_username' }, { label: 'Remote Login', value: 'login_user' }]).label('Command'), nga.field('command').attributes({ placeholder: 'You can type your Command here' }).label('Write your Command').template('<ma-input-field field="field" value="entry.values.command"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">If you write here, you must not choose from above field. Above field overwrite this field.</small>'),
-
+	
 	    //field for show_username command with ng-if
 	    nga.field('top', 'boolean').defaultValue(false).template('<ma-field ng-if="entry.values.command === \'show_username\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true), nga.field('left', 'boolean').defaultValue(false).template('<ma-field ng-if="entry.values.command === \'show_username\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true),
 	    //./field for show_username command with ng-if
-
+	
 	    //field for login_user command with ng-if
 	    nga.field('password').template('<ma-field ng-if="entry.values.command === \'login_user\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true), nga.field('macadress').template('<ma-field ng-if="entry.values.command === \'login_user\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true), nga.field('wifi').template('<ma-field ng-if="entry.values.command === \'login_user\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true),
 	    //./field for login_user command with ng-if
-
+	
 	    nga.field('parameter1', 'string').attributes({ placeholder: 'parammeter1' }).label('Target'), nga.field('parameter2', 'string').attributes({ placeholder: 'parammeter2' }).label('Destination'), nga.field('parameter3', 'string').attributes({ placeholder: 'parammeter3' }).label('Options'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 	    return commands;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 233 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
-	var _filter_genre_btnHtml = __webpack_require__(170);
-
+	
+	var _filter_genre_btnHtml = __webpack_require__(176);
+	
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var ads = admin.getEntity('ads');
-
+	
 	    //todo: username ose allusers te jete required
 	    ads.listView().title('<h4>Ads <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('login_datum.username').label('Username'), nga.field('googleappid').label('Device'), nga.field('command').label('Action'), nga.field('status').label('Status'), nga.field('createdAt', 'datetime').label('Time sent')]).filters([nga.field('username').label('User'), nga.field('command').label('Action'), nga.field('status', 'choice').choices([{ value: 'sent', label: 'Outbox commands' }, { value: 'success', label: 'Executed commands' }, { value: 'failure', label: 'Failed commands' }])]).listActions([]);
-
+	
 	    ads.creationView().title('<h4>Ads <i class="fa fa-angle-right" aria-hidden="true"></i> Send: ad</h4>').fields([nga.field('username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Select Account from dropdown list' }).remoteComplete(true, {
 	        refreshDelay: 300,
 	        // populate choices from the response of GET /posts?q=XXX
@@ -22927,86 +23493,86 @@
 	            return { q: search };
 	        }
 	    }).perPage(10) // limit the number of results to 10
-	    .label('Username'), nga.field('all_users', 'boolean').validation({ required: true }).label('Send to all users (overrides username)'), nga.field('appid', 'choices').attributes({ placeholder: 'Select from dropdown list to send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('activity', 'choices').choices([{ value: 'livetv', label: 'In live tv' }, { value: 'vod', label: 'In vod' }, { value: 'all', label: 'Everywhere (overrules other values)' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Display'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).label('Message'), nga.field('link_url', 'string').template('<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Default empty string</small>').label('Link'), nga.field('xOffset', 'choice').choices([{ value: '1', label: 'Top' }, { value: '2', label: 'Center' }, { value: '3', label: 'Bottom' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Position'), nga.field('imageGif', 'string').validation({ required: true }).attributes({ placeholder: 'Image link' }).label('Image link'), nga.field('duration', 'number').template('<div>' + '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>' + '</div>').attributes({ placeholder: 'Duration in ms' }).label('Duration in ms'), nga.field('delivery_time', 'datetime').attributes({ placeholder: 'Choose date' }).label('Send ad at'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	    .label('Username'), nga.field('all_users', 'boolean').validation({ required: true }).label('Send to all users (overrides username)'), nga.field('appid', 'choices').attributes({ placeholder: 'Select from dropdown list to send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('activity', 'choices').choices([{ value: 'livetv', label: 'In live tv' }, { value: 'vod', label: 'In vod' }, { value: 'all', label: 'Everywhere (overrules other values)' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Display'), nga.field('type', 'choice').choices([{ value: 'textonly', label: 'Text Only' }, { value: 'imageonly', label: 'Image only' }, { value: 'imageandtext', label: 'Image and Text' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Ad Type'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).label('Message'), nga.field('link_url', 'string').template('<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Default empty string</small>').label('Link'), nga.field('xOffset', 'choice').choices([{ value: '1', label: 'Top' }, { value: '2', label: 'Center' }, { value: '3', label: 'Bottom' }]).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Position'), nga.field('imageGif', 'string').attributes({ placeholder: 'Image link' }).label('Image link'), nga.field('duration', 'number').template('<div>' + '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>' + '</div>').attributes({ placeholder: 'Duration in ms' }).label('Duration in ms'), nga.field('delivery_time', 'datetime').attributes({ placeholder: 'Choose date' }).label('Send ad at'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 	    return ads;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 234 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var logs = admin.getEntity('logs');
 	    logs.listView().title('<h4>User logs <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'number').label('ID'), nga.field('username', 'string').label('User'), nga.field('user_ip', 'string').label('from ip'), nga.field('action', 'string').label('action'), nga.field('createdAt', 'datetime').label('date')]).listActions(['show']);
-
+	
 	    logs.showView().title('<h4>Logs <i class="fa fa-angle-right" aria-hidden="true"></i> Details</h4>').fields([nga.field('id', 'number').label('ID'), nga.field('user.username', 'string').label('User'), nga.field('user_ip', 'string').label('from ip'), nga.field('action', 'string').label('action'), nga.field('details', 'json').map(function detailsdecode(value, entry) {
 	        return JSON.parse(value);
 	    }).label('details'), nga.field('createdAt', 'date').label('date')]);
-
+	
 	    return logs;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 235 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	  var actv = admin.getEntity('activity');
 	  actv.listView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('description', 'string').label('Description')]).listActions(['edit']).exportFields([actv.listView().fields()]);
-
+	
 	  actv.creationView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> Create: APP</h4>').fields([nga.field('description', 'string').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Description'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	  actv.editionView().title('<h4>App Management <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([actv.creationView().fields()]);
-
+	
 	  return actv;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 236 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var app_gr = admin.getEntity('appgroup');
 	    app_gr.listView().title('<h4>App Group <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('app_id').map(function app(value) {
@@ -23032,39 +23598,37 @@
 	    }).label('App Group ID')]).
 	    // nga.field('app_group_name')
 	    // 	.label('App Group Name'),
-
-	    listActions(['edit']).exportFields([app_gr.listView().fields()]);
-
+	
+	    listActions([]).exportFields([app_gr.listView().fields()]);
+	
 	    app_gr.creationView().title('<h4>App Group <i class="fa fa-angle-right" aria-hidden="true"></i> Create: APP</h4>').fields([nga.field('app_group_id').attributes({ placeholder: 'App Group ID' }).validation({ required: true }).label('App Group ID'), nga.field('app_group_name').attributes({ placeholder: 'App Group Name' }).validation({ required: true }).label('App Group Name'), nga.field('app_id').attributes({ placeholder: 'App ID' }).validation({ required: true }).label('App ID'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
-	    app_gr.editionView().title('<h4>App Group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list']).fields([app_gr.creationView().fields()]);
-
+	
 	    return app_gr;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 237 */
+/* 245 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	//import foto from '../foto.html';
-
+	
 	exports['default'] = function (nga, admin) {
 	    var vod = admin.getEntity('Vods');
-	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }];
+	    var language_list = [{ value: { "iso_639_1": "en", "name": "English" }, label: 'English' }, { value: { "iso_639_1": "sp", "name": "Spanish" }, label: 'Spanish' }, { value: { "iso_639_1": "gr", "name": "German" }, label: 'German' }, { value: { "iso_639_1": "fr", "name": "French" }, label: 'French' }, { value: { "iso_639_1": "pt", "name": "Portuguese" }, label: 'Portuguese' }];
 	    vod.listView().title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([
 	    // '<vod type="update_film" selection="selection"></vod>',
 	    '<move type="move_to_package"  selection="selection"></move>']).actions(['batch', 'export', 'filter', 'create']).fields([nga.field('title', 'string').label('Title'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('vod_vod_categories').cssClasses('hidden').map(function getpckgid(value, entry) {
@@ -23082,9 +23646,9 @@
 	    }).label('Vod in packages'), nga.field('package_vods', 'reference_many').targetEntity(admin.getEntity('Packages')).perPage(-1).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).singleApiCall(function (package_id) {
 	        return { 'package_id[]': package_id };
 	    }).label('Packages'), nga.field('duration', 'number').cssClasses('hidden-xs').label('Duration'), nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('isavailable', 'boolean').cssClasses('hidden-xs').label('Available'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created at'), nga.field('pin_protected', 'boolean').cssClasses('hidden-xs').label('Pin Protected')]).sortDir("DESC").sortField("createdAt").filters([nga.field('not_id', 'reference').targetEntity(admin.getEntity('vodPackages')).permanentFilters({ package_type_id: [3, 4] }).targetField(nga.field('package_name')).label('Not In Package'), nga.field('expiration_time', 'datetime').label('Expiration Time'), nga.field('title').label('Title'), nga.field('pin_protected', 'choice').choices([{ value: 0, label: 'False' }, { value: 1, label: 'True' }]).attributes({ placeholder: 'Pin Protected' }).label('Pin Protected'), nga.field('added_before', 'datetime').label('Added before'), nga.field('added_after', 'datetime').label('Added after'), nga.field('updated_before', 'date').label('Last updated before'), nga.field('updated_after', 'date').label('Last updated after'), nga.field('isavailable', 'boolean').filterChoices([{ value: true, label: 'Available' }, { value: false, label: 'Not Available' }]).label('Available'), nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([vod.listView().fields()]);
-
+	
 	    vod.deletionView().title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    vod.creationView().title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Movie</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
@@ -23136,7 +23700,7 @@
 	            }
 	        }
 	    }).label('Image *'), nga.field('pin_protected', 'boolean').attributes({ placeholder: 'Pin Protected' }).validation({ required: true }).label('Pin Protected'), nga.field('adult_content', 'choice').defaultValue(false).choices([{ value: true, label: 'Yes' }, { value: false, label: 'No' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Has adult content'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('expiration_time', 'datetime').defaultValue('3018-01-01 00:00:00').label('Expiration date'), nga.field('price', 'float').template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*Set price to 0 for movies that are not for sale</small>').validation({ required: true }).label('Price'), nga.field('mandatory_ads', 'choice').defaultValue(false).choices([{ value: true, label: 'Enabled' }, { value: false, label: 'Disabled' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Mandatory ads'), nga.field('revenue', 'number').defaultValue(0).label('Revenues'), nga.field('budget', 'number').defaultValue(0).label('Budget'), nga.field('original_language', 'string').defaultValue('en').label('Original language'), nga.field('spoken_languages', 'choices').choices(language_list).label('Spoken languages'), nga.field('release_date', 'date').validation({ required: true }).defaultValue('1896-12-28').label('Release date'), nga.field('status', 'choice').defaultValue('released').choices([{ value: 'filming', label: 'Filming' }, { value: 'post-production', label: 'Post-production' }, { value: 'released', label: 'Released' }]).attributes({ placeholder: 'Choose from dropdown list' }).validation({ required: true }).label('Status'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    vod.editionView().title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>').actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']).fields([
 	    //creation view fields
 	    nga.field('title', 'string').attributes({ placeholder: 'Movie Name' }).validation({ required: true }).label('Title'), nga.field('original_title', 'string').label('Original title'), nga.field('imdb_id', 'string').attributes({ placeholder: 'Movie Imdb Id' }).defaultValue(0).template('<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>').label('Movie Imdb Id'), nga.field('vod_vod_categories', 'reference_many').targetEntity(admin.getEntity('VodCategories')).targetField(nga.field('name')).label('Genres').attributes({ placeholder: 'Select genre' }).map(function getpckgid(value, entry) {
@@ -23203,43 +23767,44 @@
 	        var no_sub_object = { value: 0, label: "No default subtitles", selected: true };
 	        entry.values.vod_subtitles.unshift(no_sub_object);
 	        return entry.values.vod_subtitles;
-	    }).label('Default subtitles'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('vodsubtitles', 'referenced_list').label('Subtitles').targetEntity(admin.getEntity('vodsubtitles')).targetReferenceField('vod_id').targetFields([nga.field('title').label('Language')]).listActions(['edit', 'delete']), nga.field('ADD SUBTITLES', 'template').label('').template('<ma-create-button entity-name="vodsubtitles" class="pull-right" label="ADD SUBTITLES" default-values="{ vod_id: entry.values.id }"></ma-create-button>'), nga.field('vodstreams', 'referenced_list').label('Stream Sources').targetEntity(admin.getEntity('vodstreams')).targetReferenceField('vod_id').targetFields([nga.field('url')
-	    // .map(function truncate(value) {
-	    //     if (!value) {
-	    //         return '';
-	    //     }
-	    //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
-	    // })
-	    .label('Vod URL')]).listActions(['edit', 'delete']), nga.field('ADD STREAM', 'template').label('').template('<ma-create-button entity-name="vodstreams" class="pull-right" label="ADD STREAM" default-values="{ vod_id: entry.values.id }"></ma-create-button>')]);
-
+	    }).label('Default subtitles'), nga.field('template').label('').template(_edit_buttonHtml2['default']), nga.field('vodsubtitles', 'referenced_list').label('Subtitles').targetEntity(admin.getEntity('vodsubtitles')).targetReferenceField('vod_id').targetFields([nga.field('title').label('Language')]).listActions(['edit', 'delete']), nga.field('ADD SUBTITLES', 'template').label('').template('<ma-create-button entity-name="vodsubtitles" class="pull-right" label="ADD SUBTITLES" default-values="{ vod_id: entry.values.id }"></ma-create-button>'), nga.field('vodstreams', 'referenced_list').label('Stream Sources').targetEntity(admin.getEntity('vodstreams')).targetReferenceField('vod_id').targetFields([nga.field('url').label('Vod URL'), nga.field('stream_type', 'string').label('Stream Type')]).listActions(['edit', 'delete']), nga.field('ADD STREAM', 'template').label('').template('<ma-create-button entity-name="vodstreams" class="pull-right" label="ADD STREAM" default-values="{ vod_id: entry.values.id }"></ma-create-button>')]);
+	
 	    return vod;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 238 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
+	var _templatesModalTemplateHtml = __webpack_require__(182);
+	
+	var _templatesModalTemplateHtml2 = _interopRequireDefault(_templatesModalTemplateHtml);
+	
+	var _templatesModalImageUploadHtml = __webpack_require__(183);
+	
+	var _templatesModalImageUploadHtml2 = _interopRequireDefault(_templatesModalImageUploadHtml);
+	
 	exports['default'] = function (nga, admin) {
 	    var vodcategory = admin.getEntity('VodCategories');
-	    vodcategory.listView().title('<h4>Vod Categories <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('icon_url', 'file').template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Icon'), nga.field('small_icon_url', 'file').template('<img src="{{ entry.values.small_icon_url }}" height="35" width="35" />').cssClasses('hidden-xs').label('Small icon'), nga.field('name', 'string').label('Name'), nga.field('description', 'text').cssClasses('hidden-xs').label('Description'), nga.field('sorting', 'string').cssClasses('hidden-xs').label('Sorting'), nga.field('isavailable', 'boolean').label('Available'), nga.field('password', 'boolean').label('Password')]).listActions(['edit', '<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>']).exportFields([vodcategory.listView().fields()]);
-
+	    vodcategory.listView().title('<h4>Vod Categories <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('icon_url', 'file').template(_templatesModalTemplateHtml2['default']).cssClasses('hidden-xs').label('Icon'), nga.field('small_icon_url', 'file').template('<div ng-controller="modalController">\n                                    <img ng-src="{{ entry.values.small_icon_url }}"\n                                         width="45"\n                                         height="45"\n                                         ng-click="openModalImage(entry.values.small_icon_url)">\n                                    </div>').cssClasses('hidden-xs').label('Small icon'), nga.field('name', 'string').label('Name'), nga.field('description', 'text').cssClasses('hidden-xs').label('Description'), nga.field('sorting', 'string').cssClasses('hidden-xs').label('Sorting'), nga.field('isavailable', 'boolean').label('Available'), nga.field('password', 'boolean').label('Password')]).listActions(['edit', '<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>']).exportFields([vodcategory.listView().fields()]);
+	
 	    vodcategory.deletionView().title('<h4>Vod Category <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.name }} </span></h4>').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
-	    vodcategory.creationView().title('<h4>Vod Categories <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Category</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Category name' }).validation({ required: true }).label('Name'), nga.field('description', 'text').attributes({ placeholder: 'Specify information you need for the category' }).validation({ required: true }).label('Description'), nga.field('sorting', 'number').attributes({ placeholder: 'Sorting' }).validation({ required: true }).label('Sorting'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vodcategory/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>').validation({
+	
+	    vodcategory.creationView().title('<h4>Vod Categories <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Category</h4>').fields([nga.field('name', 'string').attributes({ placeholder: 'Category name' }).validation({ required: true }).label('Name'), nga.field('description', 'text').attributes({ placeholder: 'Specify information you need for the category' }).validation({ required: true }).label('Description'), nga.field('sorting', 'number').attributes({ placeholder: 'Sorting' }).validation({ required: true }).label('Sorting'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vodcategory/icon_url', 'apifilename': 'result' }).template(_templatesModalImageUploadHtml2['default']).validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose icon');
@@ -23252,7 +23817,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('small_icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vodcategory/small_icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.small_icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.small_icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">159x117 px, not larger than 150 KB</small></div>').validation({
+	    }).label('Icon *'), nga.field('small_icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/vodcategory/small_icon_url', 'apifilename': 'result' }).template('<div class="row">\n                    <div class="col-xs-12 col-sm-1">\n\t\t\t\t\t\t<div ng-controller="modalController">\n\t\t\t\t\t\t\t<img ng-src="{{ entry.values.small_icon_url }}"\n\t\t\t\t\t\t\t\t width="45"\n\t\t\t\t\t\t\t\t height="45"\n\t\t\t\t\t\t\t\t ng-click="openModalImage(entry.values.small_icon_url)">\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n                    <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.small_icon_url"></ma-file-field></div>\n                    </div>\n                    <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>').validation({
 	        validator: function validator(value) {
 	            if (value == null) {
 	                throw new Error('Please, choose your small icon');
@@ -23266,43 +23831,36 @@
 	            }
 	        }
 	    }).label('Small icon *'), nga.field('password', 'boolean').attributes({ placeholder: 'Password' }).validation({ required: true }).label('Password'), nga.field('isavailable', 'boolean').attributes({ placeholder: 'Is Available' }).validation({ required: true }).label('Is Available'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    vodcategory.editionView().title('<h4>Vod Categories <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.name }}</h4>').actions(['list']).fields([vodcategory.creationView().fields()]);
-
+	
 	    return vodcategory;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 239 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var vodstream = admin.getEntity('vodstreams');
-	    vodstream.listView().title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('vod_id', 'reference').targetEntity(admin.getEntity('Vods')).targetField(nga.field('title')).isDetailLink(false).label('Vod'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).isDetailLink(false).label('Stream Source'), nga.field('url', 'string')
-	    // .map(function truncate(value) {
-	    // 	if (!value) {
-	    //            return '';
-	    //      	}
-	    //            return value.length > 25 ? value.substr(0, 25) + '...' : value;
-	    //      	})
-	    .label('Url'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').label('Encryption'), nga.field('token_url', 'string').label('Token Url')]).listActions(['edit']).exportFields([vodstream.listView().fields()]);
-
+	    vodstream.listView().title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('vod_id', 'reference').targetEntity(admin.getEntity('Vods')).targetField(nga.field('title')).isDetailLink(false).label('Vod'), nga.field('stream_source_id', 'reference').targetEntity(admin.getEntity('VodStreamSources')).targetField(nga.field('description')).isDetailLink(false).label('Stream Source'), nga.field('url', 'string').label('Url'), nga.field('stream_type', 'string').label('Stream Type'), nga.field('token', 'boolean').label('Token'), nga.field('encryption', 'boolean').label('Encryption'), nga.field('token_url', 'string').label('Token Url')]).listActions(['edit']).exportFields([vodstream.listView().fields()]);
+	
 	    vodstream.deletionView().title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> Vod Streams').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    vodstream.creationView().title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
@@ -23317,12 +23875,35 @@
 	                throw new Error('Please Select Stream Source');
 	            }
 	        }
-	    }).perPage(-1).label('Stream Source *'), nga.field('url', 'string').attributes({ placeholder: 'Movie Stream Url' }).validation({ validator: function validator(value) {
-	            if (value === null || value === '') {
-	                throw new Error('Please Select Url');
-	            }
-	        }
-	    }).label('Url *'), nga.field('stream_resolution', 'choices').attributes({ placeholder: 'Select screen types where this stream should play' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).defaultValue([1, 2, 3, 4, 5, 6]).validation({ validator: function validator(value) {
+	    }).perPage(-1).label('Stream Source *'), nga.field('url', 'string').attributes({ placeholder: 'Movie Stream Url' }).label('Url *'),
+	    // nga.field('stream_mode', 'choice')
+	    //     .attributes({ placeholder: 'Select Stream Mode from dropdown list' })
+	    //     .choices([
+	    //         { value: 'hls', label: 'hls' },
+	    //         { value: 'mpegd', label: 'mpegd' }
+	    //     ])
+	    //     .validation({validator: function(value) {
+	    //             if(value === null || value === ''){
+	    //                 throw new Error('Please Select Stream mode');
+	    //             }
+	    //         }
+	    //     })
+	    //     .label('Stream Type *'),
+	    // nga.field('stream_type', 'choice')
+	    //     .attributes({ placeholder: 'Select Stream Type from dropdown list' })
+	    //     .choices([
+	    //         { value: 'vr', label: 'vr' },
+	    //         { value: '360', label: '360' }
+	    //     ])
+	    //     .validation({validator: function(value) {
+	    //             if(value === null || value === ''){
+	    //                 throw new Error('Please Select Stream type');
+	    //             }
+	    //         }
+	    //     })
+	    //
+	    //     .label('Stream Type *'),
+	    nga.field('stream_resolution', 'choices').attributes({ placeholder: 'Select screen types where this stream should play' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).defaultValue([1, 2, 3, 4, 5, 6]).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select Stream resolution');
 	            }
@@ -23332,65 +23913,86 @@
 	                throw new Error('Please Select Stream Format');
 	            }
 	        }
-	    }).label('Stream Format *'), nga.field('token', 'boolean').attributes({ placeholder: 'Token' }).validation({ required: true }).label('Token'), nga.field('token_url', 'string').defaultValue('Token Url').attributes({ placeholder: 'Token Url' }).validation({ required: true }).label('Token Url'), nga.field('encryption', 'boolean').validation({ required: true }).label('Encryption'), nga.field('encryption_url', 'string').defaultValue('Encryption url').validation({ required: true }).label('Encryption url'), nga.field('drm_platform', 'choice').attributes({ placeholder: 'Select from dropdown list' }).defaultValue('none').choices([{ value: 'none', label: 'None' }, { value: 'pallycon', label: 'Pallycon' }, { value: 'verimatrix', label: 'Verimatrix' }, { value: 'widevine', label: 'Widevine' }]).validation({ validator: function validator(value) {
+	    }).label('Stream Format *'),
+	
+	    // nga.field('stream_mode', 'choice')
+	    //     .attributes({ placeholder: 'Select Stream Mode from dropdown list' })
+	    //     .choices([
+	    //         { value: 'hls', label: 'hls' },
+	    //         { value: 'mpegd', label: 'mpegd' }
+	    //     ])
+	    //     .validation({validator: function(value) {
+	    //             if(value === null || value === ''){
+	    //                 throw new Error('Please Select Stream mode');
+	    //             }
+	    //         }
+	    //     })
+	    //     .label('Stream Mode *'),
+	
+	    nga.field('stream_type', 'choice').attributes({ placeholder: 'Select Stream Type from dropdown list' }).choices([{ value: 'vr', label: 'Virtual Reality (VR)' }, { value: '360', label: '360° Video' }, { value: 'regular', label: 'Regular' }]).validation({ validator: function validator(value) {
+	            if (value === null || value === '') {
+	                throw new Error('Please Select Stream type');
+	            }
+	        }
+	    }).label('Stream Type *'), nga.field('token', 'boolean').attributes({ placeholder: 'Token' }).validation({ required: true }).label('Token'), nga.field('token_url', 'string').defaultValue('Token Url').attributes({ placeholder: 'Token Url' }).validation({ required: true }).label('Token Url'), nga.field('encryption', 'boolean').validation({ required: true }).label('Encryption'), nga.field('encryption_url', 'string').defaultValue('Encryption url').validation({ required: true }).label('Encryption url'), nga.field('drm_platform', 'choice').attributes({ placeholder: 'Select from dropdown list' }).defaultValue('none').choices([{ value: 'none', label: 'None' }, { value: 'pallycon', label: 'Pallycon' }, { value: 'verimatrix', label: 'Verimatrix' }, { value: 'widevine', label: 'Widevine' }]).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select DRM Platform');
 	            }
 	        }
 	    }).label('DRM Platform *'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    vodstream.editionView().title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.vod_id }}</h4>').actions(['list', 'delete']).fields([vodstream.creationView().fields()]);
-
+	
 	    return vodstream;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 240 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	  var vodstreamsource = admin.getEntity('VodStreamSources');
 	  vodstreamsource.listView().title('<h4>Vod Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('description', 'string').label('Stream Source')]).listActions(['edit']).exportFields([vodstreamsource.listView().fields()]);
-
+	
 	  vodstreamsource.creationView().title('<h4>Vod Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream Source</h4>').fields([nga.field('description', 'string').attributes({ placeholder: 'Description' }).validation({ required: true }).label('Stream Source'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	  vodstreamsource.editionView().title('<h4>Vod Stream Sources <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>').actions(['list']).fields([vodstreamsource.creationView().fields()]);
-
+	
 	  return vodstreamsource;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 241 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var vodsubtitles = admin.getEntity('vodsubtitles');
 	    vodsubtitles.listView().title('<h4>Vod Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('vod_id', 'reference').targetEntity(admin.getEntity('Vods')).targetField(nga.field('title')).isDetailLink(false).label('Vod'), nga.field('title', 'string').label('Title'), nga.field('subtitle_url', 'string').map(function truncate(value) {
@@ -23399,73 +24001,95 @@
 	        }
 	        return value.length > 25 ? value.substr(0, 25) + '...' : value;
 	    }).label('Subtitle Url')]).filters([nga.field('q').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['edit']).exportFields([vodsubtitles.listView().fields()]);
-
+	
 	    vodsubtitles.deletionView().title('<h4>Channel Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{entry.values.title}}').actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>']);
-
+	
 	    vodsubtitles.creationView().title('<h4>Vod Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Subtitles</h4>').onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 	        progression.done();
 	        $state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
-
+	
 	        return false;
 	    }]).fields([nga.field('vod_id', 'reference').targetEntity(admin.getEntity('Vods')).targetField(nga.field('title')).attributes({ placeholder: 'Select Vod from dropdown list' }).validation({ required: true }).perPage(-1).label('Vod'), nga.field('title').attributes({ placeholder: 'Specify the subtitles title' }).validation({ required: true }).label('Title'), nga.field('subtitle_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/subtitles/subtitle_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.subtitle_url"></ma-file-field></div>' + '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.subtitle_url }}"/></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">Please, make sure the subtitle file is correctly encoded</small></div>').label('File input *').validation({ required: true }).label('URL'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
-
+	
 	    vodsubtitles.editionView().title('<h4>Vod Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.vod_id }}</h4>').actions(['list', 'delete']).fields([vodsubtitles.creationView().fields()]);
-
+	
 	    return vodsubtitles;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 242 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 250 */
+/***/ (function(module, exports) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
+	
+	exports['default'] = function (nga, admin) {
+	    var subitlesImport = admin.getEntity('subtitlesImport');
+	
+	    subitlesImport.listView().title('<h4>Open Subtitles<i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').actions([]).batchActions([]).fields([nga.field('id').label('ID'), nga.field('filename').label('Filename'), nga.field('downloads').label('Downloads'), nga.field('lang').label("Language")]).filters([nga.field('query').label('').template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>').pinned(true)]).listActions(['<a ng-href="/admin/#/{{entry.values.route}}/edit/{{entry.values.id}}?link={{entry.values.url}}&lang={{entry.values.langcode}}">Import</a>']);
+	
+	    subitlesImport.editionView().title('<h4>OpenSubtitles.org Subtitles<i class="fa fa-angle-right" aria-hidden="true"></i> Import</h4>').actions(['']).fields([nga.field('vod_id', 'string').attributes({ placeholder: "Leave empty if you are importing for Tv Episodes" }).label('VOD ID'), nga.field('tv_episode_id', 'string').attributes({ placeholder: "Leave empty if you are importing for VOD" }).label('Tv Episode ID'), nga.field('template').template('<div ng-controller="subController">\n                          <button type="button" class="btn btn-default" ng-click="submitSubForm(entry.values.vod_id, entry.values.tv_episode_id)">✔ Import</button>\n                          <div class="btn btn-small"><ma-back-button class="pull-right" label="Cancel"></ma-back-button></div>\n                </div>').label('')]);
+	
+	    return subitlesImport;
+	};
+	
+	module.exports = exports['default'];
 
+/***/ }),
+/* 251 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _edit_buttonHtml = __webpack_require__(164);
-
+	
+	var _edit_buttonHtml = __webpack_require__(170);
+	
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
-
+	
 	exports['default'] = function (nga, admin) {
 	    var paymenttransaction = admin.getEntity('PaymentTransactions');
 	    paymenttransaction.listView().title('<h4>Payment Transactions <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'number').label('ID'), nga.field('transaction_id', 'string').label('Transaction ID'), nga.field('transaction_type', 'string').label('Transaction Type'), nga.field('transaction_token', 'string').label('Transaction Token'), nga.field('message', 'string').label('Message'), nga.field('customer_username', 'string').label('Customer Username'), nga.field('product_id', 'text').label('Product'), nga.field('payment_provider', 'string').label('Payment Provider'), nga.field('payment_success', 'boolean').label('Payment Success')]).listActions(['edit']).exportFields([paymenttransaction.listView().fields()]);
-
+	
 	    paymenttransaction.editionView().title('<h4>Transaction <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>').actions(['list']).fields([nga.field('id', 'number').editable(false).label('ID'), nga.field('transaction_id', 'string').label('Transaction ID').editable(false), nga.field('transaction_type', 'string').label('Transaction Type').editable(false), nga.field('transaction_token', 'string').editable(false).label('Transaction Token'), nga.field('message', 'string').editable(false).label('Message'), nga.field('customer_username', 'string').editable(false).label('Customer Username'), nga.field('product_id', 'text').editable(false).label('Product'), nga.field('payment_provider', 'string').editable(false).label('Payment Provider'), nga.field('payment_success', 'boolean').editable(false).label('Payment Success'), nga.field('full_log', 'json').editable(false).label('Full Transaction Log')]);
-
+	
 	    return paymenttransaction;
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 243 */
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
 	    value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _resellers_dashboardHtml = __webpack_require__(244);
-
+	
+	var _resellers_dashboardHtml = __webpack_require__(253);
+	
 	var _resellers_dashboardHtml2 = _interopRequireDefault(_resellers_dashboardHtml);
-
+	
 	var moment = __webpack_require__(5);
 	var fromNow = function fromNow(v) {
 	    return moment(v).fromNow();
 	};
-
+	
 	exports['default'] = function (nga, admin) {
-
+	
 	    return nga.dashboard().addCollection(nga.collection(admin.getEntity('MySales')).name('sales_report').title('Last 10 sales').fields([
 	    // nga.field('user_id', 'reference')
 	    //     .targetEntity(admin.getEntity('Users'))
@@ -23476,68 +24100,70 @@
 	        distributorname: localStorage.userName
 	    }).perPage(10)).template(_resellers_dashboardHtml2['default']);
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 244 */
+/* 253 */
 /***/ (function(module, exports) {
 
 	module.exports = "<div class=\"row dashboard-starter\"></div>\r\n<resellersdashboard-summary></resellersdashboard-summary>\r\n\r\n<graph>\r\n    <vis-timeline data=\"data\" options=\"options\"></vis-timeline>\r\n</graph>\r\n\r\n<div class=\"row dashboard-content\">\r\n\r\n    <div class=\"col-lg-12\">\r\n        <div class=\"panel panel-default theme\">\r\n            <ma-dashboard-panel collection=\"dashboardController.collections.sales_report\" entries=\"dashboardController.entries.sales_report\" datastore=\"dashboardController.datastore\"></ma-dashboard-panel>\r\n        </div>\r\n    </div>\r\n\r\n\r\n    <div class=\"container-fluid\">\r\n        <!--div class=\"col-xs-2 idiqagentstatus-buttonHolders pull-right\">\r\n        <button type=\"button\" class=\"btn btn-xs\" ng-click=\"agentClicked()\">Show hidden Node and change color</button>\r\n      </div-->\r\n        <vis-timeline data=\"data\" options=\"options\"></vis-timeline>\r\n    </div>\r\n\r\n</div>";
 
 /***/ }),
-/* 245 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	Object.defineProperty(exports, '__esModule', {
-		value: true
+	  value: true
 	});
-
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _dashboardHtml = __webpack_require__(246);
-
+	
+	var _moment = __webpack_require__(5);
+	
+	var _moment2 = _interopRequireDefault(_moment);
+	
+	var _dashboardHtml = __webpack_require__(255);
+	
 	var _dashboardHtml2 = _interopRequireDefault(_dashboardHtml);
-
-	var moment = __webpack_require__(5);
+	
 	var fromNow = function fromNow(v) {
-		return moment(v).fromNow();
+	  return (0, _moment2['default'])(v).fromNow();
 	};
-
+	
 	exports['default'] = function (nga, admin) {
-
-		return nga.dashboard().addCollection(nga.collection(admin.getEntity('Salesreports')).name('sales_report').title('Last 10 sales').fields([nga.field('user_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).cssClasses('hidden-xs').label('User'), nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('name')).isDetailLink(false).label('Product'), nga.field('user_username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).isDetailLink(false).label('Customers Username'), nga.field('saledate', 'date').cssClasses('hidden-xs').label('Sale Date')]).perPage(10)).addCollection(nga.collection(admin.getEntity('LoginData')).name('login_accounts').title('Last 10 accounts created').fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname').map(function (value, entry) {
-			return entry.firstname + ' ' + entry.lastname;
-		})).isDetailLink(false).cssClasses('hidden-xs').label('Customer'), nga.field('username', 'string').label('Customers Username'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('force_upgrade', 'boolean').cssClasses('hidden-xs').label('Force Upgrade'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Lock'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created At')]).perPage(10)).template(_dashboardHtml2['default']);
+	  return nga.dashboard().addCollection(nga.collection(admin.getEntity('Salesreports')).name('sales_report').title('Last 10 sales').fields([nga.field('user_id', 'reference').targetEntity(admin.getEntity('Users')).targetField(nga.field('username')).isDetailLink(false).cssClasses('hidden-xs').label('User'), nga.field('combo_id', 'reference').targetEntity(admin.getEntity('Combos')).targetField(nga.field('name')).isDetailLink(false).label('Product'), nga.field('login_data_id', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).isDetailLink(false).label('Customers Username'), nga.field('saledate', 'date').cssClasses('hidden-xs').label('Sale Date')]).perPage(10)).addCollection(nga.collection(admin.getEntity('LoginData')).name('login_accounts').title('Last 10 accounts created').fields([nga.field('customer_id', 'reference').targetEntity(admin.getEntity('CustomerData')).targetField(nga.field('firstname').map(function (value, entry) {
+	    return entry.firstname + ' ' + entry.lastname;
+	  })).isDetailLink(false).cssClasses('hidden-xs').label('Customer'), nga.field('username', 'string').label('Customers Username'), nga.field('pin', 'string').cssClasses('hidden-xs').label('Pin'), nga.field('timezone', 'number').cssClasses('hidden-xs').label('Timezone'), nga.field('force_upgrade', 'boolean').cssClasses('hidden-xs').label('Force Upgrade'), nga.field('account_lock', 'boolean').cssClasses('hidden-xs').label('Account Lock'), nga.field('auto_timezone', 'boolean').cssClasses('hidden-xs').label('Auto Timezone'), nga.field('createdAt', 'date').cssClasses('hidden-xs').label('Created At')]).perPage(10)).template(_dashboardHtml2['default']);
 	};
-
+	
 	module.exports = exports['default'];
 
 /***/ }),
-/* 246 */
+/* 255 */
 /***/ (function(module, exports) {
 
-	module.exports = "<div class=\"row dashboard-starter\"></div>\r\n<dashboard-summary></dashboard-summary>\r\n\r\n<graph>\r\n    <vis-timeline data=\"data\" options=\"options\"></vis-timeline>\r\n</graph>\r\n\r\n<div class=\"row dashboard-content\">\r\n\r\n    <div class=\"container-fluid\">\r\n        <div class=\"panel panel-default theme\">\r\n            <ma-dashboard-panel collection=\"dashboardController.collections.login_accounts\" entries=\"dashboardController.entries.login_accounts\" datastore=\"dashboardController.datastore\"></ma-dashboard-panel>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"col-lg-12\">\r\n        <div class=\"panel panel-default theme\">\r\n            <ma-dashboard-panel collection=\"dashboardController.collections.sales_report\" entries=\"dashboardController.entries.sales_report\" datastore=\"dashboardController.datastore\"></ma-dashboard-panel>\r\n        </div>\r\n    </div>\r\n\r\n\r\n    <div class=\"container-fluid\">\r\n        <!--div class=\"col-xs-2 idiqagentstatus-buttonHolders pull-right\">\r\n        <button type=\"button\" class=\"btn btn-xs\" ng-click=\"agentClicked()\">Show hidden Node and change color</button>\r\n      </div-->\r\n        <vis-timeline data=\"data\" options=\"options\"></vis-timeline>\r\n    </div>\r\n\r\n</div>";
+	module.exports = "<div class=\"row dashboard-starter\"></div>\r\n<dashboard-summary></dashboard-summary>\r\n\r\n<graph>\r\n  <vis-graph2d class=\"custom-graph-style\" data=\"data\" options=\"options\"></vis-graph2d>\r\n</graph>\r\n\r\n<div class=\"row dashboard-content\">\r\n  <div class=\"container-fluid\">\r\n    <div ng-controller=\"expireGraphCtr\">\r\n      <div class=\"row\">\r\n        <div class=\"col-sm-12 col-md-6\">\r\n          <h4>Expirations By Month</h4>\r\n          <vis-graph2d data=\"data\" options=\"options\"></vis-graph2d>\r\n        </div>\r\n        <div class=\"col-sm-6\">\r\n          <h4>All time Expirations</h4>\r\n          <vis-graph2d class=\"group0Style\" data=\"data2\" options=\"options2\"></vis-graph2d>\r\n        </div>\r\n        <div class=\"col-sm-12 col-md-12\">\r\n          <h4 style=\"margin-top: 25px;\">Sales Last 24 months</h4>\r\n          <vis-graph2d class=\"group0Style\" data=\"data3\" options=\"options3\"></vis-graph2d>\r\n        </div>\r\n      </div>\r\n    </div>\r\n    <div class=\"panel panel-default theme\">\r\n      <ma-dashboard-panel\r\n        collection=\"dashboardController.collections.login_accounts\"\r\n        entries=\"dashboardController.entries.login_accounts\"\r\n        datastore=\"dashboardController.datastore\"\r\n      ></ma-dashboard-panel>\r\n    </div>\r\n  </div>\r\n\r\n  <div class=\"col-lg-12\">\r\n    <div class=\"panel panel-default theme\">\r\n      <ma-dashboard-panel\r\n        collection=\"dashboardController.collections.sales_report\"\r\n        entries=\"dashboardController.entries.sales_report\"\r\n        datastore=\"dashboardController.datastore\"\r\n      ></ma-dashboard-panel>\r\n    </div>\r\n  </div>\r\n\r\n  <div class=\"container-fluid\">\r\n    <!--div class=\"col-xs-2 idiqagentstatus-buttonHolders pull-right\">\r\n        <button type=\"button\" class=\"btn btn-xs\" ng-click=\"agentClicked()\">Show hidden Node and change color</button>\r\n      </div-->\r\n\r\n  </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 247 */
+/* 256 */
 /***/ (function(module, exports) {
 
-	module.exports = "<div class=\"navbar-header\">\r\n    <button type=\"button\" class=\"navbar-toggle\" ng-click=\"isCollapsed = !isCollapsed\">\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n    </button>\r\n    <a class=\"navbar-brand\" href=\"#\" ng-click=\"appController.displayHome()\" ng-app=\"myApp\" ng-controller=\"envVariablesCtrl\">\r\n\r\n        <div class=\"row\">\r\n            <div class=\"col-sm-6\">\r\n                <img src=\"{{company_logo}}\"  class=\"img-responsive logo_company\" alt=\"Company Logo\">\r\n            </div>\r\n            <div class=\"col-sm-6\">\r\n                <p id=\"company_name\">{{company_name}} - Administration System</p>\r\n            </div>\r\n        </div>\r\n    </a>\r\n</div>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right text-center responsive\">\r\n    <li uib-dropdown>\r\n        <a uib-dropdown-toggle href=\"#\" aria-expanded=\"true\" ng-controller=\"username\">\r\n            <i class=\"fa fa-user fa-lg\"></i>&nbsp; {{ username }}&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\">\r\n            <li><a href=\"#/personal\"><i class=\"fa fa-user fa-fw\"></i> Personal Details</a></li>\r\n            <li><a href=\"#/change-password\"><i class=\"fa fa-cog fa-fw\"></i> Change Password</a></li>\r\n            <li><a href=\"#\" onclick=\"logout()\"><i class=\"fa fa-sign-out fa-fw\"></i> Logout</a></li>\r\n        </ul>\r\n    </li>\r\n</ul>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right text-center\">\r\n    <li uib-dropdown ng-controller=\"languageCtrl\">\r\n        <a id=\"single-button\" href=\"#\" aria-expanded=\"true\" uib-dropdown-toggle ng-disabled=\"disabled\">\r\n            <i class=\"fa fa-globe fa-lg\"></i>&nbsp; Language {{button}}&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\" aria-labelledby=\"single-button\">\r\n            <li role=\"menuitem\">\r\n                <a ng-click=\"serve_language('en');change('English')\"><i class=\"fa fa-sign-out fa-fw\"></i> English</a>\r\n                <a ng-click=\"serve_language('fr');change('French')\"><i class=\"fa fa-sign-out fa-fw\"></i> French</a>\r\n                <a ng-click=\"serve_language('sp');change('Spanish')\"><i class=\"fa fa-sign-out fa-fw\"></i> Spanish</a>\r\n\t\t\t\t<a ng-click=\"serve_language('sq');change('Albanian')\"><i class=\"fa fa-sign-out fa-fw\"></i> Albanian</a>\r\n            </li>\r\n\r\n        </ul>\r\n    </li>\r\n</ul>\r\n\r\n\r\n\r\n";
+	module.exports = "<div class=\"navbar-header\">\r\n    <button type=\"button\" class=\"navbar-toggle\" ng-click=\"isCollapsed = !isCollapsed\">\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n    </button>\r\n    <a class=\"navbar-brand\" href=\"#\" ng-click=\"appController.displayHome()\" ng-app=\"myApp\" ng-controller=\"envVariablesCtrl\">\r\n\r\n        <div class=\"row\">\r\n            <div class=\"col-sm-6\">\r\n                <img src=\"{{company_logo}}\"  class=\"img-responsive logo_company\" alt=\"Company Logo\">\r\n            </div>\r\n            <div class=\"col-sm-6\">\r\n                <p id=\"company_name\">{{company_name}} - Administration System</p>\r\n            </div>\r\n        </div>\r\n    </a>\r\n</div>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right text-center responsive\">\r\n    <li uib-dropdown>\r\n        <a uib-dropdown-toggle href=\"#\" aria-expanded=\"true\" ng-controller=\"username\">\r\n            <i class=\"fa fa-user fa-lg\"></i>&nbsp; {{ username }}&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\">\r\n            <li><a href=\"#/personal\"><i class=\"fa fa-user fa-fw\"></i> Personal Details</a></li>\r\n            <li><a href=\"#/change-password\"><i class=\"fa fa-cog fa-fw\"></i> Change Password</a></li>\r\n            <li><a href=\"#\" onclick=\"logout()\"><i class=\"fa fa-sign-out fa-fw\"></i> Logout</a></li>\r\n        </ul>\r\n    </li>\r\n</ul>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right text-center\">\r\n    <li uib-dropdown ng-controller=\"languageCtrl\">\r\n        <a id=\"single-button\" href=\"#\" aria-expanded=\"true\" uib-dropdown-toggle ng-disabled=\"disabled\">\r\n            <i class=\"fa fa-globe fa-lg\"></i>&nbsp; Language {{button}}&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\" aria-labelledby=\"single-button\">\r\n            <li role=\"menuitem\">\r\n                <a ng-click=\"serve_language('en');change('English')\"><i class=\"fa fa-sign-out fa-fw\"></i> English</a>\r\n                <a ng-click=\"serve_language('fr');change('French')\"><i class=\"fa fa-sign-out fa-fw\"></i> French</a>\r\n                <a ng-click=\"serve_language('sp');change('Spanish')\"><i class=\"fa fa-sign-out fa-fw\"></i> Spanish</a>\r\n\t\t\t\t<a ng-click=\"serve_language('sq');change('Albanian')\"><i class=\"fa fa-sign-out fa-fw\"></i> Albanian</a>\r\n                <a ng-click=\"serve_language('pt');change('Portuguese')\"><i class=\"fa fa-sign-out fa-fw\"></i> Portuguese</a>\r\n            </li>\r\n\r\n        </ul>\r\n    </li>\r\n</ul>\r\n\r\n\r\n\r\n";
 
 /***/ }),
-/* 248 */
+/* 257 */
 /***/ (function(module, exports) {
 
 	"use strict";
-
+	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports["default"] = [
-
+	
 	//======================================Dashboard (access: admin,finance,sales,cc)=================================
 	{
 	    "template": '<div class="menu_space">Dashboard</div>',
@@ -23562,7 +24188,7 @@
 	    "children": [],
 	    "link": '/Subscriptions/create'
 	},
-
+	
 	//======================================Customer Management (access: superadmin, admin , cc, marketing)=================================
 	{
 	    "template": '<div class="menu_space">Customer Management</div>',
@@ -23627,7 +24253,7 @@
 	        "group_roles": ["admin", "cc", "marketing"]
 	    }]
 	},
-
+	
 	//======================================Reports (access: admin, finance)===================================================
 	{
 	    "template": '<div class="menu_space">Reports</div>',
@@ -23685,9 +24311,15 @@
 	        "icon": '<span class="fa fa-list fa-fw dashboard_icon"></span>',
 	        "link": '/sales_by_expiration/list?search=%7B%22next%22:%2230%22%7D',
 	        "group_roles": ["admin", "finance"]
+	    }, {
+	        "entity": "",
+	        "title": "Expiration Graph",
+	        "icon": '<span class="fa fa-list fa-fw dashboard_icon"></span>',
+	        "link": '/expiresubscription',
+	        "group_roles": ["admin", "finance"]
 	    }]
 	},
-
+	
 	//======================================Video Content Management (access: admin , content_management)=======================
 	{
 	    "template": '<div class="menu_space">Video Content Management</div>',
@@ -23808,7 +24440,7 @@
 	        "link": '/import_vod/create',
 	        "group_roles": ["admin", "content_management"]
 	    },
-
+	
 	    //hidden for the moment (meaning: import several movies at the same time)
 	    // {
 	    //     "entity":"",
@@ -23817,7 +24449,7 @@
 	    //     "link":'/Vods/list?search=%7B"pin_protected":"0"%7D',
 	    //     "group_roles":["admin","content_management"]
 	    // },
-
+	
 	    {
 	        "entity": "",
 	        "title": "Import Movies From TMDB",
@@ -23832,9 +24464,9 @@
 	        "group_roles": ["admin", "content_management"]
 	    }]
 	},
-
+	
 	//======================================Settings (access: superadmin, admin, IT)=======================================================
-
+	
 	{
 	    "template": '<div class="menu_space">Settings</div>',
 	    "group_roles": ["superadmin", "admin", "audit", "IT", "marketing"],
@@ -24020,7 +24652,7 @@
 	    "children": [],
 	    "link": '/support'
 	},
-
+	
 	//======================================================================================================================
 	//                                         RESELLERS DASHBOARD
 	//======================================================================================================================
@@ -24058,52 +24690,53 @@
 	module.exports = exports["default"];
 
 /***/ }),
-/* 249 */
+/* 258 */
 /***/ (function(module, exports) {
 
 	"use strict";
-
+	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-
+	
 	exports["default"] = function (nga, admin, menujson) {
-
+	
 	    var returnmenu = nga.menu();
 	    var menuidx = 0;
-
+	
 	    for (var i = 0; i < menujson.length; i++) {
-
+	
 	        //add parent menu item
 	        returnmenu.addChild(nga.menu().title(menujson[i].title).icon(menujson[i].icon).link(menujson[i].link));
-
+	
 	        if (menujson[i].template) {
 	            returnmenu._children[menuidx]._template = menujson[i].template;
 	        }
-
+	
 	        //if menu has sub menus
 	        if (menujson[i].children.length > 0) {
 	            //start adding children menu items
 	            for (var j = 0; j < menujson[i].children.length; j++) {
-
+	
 	                //add child menu item
 	                returnmenu._children[menuidx].addChild(nga.menu().title(menujson[i].children[j].title).icon(menujson[i].children[j].icon).link(menujson[i].children[j].link));
 	            }
 	        }
-
+	
 	        menuidx++;
 	    }
-
+	
 	    return returnmenu;
 	};
-
+	
 	module.exports = exports["default"];
 
 /***/ }),
-/* 250 */
+/* 259 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);
+//# sourceMappingURL=main.js.map

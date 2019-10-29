@@ -1,72 +1,61 @@
-[
-    {
-        "id": 1,
-        "parameter_id": "max_multilogin_nr",
-        "parameter_value": "2",
-        "parameter1_value": "",
-        "parameter2_value": "",
-        "parameter3_value": "",
-        "duration": 1,
-        "description": "This parameter defines the number of devices the user is allowed to login simultaneously. Parameter  : Define the number of devices. Other parameters : leave them blank. Duration : 1 (default)"
+{
+    "auth": {
+        "description": "This group of settings configures the auth like max number of multi logins simultaneously.",
+        "max_logins": 2
     },
-    {
-        "id": 2,
-        "parameter_id": "transaction_vod_duration",
-        "parameter_value": "24",
-        "parameter1_value": "",
-        "parameter2_value": "",
-        "parameter3_value": "",
-        "duration": 1,
-        "description": ""
+    "vod": {
+        "description": "Vod configuration",
+        "transaction_duration": 24
     },
-    {
-        "id": 3,
-        "parameter_id": "woocomerce",
-        "parameter_value": "url",
-        "parameter1_value": "consumerKey",
-        "parameter2_value": "consumerSecret",
-        "parameter3_value": "",
-        "duration": 0,
-        "description": "This parameter is used to integrate the woocomerce billing with Magoware management system. Parameter  :  URL of the woocomerce page (http(s)://yourdomainname). Parameter 1 : Consumer Key found on woocomerce admin page under advanced settings. Parameter 2 : Consumer Secret key found on woocomerce admin page under advanced settings"
+    "woocomerce": {
+        "description": "Integration configuration of woocomerce billing with Magoware management system. Parameter  :  URL of the woocomerce page (http(s)://yourdomainname). Consumer Key found on woocomerce admin page under advanced settings. Consumer Secret key found on woocomerce admin page under advanced settings",
+        "base_url": "",
+        "consumer_secret": "",
+        "consumer_key": ""
     },
-    {
-        "id": 4,
-        "parameter_id": "stripe",
-        "parameter_value": "",
-        "parameter1_value": "Publishable key",
-        "parameter2_value": "Secret key",
-        "parameter3_value": "",
-        "duration": 0,
-        "description": "This parameter is used to integrate the Stripe billing system with Magoware management system. Parameter 1 : Publishable Key found on Stripe admin page under Development tools. Parameter 2 : Secret Key found on stripe admin page under Development tools."
+    "stripe": {
+        "description": "Integration configuration of the Stripe billing system with Magoware management system. Publishable Key found on Stripe admin page under Development tools. Secret Key found on stripe admin page under Development tools.",
+        "api_key": "",
+        "publishable_key": "",
+        "secret_key": ""
     },
-    {
-        "id": 5,
-        "parameter_id": "flussonic_token",
-        "parameter_value": "TOKEN_KEY",
-        "parameter1_value": "SALT",
-        "parameter2_value": "PASSWORD",
-        "parameter3_value": "",
-        "duration": 0,
-        "description": "This parameter is used to integrate the token for stream protection via Flussonic. Parameter  : TOKEN_KEY value used when configuring the token on Flussonic server. Parameter 1 : SALT value used when configuring the token on Flussonic server. Parameter 2 : PASSWORD used when configuring the token on Flussonic server. Parameter 3 : WINDOW value which determines the time in second the token is valuable."
+    "paypal": {
+        "description": "Integration configuration of the Paypal billing system with Magoware management system. By deffault not used. Instead preconfigured buttons with IPN",
+        "production": false,
+        "client_id": "",
+        "client_secret": ""
     },
-    {
-        "id": 6,
-        "parameter_id": "akamai_token",
-        "parameter_value": "TOKEN_KEY",
-        "parameter1_value": "SALT",
-        "parameter2_value": "WINDOW",
-        "parameter3_value": "",
-        "duration": 0,
-        "description": "This parameter id is used to integrate the token for stream protection via Akamai. Parameter  : TOKEN_KEY value used when configuring the token on Akamai server. Parameter 1 : SALT used when configuring the token on Flussonic server). Parameter 2 : WINDOW value which determines the time in second the token is valuable."
+    "flussonic": {
+        "description": "Integration configuration for token stream protection via Flussonic. Key value used when configuring the token on Flussonic server. Salt value used when configuring the token on Flussonic server. Password used when configuring the token on Flussonic server. Window value which determines the time in second the token is valuable.",
+        "key": "",
+        "salt": "",
+        "password": "",
+        "window": ""
     },
-    {
-        "id": 7,
-        "parameter_id": "paypal",
-        "parameter_value": "url",
-        "parameter1_value": "Secret Key",
-        "parameter2_value": "",
-        "parameter3_value": "",
-        "duration": 0,
-        "description": "This parameter is used to integrate the PayPal account with the Magoware management system. Parameter : URL of webview for the payment. Parameter 1 : Secret Key found on PayPal account."
+    "akamai": {
+        "description": "Integration configuration for token stream protection via Akamai. Key value used when configuring the token on Akamai server. Salt used when configuring the token on Flussonic server. Window value which determines the time in second the token is valuable.",
+        "key": "",
+        "salt": "",
+        "window": ""
+    },
+    "verizon": {
+        "description": "Integration configuration for Verizon cdn token creation. Key value used when configuring the token on Verizon server. Proto Allowed value specifies the protocol. Window value which determines the time in seconds the token is valuable.",
+        "key": "",
+        "proto_allowed": "http",
+        "window": 10
+    },
+    "wowza": {
+        "description": "Integration configuration for stream token generation for WOWZA. Shared Secret value used when configuring the token on Womza server. Window value which determines the time in second the token is valuable.",
+        "shared_secret": "",
+        "window": 10800
+    },
+    "nimble_drm": {
+        "description": "Integration configuration for drm key stream protection via Nimble.",
+        "key": ""
+    },
+    "nimble_token": {
+        "description": "Integration configuration for stream token generation for Nimble. Key is used to generate token. Window defines the time the token is valid.",
+        "key": "",
+        "window": 10
     }
-]
+}

@@ -322,7 +322,7 @@ exports.settings = function (req, res) {
                 "iptimezone": offset,
                 "available_upgrade": available_upgrade,
                 "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true)) ? 1 : 0,
-                "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
+                "vast_ad_url": (req.app.locals.backendsettings[req.thisuser.company_id].vast_ad_url)
             }];
 
             response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
@@ -517,7 +517,7 @@ exports.get_settings = function (req, res) {
             "iptimezone": parseInt(iptimeoffset) / 60,
             "available_upgrade": false,
             "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true)) ? 1 : 0,
-            "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
+            "vast_ad_url": (req.app.locals.backendsettings[req.thisuser.company_id].vast_ad_url)
         }];
 
 

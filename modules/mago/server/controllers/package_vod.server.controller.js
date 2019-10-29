@@ -92,7 +92,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at delete package vod, error: ",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -129,7 +129,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at package vod list method, error: ",err);
         res.jsonp(err);
     });
 };

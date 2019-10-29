@@ -8,11 +8,18 @@ export default function (nga, admin) {
         .fields([
             nga.field('box_logo_url', 'file')
                 .label('Box Logo *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px,not larger than 600 KB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.box_logo_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.box_logo_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px,not larger than 600 KB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -31,11 +38,18 @@ export default function (nga, admin) {
 
             nga.field('box_background_url', 'file')
                 .label('Box Background *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1.3 MB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.box_background_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.box_background_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1.3 MB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -54,11 +68,18 @@ export default function (nga, admin) {
 
             nga.field('mobile_background_url', 'file')
                 .label('Landscape Background Mobile *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">540x960 px, not larger than 1 MB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.mobile_background_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.mobile_background_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">540x960 px, not larger than 1 MB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -81,11 +102,18 @@ export default function (nga, admin) {
 
             nga.field('portrait_background_url', 'file')
                 .label('Portrait Background Mobile')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.portrait_background_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.portrait_background_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">432x768 px, not larger than 1 MB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.portrait_background_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.portrait_background_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.portrait_background_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">432x768 px, not larger than 1 MB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/portrait_background_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -107,11 +135,18 @@ export default function (nga, admin) {
 
             nga.field('mobile_logo_url', 'file')
                 .label('Mobile Logo *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px, not larger than 600 KB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.mobile_logo_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.mobile_logo_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px, not larger than 600 KB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -133,11 +168,18 @@ export default function (nga, admin) {
 
             nga.field('vod_background_url', 'file')
                 .label('VOD Background *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.vod_background_url }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.vod_background_url)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">920x1080 px, not larger than 1 MB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url','apifilename': 'result'})
                 .validation({
                     validator: function(value) {
@@ -176,11 +218,18 @@ export default function (nga, admin) {
                     '</div>'),
             nga.field('company_logo', 'file')
                 .label('Company logo *')
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.company_logo }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>')
+                .template(`<div class="row">
+                                <div class="col-xs-12 col-sm-1">
+                                    <div ng-controller="modalController">
+                                        <img ng-src="{{ entry.values.company_logo }}"
+                                             width="45"
+                                             height="45"
+                                             ng-click="openModalImage(entry.values.company_logo)">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>
+                               </div>
+                            <div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>`)
                 .uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo','apifilename': 'result'})
                 .validation({
                     validator: function(value) {

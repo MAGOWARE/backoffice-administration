@@ -1,0 +1,314 @@
+<head>
+    <style type="text/css">
+        @media screen and ( max-width: 1600px ) {
+            .frm {
+                margin-left: 150px;
+                margin-right: 150px;
+            }
+        }
+
+        @media screen and ( max-width: 989px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 767px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 600px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 540px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 480px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 380px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="row list-header">
+    <div class="col-lg-12">
+        <div class="page-header">
+            <h4>Advanced Settings</h4>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <form ng-submit="updateAdvancedSettings()">
+                <div class="form-group">
+                    <h3>Akamai</h3>
+                    <small id="emailHelp" class="form-text text-muted">{{advanced_settings.akamai.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="akamaiInput">Akamai Key</label>
+                        <input type="text" class="form-control" id="akamaiInput"
+                               ng-model="advanced_settings.akamai.key"
+                               placeholder="Akamai Key">
+                        <br>
+                        <div class="form-group">
+                            <label for="authInput11">Akamai Window</label>
+                            <input type="text" class="form-control" id="authInput11"
+                                   ng-model="advanced_settings.akamai.window"
+                                   placeholder="Akamai Window">
+                        </div>
+                        <div class="form-group">
+                            <label for="akamaiSalt">Akamai Salt</label>
+                            <input type="text" class="form-control" id="akamaiSalt"
+                                   ng-model="advanced_settings.akamai.salt"
+                                   placeholder="Akamai Salt">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Flussonic</h3>
+                    <small class="form-text text-muted">{{advanced_settings.flussonic.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="flussonicKey">Flussonic Key</label>
+                        <input type="text" class="form-control" id="flussonicKey"
+                               ng-model="advanced_settings.flussonic.key"
+                               placeholder="Flussonic Key">
+                        <br>
+                        <label for="flussonicKey">Flussonic Salt</label>
+                        <input type="text" class="form-control" id="flussonicSalt"
+                               ng-model="advanced_settings.flussonic.salt"
+                               placeholder="Flussonic Salt">
+                        <br>
+                        <label for="flussinoicPassword">Flussonic Password</label>
+                        <input type="text" class="form-control" id="flussinoicPassword"
+                               ng-model="advanced_settings.flussonic.password"
+                               placeholder="Flussonic Pasword">
+                        <br>
+                        <label for="flussonicWindow">Flussonic Window</label>
+                        <input type="text" class="form-control" id="flussonicWindow"
+                               ng-model="advanced_settings.flussonic.window"
+                               placeholder="Flussonic Window">
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <h3>WooCommerce</h3>
+                    <small class="form-text text-muted">{{advanced_settings.woocomerce.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="flussonicKey">WooCommerce Base URL</label>
+                        <input type="text" class="form-control" id="woocommerceBaseUrl"
+                               ng-model="advanced_settings.woocomerce.base_url"
+                               placeholder="WooCommerce Base URL">
+                        <br>
+                        <label for="wConsumerSecret">WooCommerce Consumer Secret</label>
+                        <input type="text" class="form-control" id="wConsumerSecret"
+                               ng-model="advanced_settings.woocomerce.consumer_secret"
+                               placeholder="WooCommerce Consumer Salt">
+                        <br>
+                        <label for="wConsumerSecret">WooCommerce Consumer Key</label>
+                        <input type="text" class="form-control" id="wConsumerKey"
+                               ng-model="advanced_settings.woocomerce.consumer_key"
+                               placeholder="WooCommerce Consumer Key">
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <h3>Stripe</h3>
+                    <small class="form-text text-muted">{{advanced_settings.stripe.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="stripeAPIKey">Stripe API Key</label>
+                        <input type="text" class="form-control" id="stripeAPIKey"
+                               ng-model="advanced_settings.stripe.api_key"
+                               placeholder="Stripe API Key">
+                        <br>
+                        <label for="stripePk">Stripe Publishable Key</label>
+                        <input type="text" class="form-control" id="stripePk"
+                               ng-model="advanced_settings.stripe.publishable_key"
+                               placeholder="Stripe Publishable Key">
+                        <br>
+                        <label for="stripeKey">Stripe Secret Key</label>
+                        <input type="text" class="form-control" id="stripeKey"
+                               ng-model="advanced_settings.stripe.secret_key"
+                               placeholder="Stripe Key">
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <h3>Paypal</h3>
+                    <small class="form-text text-muted">{{advanced_settings.paypal.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="paypalId">Paypal Client ID</label>
+                        <input type="text" class="form-control" id="paypalId"
+                               ng-model="advanced_settings.paypal.client_id"
+                               placeholder="Paypal Client ID">
+                        <br>
+                        <label for="paypalClientId">Paypal Production</label>
+                        <input type="checkbox" class="form-control" id="paypalClientId"
+                               ng-model="advanced_settings.paypal.production"
+                               placeholder="Paypal Production">
+                        <br>
+                        <label for="paypalClientSecret">Paypal Client Secret</label>
+                        <input type="text" class="form-control" id="paypalClientSecret"
+                               ng-model="advanced_settings.paypal.client_secret"
+                               placeholder="Paypal Client Secret">
+                        <br>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <h3>Verizon</h3>
+                    <small class="form-text text-muted">{{advanced_settings.verizon.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="verizonKey">Verizon Key</label>
+                        <input type="text" class="form-control" id="verizonKey"
+                               ng-model="advanced_settings.verizon.key"
+                               placeholder="Verizon Key">
+                        <br>
+                        <label for="verizonProtocolAllowed">Verizon Protocol Allowed</label>
+                        <input type="text" class="form-control" id="verizonProtocolAllowed"
+                               ng-model="advanced_settings.verizon.proto_allowed"
+                               placeholder="Verizon Protocol Allowed">
+                        <br>
+                        <label for="verizonWindow">Verizon Window</label>
+                        <input type="text" class="form-control" id="verizonWindow"
+                               ng-model="advanced_settings.verizon.window"
+                               placeholder="Verizon Window">
+                        <br>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Wowza</h3>
+                    <small class="form-text text-muted">{{advanced_settings.wowza.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="womzaSs">Wowza Shared Secret</label>
+                        <input type="text" class="form-control" id="womzaSs"
+                               ng-model="advanced_settings.wowza.shared_secret"
+                               placeholder="Womza Shared Secret">
+                        <br>
+                        <label for="womzaWindow">Wowza Window</label>
+                        <input type="text" class="form-control" id="womzaWindow"
+                               ng-model="advanced_settings.wowza.window"
+                               placeholder="Womza Window">
+                        <br>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Nimble DRM</h3>
+                    <small class="form-text text-muted">{{advanced_settings.nimble_drm.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="nimbleKey">Nimble DRM Key</label>
+                        <input type="text" class="form-control" id="nimbleKey"
+                               ng-model="advanced_settings.nimble_drm.key"
+                               placeholder="Nimble DRM Key">
+                        <br>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Nimble Token</h3>
+                    <small class="form-text text-muted">{{advanced_settings.nimble_token.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="nimbleTKey">Nimble Token Key</label>
+                        <input type="text" class="form-control" id="nimbleTKey"
+                               ng-model="advanced_settings.nimble_token.key"
+                               placeholder="Nimble Token Key">
+                        <br>
+
+                        <label for="nimbleTwin">Nimble Token Window</label>
+                        <input type="text" class="form-control" id="nimbleTwin"
+                               ng-model="advanced_settings.nimble_token.window"
+                               placeholder="Nimble Token Window">
+                        <br>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Auth</h3>
+                    <small class="form-text text-muted">{{advanced_settings.auth.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="authId">Auth Max Logins</label>
+                        <input type="text" class="form-control" id="authId"
+                               ng-model="advanced_settings.auth.max_logins"
+                               placeholder="Auth Max Logins">
+                        <br>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h3>Vod</h3>
+                    <small class="form-text text-muted">{{advanced_settings.vod.description}}</small>
+                    <br>
+                    <br>
+                    <div class="container">
+                        <label for="vodConf">Vod Transaction Duration</label>
+                        <input type="text" class="form-control" id="vodConf"
+                               ng-model="advanced_settings.vod.transaction_duration"
+                               placeholder="Vod Transaction Duration">
+                        <br>
+                    </div>
+                </div>
+
+
+                <hr>
+                <button type="submit" class="btn btn-default pull-right">Submit</button>
+                <br>
+                <br>
+                <br>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+
+

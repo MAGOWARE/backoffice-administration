@@ -55,12 +55,8 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Package Name' })
                 .validation({ required: true })
                 .label('Package Name'),
-            nga.field('package_type_id', 'reference')
-                .targetEntity(admin.getEntity('packagetypes'))
-                .targetField(nga.field('description'))
-                .validation({ required: true })
-                .attributes({ placeholder: 'Select Package Type' })
-                .permanentFilters({ package_type_id: [1,2] })
+            nga.field('package_type.description', 'string')
+                .attributes({readOnly: true})
                 .label('Package Type'),
             nga.field('template')
                 .label('')

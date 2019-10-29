@@ -21,25 +21,26 @@ var config = require('../config'),
     cors = require('cors'),
     rateLimit = require('express-rate-limit'),
     securityConfig = require('../security/exprees.security.config'),
-    policy = require(path.resolve('./modules/mago/server/policies/mago.server.policy'));
+    policy = require(path.resolve('./modules/mago/server/policies/mago.server.policy')),
+    morgan = require('morgan');
 
-    //documentation
-    //docs = require("express-mongoose-docs");
+//documentation
+//docs = require("express-mongoose-docs");
 
-    //language configuration parameters
-    global.languages = {};
-    const language_folder_path = './config/languages/';
-    global.vod_list = {};
-    global.company_configurations = {};
-    global.livetv_s_subscription_end = [];
-    global.livetv_l_subscription_end = [];
-    global.vod_s_subscription_end = [];
-    global.vod_l_subscription_end = [];
+//language configuration parameters
+global.languages = {};
+const language_folder_path = './config/languages/';
+global.vod_list = {};
+global.company_configurations = {};
+global.livetv_s_subscription_end = [];
+global.livetv_l_subscription_end = [];
+global.vod_s_subscription_end = [];
+global.vod_l_subscription_end = [];
 
 /**
  * Initialize local variables
  */
-module.exports.initLocalVariables = function(app) {
+module.exports.initLocalVariables = function (app) {
     winston.info('Initializing LocalVariables...');
     // Setting application local variables
     app.locals.title = config.app.title;
@@ -60,11 +61,11 @@ module.exports.initLocalVariables = function(app) {
 /**
  * Initialize application middleware
  */
-module.exports.initMiddleware = function(app) {
+module.exports.initMiddleware = function (app) {
     winston.info('Initializing Middleware...');
 
     // Passing the request url to environment locals
-    app.use(function(req, res, next) {
+    app.use(function (req, res, next) {
         res.locals.host = req.protocol + '://' + req.hostname;
         res.locals.url = req.protocol + '://' + req.headers.host + req.originalUrl;
         app.locals.originUrl = req.protocol + '://' + req.headers.host;
@@ -79,48 +80,55 @@ module.exports.initMiddleware = function(app) {
 
     // Environment dependent middleware
     if (process.env.NODE_ENV === 'development') {
-        // Enable logger (morgan)
-        // app.use(morgan('dev'));
+        app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
         // Disable views cache
         app.set('view cache', false);
     } else
-    if (process.env.NODE_ENV === 'production') {
-        app.locals.cache = 'memory';
+        if (process.env.NODE_ENV === 'production') {
+            app.locals.cache = 'memory';
+        }
+
+    if (securityConfig.rate_limit.enabled) {
+        //Add rate req limit
+        const limiter = rateLimit({
+            windowMs: 60 * 1000, // 15 minutes
+            max: securityConfig.rate_limit.max_request_min, // limit each IP to 100 requests per windowMs
+            handler: function(req, res, next) {
+                let ip = req.ip.substring(req.ip.lastIndexOf(':') + 1, req.ip.length);
+                if (securityConfig.rate_limit.ip_whitelist.indexOf(ip) !== -1) {
+                    next();
+                }
+                else{
+                    res.status(429).send({message: "Too many requests, please try again later"})
+                }
+            }
+        });
+
+        let protectedRoutes = securityConfig.rate_limit.protected_routes;
+        protectedRoutes.forEach(function (path) {
+            app.use(path, limiter);
+        });
     }
 
-    //Add rate req limit
-    const limiter = rateLimit({
-      windowMs: 60 * 1000, // 15 minutes
-      max: securityConfig.max_request_min, // limit each IP to 100 requests per windowMs
-    });
-    
-    let protectedRoutes = securityConfig.rate_protected_routes;
-    protectedRoutes.forEach(function(path){
-        winston.info(path);
-        app.use(path, limiter);
-    });
-  
     //Add cors support
     const corsDisabled = securityConfig.cors.length === 0 ? true : false;
     app.use(cors({
         credentials: true,
-        origin: function(origin, callback){
-        // allow requests with no origin 
-        // (like mobile apps or curl requests)
-        if(!origin || corsDisabled) return callback(null, true);
+        origin: function (origin, callback) {
+            // allow requests with no origin
+            // (like mobile apps or curl requests)
+            if (!origin || corsDisabled) return callback(null, true);
 
-        for (var i = 0; i < securityConfig.cors.length; i++)
-        {
-            if (origin.startsWith(securityConfig.cors[i]))
-            {
-            return callback(null, true);
+            for (var i = 0; i < securityConfig.cors.length; i++) {
+                if (origin.startsWith(securityConfig.cors[i])) {
+                    return callback(null, true);
+                }
             }
-        }
 
-        var msg = 'The CORS policy for this site does not ' +
-        'allow access from the specified Origin.';
-        return callback(new Error(msg), false);
+            var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+            return callback(new Error(msg), false);
         }
     }));
     // Request body parsing middleware should be above methodOverride
@@ -137,7 +145,16 @@ module.exports.initMiddleware = function(app) {
     // Add the cookie parser and flash middleware
     app.use(cookieParser());
 
+    //Custom error handling when error occurs in middleware
+    app.use(function (err, req, res, next) {
+        winston.error(err);
 
+        if (err.name == 'PayloadTooLargeError') {
+            res.status(413).send({ message: 'Payload too large' });
+        } else {
+            res.send(500).send({ message: 'Internal server error' })
+        }
+    })
     // Add multipart handling middleware
     /*
     var storage = multer.diskStorage({
@@ -166,7 +183,7 @@ module.exports.initMiddleware = function(app) {
 /**
  * Configure view engine
  */
-module.exports.initViewEngine = function(app) {
+module.exports.initViewEngine = function (app) {
     winston.info('Initializing ViewEngine...');
     // Set swig as the template engine
     app.engine('server.view.html', consolidate[config.templateEngine]);
@@ -179,35 +196,35 @@ module.exports.initViewEngine = function(app) {
 /**
  * Configure Express session
  */
-module.exports.initSession = function(app, db) {
-  winston.info('Initializing Session...');
+module.exports.initSession = function (app, db) {
+    winston.info('Initializing Session...');
 
-  app.use(session({
-    saveUninitialized: true,
-    resave: true,
-    secret: config.sessionSecret,
-    cookie: {
-      maxAge: config.sessionCookie.maxAge,
-      httpOnly: config.sessionCookie.httpOnly,
-      secure: config.sessionCookie.secure && config.secure && config.secure.ssl
-    },
-    key: config.sessionKey,
-    store: new RedisStore({
-      host: config.redis.host || 'localhost',
-      port: config.redis.port || 6379,
-      db: config.redis.database || 0,
-      pass: config.redis.password || ''
-    })
-  }));
+    app.use(session({
+        saveUninitialized: true,
+        resave: true,
+        secret: config.sessionSecret,
+        cookie: {
+            maxAge: config.sessionCookie.maxAge,
+            httpOnly: config.sessionCookie.httpOnly,
+            secure: config.sessionCookie.secure && config.secure && config.secure.ssl
+        },
+        key: config.sessionKey,
+        store: new RedisStore({
+            host: config.redis.host || 'localhost',
+            port: config.redis.port || 6379,
+            db: config.redis.database || 0,
+            pass: config.redis.password || ''
+        })
+    }));
 
 };
 
 /**
  * Invoke modules server configuration
  */
-module.exports.initModulesConfiguration = function(app, db) {
+module.exports.initModulesConfiguration = function (app, db) {
     winston.info('Initializing Modules Configuration...');
-    config.files.server.configs.forEach(function(configPath) {
+    config.files.server.configs.forEach(function (configPath) {
         require(path.resolve(configPath))(app, db);
     });
 };
@@ -215,7 +232,7 @@ module.exports.initModulesConfiguration = function(app, db) {
 /**
  * Configure Helmet headers configuration
  */
-module.exports.initHelmetHeaders = function(app) {
+module.exports.initHelmetHeaders = function (app) {
     winston.info('Initializing Helmet Headers...');
     // Use helmet to secure Express headers
     var SIX_MONTHS = 15778476000;
@@ -234,7 +251,7 @@ module.exports.initHelmetHeaders = function(app) {
 /**
  * Configure the modules static routes
  */
-module.exports.initModulesClientRoutes = function(app) {
+module.exports.initModulesClientRoutes = function (app) {
     winston.info('Initializing Modules Client Routes...');
     // Setting the app router and static folder
     app.use('/', express.static(path.resolve('./public')));
@@ -243,11 +260,11 @@ module.exports.initModulesClientRoutes = function(app) {
 /**
  * Configure the modules ACL policies
  */
-module.exports.initModulesServerPolicies = function(app) {
+module.exports.initModulesServerPolicies = function (app) {
     winston.info('Initializing Modules Server Policies...');
 
     // Globbing policy files
-    config.files.server.policies.forEach(function(policyPath) {
+    config.files.server.policies.forEach(function (policyPath) {
         require(path.resolve(policyPath)).invokeRolesPolicies();
     });
 };
@@ -255,10 +272,10 @@ module.exports.initModulesServerPolicies = function(app) {
 /**
  * Configure the modules server routes
  */
-module.exports.initModulesServerRoutes = function(app) {
+module.exports.initModulesServerRoutes = function (app) {
     winston.info('Initializing Modules Server Routes...');
     // Globbing routing files
-    config.files.server.routes.forEach(function(routePath) {
+    config.files.server.routes.forEach(function (routePath) {
         require(path.resolve(routePath))(app);
     });
 };
@@ -266,9 +283,9 @@ module.exports.initModulesServerRoutes = function(app) {
 /**
  * Configure error handling
  */
-module.exports.initErrorRoutes = function(app) {
+module.exports.initErrorRoutes = function (app) {
     winston.info('Initializing Error Routes...');
-    app.use(function(err, req, res, next) {
+    app.use(function (err, req, res, next) {
         // If the error object doesn't exists
         if (!err) {
             return next();
@@ -286,7 +303,7 @@ module.exports.initErrorRoutes = function(app) {
  * Configure Socket.io
 */
 
-module.exports.configureSocketIO = function(app, db) {
+module.exports.configureSocketIO = function (app, db) {
     winston.info('Initializing Socket.io...');
     // Load the Socket.io configuration
     var server = require('./socket.io')(app, db);
@@ -295,10 +312,10 @@ module.exports.configureSocketIO = function(app, db) {
     return server;
 };
 
-module.exports.initExpressStatusMonitor = function(app) {
+module.exports.initExpressStatusMonitor = function (app) {
     const io = require('socket.io');
     io.listen(3000);
-      
+
     let config = {
         title: 'Express Status',  // Default title
         theme: 'default.css',     // Default styles
@@ -308,11 +325,11 @@ module.exports.initExpressStatusMonitor = function(app) {
             {
                 interval: 1,            // Every second
                 retention: 60           // Keep 60 datapoints in memory
-            }, 
+            },
             {
                 interval: 5,            // Every 5 seconds
                 retention: 60
-            }, 
+            },
             {
                 interval: 15,           // Every 15 seconds
                 retention: 60
@@ -330,53 +347,53 @@ module.exports.initExpressStatusMonitor = function(app) {
         ignoreStartsWith: '/admin'
     }
     const monitor = require('express-status-monitor')(config);
-    
+
     app.use(monitor.middleware);
     app.get('/status', monitor.pageRoute);
-} 
+}
 /**
  * Configure server response languages
  */
-module.exports.configureLanguages = function(app) {
+module.exports.configureLanguages = function (app) {
     winston.info('Initializing Languages ...');
     // Globbing routing files
-    try{
-        fs.readdir(language_folder_path, function(err, files){
-            files.forEach(function(file){
-                var lang = require(path.resolve(language_folder_path+file));
-                if(lang.language_code && lang.language_name && lang.language_variables)
-                    global.languages[''+lang.language_code+''] = lang;
+    try {
+        fs.readdir(language_folder_path, function (err, files) {
+            files.forEach(function (file) {
+                var lang = require(path.resolve(language_folder_path + file));
+                if (lang.language_code && lang.language_name && lang.language_variables)
+                    global.languages['' + lang.language_code + ''] = lang;
             });
         });
-    }catch(error){
-        winston.error(error);
+    } catch (error) {
+        winston.error("Error loading languages!, error: ", error);
     }
 };
 
 /**
  * Initiatialize company configurations
  */
-module.exports.readCompanyConfigurations = function(app) {
+module.exports.readCompanyConfigurations = function (app) {
     winston.info('Initializing company configurations ...');
     // Globbing routing files
-    try{
-        company_configurations = require(path.resolve('./config/company_configurations/'+fs.readdirSync('./config/company_configurations')[0]));
+    try {
+        company_configurations = require(path.resolve('./config/company_configurations/' + fs.readdirSync('./config/company_configurations')[0]));
     }
-    catch(error){
-        winston.error(error);
+    catch (error) {
+        winston.error("Error reading company configurations, error: ", error);
     }
 };
 
 /**
  * Initialize the Express application
  */
-module.exports.init = function(db, redis) {
+module.exports.init = function (db, redis) {
     // Initialize express app
     var app = express();
 
     // Initialize local variables
     this.initLocalVariables(app);
-    
+
     //Init Express Monitor Status
     this.initExpressStatusMonitor(app);
 
@@ -415,6 +432,6 @@ module.exports.init = function(db, redis) {
 
     // Configure Socket.io
     var serverApp = this.configureSocketIO(app, db);
-    
+
     return serverApp;
 };

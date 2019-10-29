@@ -79,14 +79,6 @@
         "link": "/commands/list"
       },
       {
-        "id": 7,
-        "api_group_name": "payment_logs",
-        "description": "Palyment Logs",
-        "icon": "<span class='fa fa-book fa-fw dashboard_icon'></span>",
-        "children": [],
-        "link": "/PaymentTransactions/list"
-      },
-      {
         "id": 8,
         "api_group_name": "notifications",
         "description": "Notifications",
@@ -123,6 +115,14 @@
       },
       {
         "id": 10,
+          "api_group_name": "device_reports",
+        "description": "Devices Active Graph",
+        "icon": "<span class='fa fa-bar-chart fa-fw dashboard_icon'></span>",
+        "children": [],
+        "link": "/activeDevicesChart"
+      },
+      {
+        "id": 11,
         "api_group_name": "sale_reports",
         "description": "Sales Reports",
         "icon": "<span class='fa fa-list fa-fw dashboard_icon'></span>",
@@ -154,7 +154,7 @@
         ]
       },
       {
-        "id": 11,
+        "id": 12,
         "api_group_name": "expiration_reports",
         "description": "Expirations Reports",
         "icon": "<span class='fa fa-list fa-fw dashboard_icon'></span>",
@@ -173,6 +173,12 @@
           },
           {
             "entity": "",
+            "title": "Expirations Graph",
+            "icon": "<span class='fa fa-bar-chart fa-fw dashboard_icon'></span>",
+            "link": "/expiresubscription"
+          },
+          {
+            "entity": "",
             "title": "Expiration Next 30 Days",
             "icon": "<span class='fa fa-list fa-fw dashboard_icon'></span>",
             "link": "/sales_by_expiration/list?search=%7B%22next%22:%2230%22%7D"
@@ -187,7 +193,7 @@
     "template": "<div class='menu_space'>VIDEO CONTENT MANAGEMENT</div>",
     "menu_list": [
       {
-        "id": 13,
+        "id": 14,
         "api_group_name": "live_tv_channels",
         "description": "Live TV Channels",
         "icon": "<span class='fa fa-television fa-fw dashboard_icon'></span>",
@@ -213,7 +219,7 @@
         ]
       },
       {
-        "id": 14,
+        "id": 15,
         "api_group_name": "vod_content",
         "description": "VOD Content",
         "icon": "<span class='fa fa-film fa-fw dashboard_icon'></span>",
@@ -239,7 +245,7 @@
         ]
       },
       {
-        "id": 15,
+        "id": 16,
         "api_group_name": "tv_shows",
         "description": "TV SHOWS",
         "icon":  "<span class='fa fa-film fa-fw dashboard_icon'></span>",
@@ -271,7 +277,7 @@
         ]
       },
       {
-        "id":16,
+        "id":17,
         "api_group_name": "epg_data",
         "description": "EPG Data",
         "icon": "<span class='fa fa-map-o fa-fw dashboard_icon'></span>",
@@ -292,7 +298,7 @@
         "api_list": []
       },
       {
-        "id":17,
+        "id":18,
         "api_group_name": "import_data",
         "description": "Import Data",
         "icon": "<span class='fa fa-download fa-fw dashboard_icon'></span>",
@@ -326,6 +332,12 @@
             "title": "Import TV Shows from TMDB",
             "icon": "<span class='fa fa-file-video-o  fa-fw dashboard_icon'></span>",
             "link": "/tmdbseries/list?search=%7B%22q%22:%22Stranger%20Things%22%7D"
+          },
+          {
+            "entity": "",
+            "title": "Import Subtitles from OpenSubtitles",
+            "icon": "<span class='fa fa-file-video-o  fa-fw dashboard_icon'></span>",
+            "link": "/subtitlesImport/list?search=%7B%22query%22:%22Stranger%20Things%22%7D"
           }
         ]
       }
@@ -337,7 +349,7 @@
     "template": "<div class='menu_space'>SETTINGS</div>",
     "menu_list": [
       {
-        "id":18,
+        "id":19,
         "api_group_name": "plans_and_packages",
         "description": "Plans And Packages",
         "icon": "<span class='fa fa-tags fa-fw dashboard_icon'></span>",
@@ -363,7 +375,7 @@
         ]
       },
       {
-        "id":19,
+        "id":20,
         "api_group_name": "system_configurations",
         "description": "System Configuration",
         "icon": "<span class='fa fa-cog fa-fw dashboard_icon'></span>",
@@ -393,10 +405,10 @@
             "link": "/ApiKeys/edit/1"
           },
           {
-            "title": "API Parameters",
+            "title": "Advanced Settings",
             "icon": "<span class='fa fa-cog fa-fw dashboard_icon'></span>",
             "children": [],
-            "link": "/AdvancedSettings/list"
+            "link": "/AdvancedSettings"
           },
           {
             "title": "GeoIP",
@@ -407,7 +419,7 @@
         ]
       },
       {
-        "id":20,
+        "id":21,
         "api_group_name": "branding",
         "description": "Appearence / Branding",
         "icon": "<span class='fa fa-align-justify fa-fw dashboard_icon'></span>",
@@ -439,7 +451,7 @@
         ]
       },
       {
-        "id":21,
+        "id":22,
         "api_group_name": "stream_sources",
         "description": "Stream Sources",
         "icon": "<span class='fa fa-signal fa-fw dashboard_icon'></span>",
@@ -459,7 +471,7 @@
         ]
       },
       {
-        "id":22,
+        "id":23,
         "api_group_name": "users_and_roles",
         "description": "Users and Roles",
         "icon": "<span class='fa fa-users fa-fw dashboard_icon'></span>",
@@ -475,7 +487,7 @@
         "link": "/Users/list?search=%7B%22group_id%22:6%7D"
       },
       {
-        "id":24,
+        "id":25,
         "api_group_name": "system_info",
         "description": "System Info",
         "icon": "<span class='fa fa-info fa-fw dashboard_icon'></span>",
@@ -513,7 +525,7 @@
         ]
       },
       {
-        "id":23,
+        "id":26,
         "api_group_name": "support",
         "description": "Support",
         "icon": "<span class='fa fa-question fa-fw dashboard_icon'></span>",

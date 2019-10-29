@@ -1,5 +1,7 @@
 import edit_button from '../edit_button.html';
 import filter_genre_btn from '../filter_genre_btn.html';
+import modalImage from '../../templates/modalTemplate.html';
+import modalImageUpload from '../../templates/modalImageUpload.html';
 
 export default function (nga, admin) {
 	var genre = admin.getEntity('Genres');
@@ -13,7 +15,7 @@ export default function (nga, admin) {
 			nga.field('description', 'string')
 				.label('Description'),
             nga.field('icon_url', 'file')
-                .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+                .template(modalImage)
                 .cssClasses('hidden-xs')
                 .label('Icon'),
 			nga.field('is_available', 'boolean')
@@ -51,11 +53,7 @@ export default function (nga, admin) {
                 .label('Is Available'),
             nga.field('icon_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/genre/icon_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>')
+                .template(modalImageUpload)
                 .validation({
                     validator: function(value) {
                         if (value == null) {
@@ -89,7 +87,7 @@ export default function (nga, admin) {
 		                nga.field('channel_number')
 		                	.label('Nr'),
 		                nga.field('icon_url', 'file')
-		                	.template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+		                	.template(modalImage)
 		                	.label('Icon'),
 		                nga.field('title', 'string')                
 		                    .attributes({ placeholder: 'Title' })

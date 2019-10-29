@@ -5,24 +5,6 @@ var path = require('path'),
     models = db.models,
     winston = require(path.resolve('./config/lib/winston'));
 
-
-//read data for current company and pass them to req.thiscompany
-exports.read_company_advanced_settings = function(req, res, next) {
-    let COMPANY_ID = req.get("company_id") || 1;
-
-    models.advanced_settings.findAll({
-        where: {company_id: COMPANY_ID }
-    }).then(function(company_data) {
-        req.thiscompany = company_data;
-        next();
-        return false;
-    }).catch(function(error){
-        winston.error("Quering for company data failed with error: ", error);
-        responses.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-    });
-};
-
-
 //find one user data information and pass it to request
 exports.read_thisuser_information = function(req,res,next){
     let COMPANY_ID = req.get("company_id") || 1;

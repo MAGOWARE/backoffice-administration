@@ -106,6 +106,12 @@ export default function (nga, admin){
 			nga.field('on_behalf_id','reference')
 			   .targetEntity(admin.getEntity('Users'))
 				.targetField(nga.field('username'))
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function(search) { return { q: search }; }
+                })
+                .perPage(10) // limit the number of results to 10
 				.label('On Behalf Id'),
 			nga.field('start_date','date')
                 .attributes({ placeholder: 'Start date' })
@@ -118,7 +124,7 @@ export default function (nga, admin){
         ])
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
-            $state.go($state.get('edit'), {entity: 'LoginData', id: entry.values.user});
+            $state.go($state.get('edit'), {entity: 'CustomerAccount', id: entry.values.user});
             return false;
         }]);
 
