@@ -38,7 +38,7 @@ function link_tv_show_with_genres(tv_show_id,array_category_ids, db_model, compa
                         company_id: company_id,
                         is_available: true
                     }, {transaction: t}).catch(function(error){
-                        winston.error(error)
+                        winston.error("Error at link_tv_show_with_genres, transaction upsert, error:" + error)
                     })
                 )
             }
@@ -46,11 +46,11 @@ function link_tv_show_with_genres(tv_show_id,array_category_ids, db_model, compa
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
-            winston.error(err);
+            winston.error("Error at link_tv_show_with_genres, failed executing transaction, error:" + err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
-        winston.error(err);
+        winston.error("Error at link_tv_show_with_genres, error deleting existing packages, error:" + err);
         return {status: false, message:'error deleting existing packages'};
     })
 }
@@ -81,12 +81,11 @@ function link_tv_show_with_packages(item_id, data_array, model_instance, company
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
-            winston.error(err);
-            return {status: false, message:'error executing transaction'};
+            winston.error("Error at link_tv_show_with_packages, failed executing transaction, error:" + err);
         })
     }).catch(function (err) {
-        winston.error(err);
-        return {status: false, message:'error deleteting existing packages'};
+        winston.error("Error at link_tv_show_with_packages, error deleting existing packages, error:" + err);
+        return {status: false, message:'error deleting existing packages'};
     })
 }
 
@@ -107,7 +106,8 @@ exports.create = function(req, res) {
 
     DBModel.create(req.body).then(function(result) {
         if (!result) {
-            return res.status(400).send({message: 'fail create data'});
+            winston.error("Error at creating tv-series method");
+            return res.status(400).send({message: 'Failed creating tv-series'});
         } else {
             logHandler.add_log(req.token.id, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
             return link_tv_show_with_genres(result.id,array_tv_series_categories, db.tv_series_categories, req.token.company_id).then(function(t_result) {
@@ -127,7 +127,7 @@ exports.create = function(req, res) {
             })
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at creating tv-series method error: " + err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -191,7 +191,7 @@ exports.update = function(req, res) {
                 }
             })
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error at tv-series, error: " + err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -226,12 +226,12 @@ exports.delete = function(req, res) {
             }).then(function (result) {
                 return res.json(result);
             }).catch(function (err) {
-                winston.error(err);
-                return res.status(400).send({message: 'Deleting this tv show item failed : ' + error});
+                winston.error("Deleting tv-show item failed, error: " + err);
+                return res.status(400).send({message: 'Deleting tv-show item failed, error ' + err });
             });
         }
     }).catch(function (error) {
-        winston.error(error);
+        winston.error("Searching tv-show item failed, error: " + error);
         return res.status(400).send({message: 'Searching for this tv show item failed : ' + error});
     });
 
@@ -319,7 +319,7 @@ exports.list = function(req, res) {
                     res.json(results.rows);
                 }
             }).catch(function(err) {
-                winston.error(err);
+                winston.error("Error tv series list, error: " + err);
                 res.jsonp(err);
             });
         });
@@ -337,7 +337,7 @@ exports.list = function(req, res) {
                 res.json(results.rows);
             }
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error fetching tv series list and count, error: " + err);
             res.jsonp(err);
         });
     }
@@ -376,7 +376,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at fetching dataById tv-series, error: " + err);
         return next(err);
     });
 
@@ -442,7 +442,7 @@ exports.update_film = function(req, res) {
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
-                        winston.error(error);
+                        winston.error("Error at updating tv-series film, error: " + error);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -455,7 +455,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
-        winston.error(error);
+        winston.error("An error occurred while searching for this movie at tv series, error: ", error);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });
@@ -485,8 +485,8 @@ function omdbapi(tv_show_data, callback){
         };
 
         request(options, function (error, response, body) {
-            if(error){
-
+            if(error) {
+                winston.error("Error at tv-series error: " + error);
                 callback(true, "An error occurred while trying to get this movie's data");
             }
             else try {

@@ -208,7 +208,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {
@@ -243,29 +243,28 @@ exports.latest = function(req, res) {
 /**
  * middleware
  */
-exports.dataByID = function(req, res, next, id) {
+exports.dataByID = function (req, res) {
+  const id = req.params.loginDataId;
+  const company_id = req.token.company_id || 1;
+
   DBModel.findOne({
     where: {
-        $or: {
-            id: id,
-            username: id
-        }
+      id: id,
+      company_id: company_id
     },
     include: [{model: db.customer_data}]
-  }).then(function(result) {
+  }).then(function (result) {
     if (!result) {
       return res.status(404).send({
         message: 'No data with that identifier has been found'
       });
     } else {
       req.loginData = result;
-      next();
-      return null;
+      return res.json(result);
     }
-  }).catch(function(err) {
+  }).catch(function (err) {
     winston.error("Getting data for client account failed with error: ", err);
-    return next(err);
+    return json(err);
   });
 
 };
-

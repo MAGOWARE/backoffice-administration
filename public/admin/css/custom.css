@@ -197,7 +197,7 @@ body{
 }
 
 /*div.container{*/
-    /*width: 800px;*/
+/*width: 800px;*/
 /*}*/
 
 #imgInp{
@@ -375,10 +375,9 @@ img.img-responsive.logo_company {
     height: 51px;
 }
 img.img-responsive.centered_logo_company {
-    margin-left: auto;
-    margin-right: auto;
-    width: 321px;
-    height: 51px;
+    max-width: 321px;
+    max-height: 300px;
+    margin: 200px auto 80px;
 }
 
 @media (max-width: 767px) {
@@ -553,7 +552,7 @@ thead {
 .table-striped>tbody>tr:nth-child(odd)>td,
 .table-striped>tbody>tr:nth-child(odd)>th {
     background-color: white;
- /*Choose your own color here*/
+    /*Choose your own color here*/
 }
 
 .table>thead>tr>th {
@@ -663,4 +662,112 @@ p#paragraph_vod {
 p#paragraph_vod:hover {
     background-color: #00c292;
     color: white;
+}
+
+.modalImage .image-wrapper {
+    text-align: center;
+    background: transparent;
+}
+.modalImage .image-wrapper img {
+    max-width: 560px;
+    max-height: 560px;
+}
+.modalImage .image-description {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.modal-header {
+    padding: 15px;
+    border-bottom: 0px solid #e5e5e5;
+}
+
+.modal-body-1 {
+    background: transparent;
+}
+.close-button {
+    margin: 50px;
+}
+
+body > div.image-modal > div > div {
+    position: relative;
+    background-color: transparent !important;
+    border: 0 !important;
+    border-radius: 6px;
+    box-shadow: none !important;
+    background-clip: padding-box;
+    outline: 0;
+}
+
+/*.custom-style2 {*/
+/*    fill: #f23303;*/
+/*    fill-opacity:0;*/
+/*    stroke-width:2px;*/
+/*    stroke: #ff0004;*/
+/*}*/
+
+.group0Style > div > div.vis-panel.vis-center > div.vis-content > div > svg > path.vis-graph-group0.vis-fill {
+    fill: #00C292 !important;
+    /*fill-opacity: 0;*/
+    stroke-width: 2px;
+    fill-opacity: .1;
+    stroke: #00C292 !important;
+}
+
+.group0Style > div > div.vis-panel.vis-center > div.vis-content > div > svg > path.vis-graph-group0 {
+    fill: #00C292 !important;
+    fill-opacity: 0;
+    stroke-width: 2px;
+    stroke: #00C292 !important;
+}
+
+.group0Style > div > div.vis-panel.vis-center > div.vis-content > div > svg > circle.vis-graph-group0.vis-point {
+    fill: #00C292 !important;
+    stroke-width: 2px;
+    fill-opacity: 1;
+    stroke: #00C292 !important;
+}
+
+
+.vis-graph-group0 {
+    fill: #03A9F3 !important;
+    fill-opacity: 0;
+    stroke-width: 2px;
+    stroke: #03A9F3 !important;
+}
+.group0Style > div > div.vis-panel.vis-left > div.vis-content > div > svg > path.vis-graph-group0.vis-icon-fill {
+    fill: #00C292 !important;
+    stroke-width: 2px;
+    stroke: #00C292 !important;
+}
+
+.group0Style > div > div.vis-panel.vis-left > div.vis-content > div > svg > path.vis-graph-group0.vis-point {
+    fill: #00C292 !important;
+    stroke-width: 2px;
+    stroke: #00C292 !important;
+}
+.group0Style > div > div.vis-panel.vis-left > div.vis-content > div > svg > path.vis-graph-group0 {
+    fill: #00C292 !important;
+    stroke-width: 2px;
+    stroke: #00C292 !important;
+}
+
+.group0Style > div > div.vis-panel.vis-left > div.vis-content > div > svg > circle {
+    fill: #00C292 !important;
+    stroke-width: 2px;
+    stroke: #00C292 !important;
+}
+
+.google-recaptcha {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.input-label {
+    color: gray;
+    text-align: left;
+    margin-top: 6px;
+    margin-left: 23px;
+    margin-bottom: -8px;
 }

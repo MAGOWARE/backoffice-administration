@@ -8,7 +8,8 @@ export default function (nga, admin) {
         {value: {"iso_639_1":"en","name":"English"}, label: 'English'},
         {value: {"iso_639_1":"sp","name":"Spanish"}, label: 'Spanish'},
         {value: {"iso_639_1":"gr","name":"German"}, label: 'German'},
-        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'}
+        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'},
+        {value: {"iso_639_1":"pt","name":"Portuguese"}, label: 'Portuguese'}
     ];
 
     tmdbseries.listView()

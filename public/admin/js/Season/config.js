@@ -1,4 +1,6 @@
 import edit_button from '../edit_button.html';
+import modalImage from '../../templates/modalTemplate.html'
+import modalImageUpload from '../../templates/modalImageUpload.html'
 //import foto from '../foto.html';
 
 export default function (nga, admin) {
@@ -18,7 +20,7 @@ export default function (nga, admin) {
                 .cssClasses('hidden-xs')
                 .label('Duration'),
             nga.field('icon_url', 'file')
-                .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+                .template(modalImage)
                 .cssClasses('hidden-xs')
                 .label('Icon'),
             nga.field('is_available', 'boolean')
@@ -87,6 +89,13 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' })
                 .validation({ required: true })
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function (search) {
+                        return {q: search};
+                    }
+                })
                 .label('TV Shows Name'),
             nga.field('season_number', 'number')
                 .attributes({ placeholder: 'Season Number' })
@@ -123,11 +132,7 @@ export default function (nga, admin) {
                 .label('Trailer url'),
             nga.field('icon_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>')
+                .template(modalImageUpload)
                 .validation({
                     validator: function(value) {
                         if (value == null) {
@@ -145,11 +150,18 @@ export default function (nga, admin) {
                 .label('Icon *'),
             nga.field('image_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/image_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>')
+                .template(`<div class="row">
+                        <div class="col-xs-12 col-sm-1">
+                            <div ng-controller="modalController">
+                                <img ng-src="{{ entry.values.image_url }}"
+                                     width="45"
+                                     height="45"
+                                     ng-click="openModalImage(entry.values.image_url)">
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>
+                    </div>
+                    <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>`)
                 .validation({
                     validator: function(value) {
                         if (value == null) {
@@ -217,6 +229,13 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' })
                 .validation({ required: true })
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function (search) {
+                        return {q: search};
+                    }
+                })
                 .label('TV Shows Name'),
             nga.field('season_number', 'number')
                 .attributes({ placeholder: 'Season Number' })
@@ -253,11 +272,7 @@ export default function (nga, admin) {
                 .label('Trailer url'),
             nga.field('icon_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">360x516 px, not larger than 150 KB</small></div>')
+                .template(modalImageUpload)
                 .validation({
                     validator: function(value) {
                         if (value == null) {
@@ -275,11 +290,18 @@ export default function (nga, admin) {
                 .label('Icon *'),
             nga.field('image_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/image_url','apifilename': 'result'})
-                .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.image_url }}" height="40" width="40" /></div>'+
-                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>'+
-                    '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>')
+                .template(`<div class="row">
+                        <div class="col-xs-12 col-sm-1">
+                            <div ng-controller="modalController">
+                                <img ng-src="{{ entry.values.image_url }}"
+                                     width="45"
+                                     height="45"
+                                     ng-click="openModalImage(entry.values.image_url)">
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.image_url"></ma-file-field></div>
+                    </div>
+                    <div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>`)
                 .validation({
                     validator: function(value) {
                         if (value == null) {

@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-var _ = require('lodash'),
+const _ = require('lodash'),
     chalk = require('chalk'),
     glob = require('glob'),
     fs = require('fs'),

@@ -31,11 +31,10 @@ module.exports = function(app) {
     app.route('/api/logindata/:loginDataId')
         .all(policy.Authenticate)
         .all(policy.isAllowed)
-        .get(loginData.read)
-        .put(loginData.update)
+        .get(loginData.dataByID)
+        .put(loginData.update);
         //.delete(loginData.delete);
 
-    app.param('loginDataId', loginData.dataByID);
 
     /* =====Resellers login data ===== */
     app.route('/api/ResellersLoginData')

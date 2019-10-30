@@ -119,7 +119,7 @@
                 } else {
                     ERROR_CODE = "1202";
                     MESSAGE = "Fail to Decrypt the data";
-                    console.log("[ERROR]: " + ERROR_CODE + "[MESSAGE]: " + MESSAGE);
+                    winston.error("[ERROR]: " + ERROR_CODE + "[MESSAGE]: " + MESSAGE);
                 }
             }
             /* = -------------------------------------------------------------------------- = */
@@ -144,7 +144,7 @@
                         if (err) {
                             ERROR_CODE = "1203";
                             MESSAGE = "Fail to Parse XML";
-                            console.log("[ERROR]: " + ERROR_CODE + "[MESSAGE]: " + MESSAGE);
+                            winston.error("[ERROR]: " + ERROR_CODE + "[MESSAGE]: " + MESSAGE);
                         } else {
                             console.log('[XML-JSON Result] ' + JSON.stringify(result));
                             sJsonResult = result;
@@ -266,7 +266,6 @@
                     "nonce": sNonce
                 };
                 sResponse = JSON.stringify(jsonResponse);
-                console.log("[Result JSON]: " + sResponse);
             }
 
             /* ============================================================================== */
@@ -277,7 +276,6 @@
             /* =   Encrypts data to respond                                             = */
             /* = -------------------------------------------------------------------------- = */
             var sEncrypted = makeDrm.encrypt(sResponse);
-            console.log("[Encrypted DATA]: " + sEncrypted);
 
             return sEncrypted;
             /* = -------------------------------------------------------------------------- = */

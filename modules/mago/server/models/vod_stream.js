@@ -54,6 +54,12 @@ module.exports = function(sequelize, DataTypes) {
         drm_platform: {
             type: DataTypes.STRING(20),
             allowNull: false
+        },
+        stream_type:{
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: 'regular',
+            unique: 'vodstream_type'
         }
     }, {
         tableName: 'vod_stream',

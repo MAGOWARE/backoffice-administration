@@ -1,12 +1,7 @@
 'user strict';
 
 //stripe servers IPs list
-var stripe_whiteilst_IPs =['54.187.174.169',
-                    '54.187.205.235',
-                    '54.187.216.72',
-                    '54.241.31.99',
-                    '54.241.31.102',
-                    '54.241.34.107'];
+var stripe_whiteilst_IPs =[];
 
 exports.stripe_isAllowed = function(req, res, next) {
 

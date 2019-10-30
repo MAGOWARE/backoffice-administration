@@ -8,52 +8,17 @@ var
     async = require('async'),
     db = {},
     http = require('http'),
-    https = require('https'),
-    chalk = require('chalk'),
-    randomstring = require('randomstring'),
-    networking = require(path.resolve('./custom_functions/networking')),
-    authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller'));
+    https = require('https');
 
-    var salt = randomstring.generate(64);
-    var protocol = (config.port === 443) ? 'https://' : 'http://'; //port 443 means we are running https, otherwise we are running http (preferably on port 80)
-
-    const os = require('os');
-    const advanced_settings = require(path.resolve("./config/defaultvalues/advanced_settings.json"));
-    const email_templates = require(path.resolve("./config/defaultvalues/email_templates.json"));
-    const html_content = require(path.resolve("./config/defaultvalues/html_content.json"));
-    const api_list = require(path.resolve("./config/api_list.json"));
-    const default_device_menu = require(path.resolve("./config/defaultvalues/device_menu.json"));
     const default_activity = require(path.resolve("./config/defaultvalues/activity.json"));
     const default_app_groups = require(path.resolve("./config/defaultvalues/app_groups.json"));
     const default_package_type = require(path.resolve("./config/defaultvalues/package_type.json"));
-    const superadmin_group = {name: 'Superadmin', code: 'superadmin', isavailable: 1, company_id: 1};
-    const admin_group = {id: 2, name: 'Administrator', code: 'admin', isavailable: 1, company_id: 1};
-    const admin_user = {id: 2, username: 'admin', hashedpassword: 'admin', salt: salt, isavailable: 1, group_id: 2, company_id: 1};
-    const settings_values = {
-        id: 1,
-        email_address: 'noreply@demo.com',
-        email_username: 'username',
-        email_password: 'password',
-        assets_url: (networking.external_serverip()) ? protocol+networking.external_serverip() : 'your_server_url',
-        old_encryption_key: '0123456789abcdef',
-        new_encryption_key: '0123456789abcdef',
-        firebase_key: '',
-        help_page: '/help_and_support',
-        vod_subset_nr: 200,
-        activity_timeout: 10800,
-        channel_log_time:6,
-        log_event_interval:300,
-        vodlastchange: Date.now(),
-        livetvlastchange: Date.now(),
-        menulastchange: Date.now(),
-        akamai_token_key: 'akamai_token_key',
-        flussonic_token_key: 'flussonic_token_key',
-        expire_date: new Date(new Date().setMonth(new Date().getMonth() + 1))
-    };
 
     const complete_menu_object = require(path.resolve("./config/defaultvalues/menu_map.json"));
     const complete_api_group = [];
     const complete_api_url = [];
+    
+    const protocol = (config.port === 443) ? 'https://' : 'http://'; //port 443 means we are running https, otherwise we are running http (preferably on port 80)
 
     db.Sequelize = Sequelize;
     db.models = {};
@@ -82,99 +47,27 @@ db.connect = function(database, username, password, options) {
             }
         });
 
+        let companyFunctions = require(path.resolve('./custom_functions/company'));
+        
         if (config.db.sync) {
 
             sequelize.sync({force: (process.env.DB_SYNC_FORCE === 'true')})
                 .then(function() {
                     async.waterfall([
-                        //create settings record
+                        //create root company
                         function(callback){
-                            db.models['settings'].findOrCreate({
-                                where: {id:1}, defaults: settings_values
-                            }).then(function(settings) {
-                                winston.info('Settings created successfully.');
-                                callback(null);
-                                return null;
-                            }).catch(function(err) {
-                                winston.error("An error occured: ", err);
-                                callback(null);
-                            });
-                        },
-                        //create admin group
-                        function(callback){
-                            db.models['groups'].findOrCreate({
-                                where: {code: 'superadmin'},defaults: superadmin_group
-                            }).then(function(group) {
-                                winston.info('Super admin group created successfully. Creating user superadmin ...');
-                                db.models['groups'].findOne({attributes: ['id'], where: {code: 'superadmin'}}).then(function(superadmin_group){
-                                    //create admin user
-                                    db.models['users'].findOrCreate({
-                                        where: {username: 'superadmin'},
-                                        defaults: {username: 'superadmin', hashedpassword: 'admin', salt: salt, isavailable: 1, group_id: superadmin_group.id, company_id: 1}
-                                    }).then(function(user) {
-                                        winston.info('Superadmin user created successfully.');
-                                        callback(null);
-                                        return null;
-                                    }).catch(function(err) {
-                                        winston.error('Error creating superadmin user - ', err);
-                                        callback(null);
-                                    });
-                                    return null;
-                                }).catch(function(err){
-                                    winston.error('Error searching the id of superadmin group - ', err);
-                                    callback(null);
+                            companyFunctions.createRootCompany()
+                                .then(function() {
+                                    callback(null)
+                                })
+                                .catch(function(err) {
+                                    if (err.code == 500) {
+                                        process.exit();
+                                    }
+                                    else{
+                                        callback(null)
+                                    }
                                 });
-                                return null;
-                            }).catch(function(err) {
-                                winston.error('Error creating superadmin group - ', err);
-                                callback(null);
-                            });
-                        },
-                        function(callback){
-                            db.models['groups'].findOrCreate({
-                                where: {code: 'admin'},defaults: admin_group
-                            }).then(function(group) {
-                                winston.info('Admin group created successfully. Creating user admin ...');
-                                //create admin user
-                                db.models['users'].findOrCreate({
-                                    where: {username: 'admin'}, defaults: admin_user
-                                }).then(function(user) {
-                                    winston.info('Admin user created successfully.');
-                                    callback(null);
-                                    return null;
-                                }).catch(function(err) {
-                                    winston.error('Error creating Admin user - ', err);
-                                    callback(null);
-                                });
-                                return null;
-                            }).catch(function(err) {
-                                winston.error('Error creating Admin group - ', err);
-                                callback(null);
-                            });
-                        },
-                        function(callback){
-                            db.models['vod_stream_source'].findOrCreate({
-                                where: {id: 1}, defaults: {id:1,description: 'VOD Streams Primary CDN'}
-                            }).then(function(done) {
-                                winston.info('VOD stream source created successfully.');
-                                callback(null);
-                                return null;
-                            }).catch(function(err) {
-                                winston.error('Error creating VOD stream source - ', err);
-                                callback(null);
-                            });
-                        },
-                        function(callback){
-                            db.models['channel_stream_source'].findOrCreate({
-                                where: {id: 1},
-                                defaults: {id:1,stream_source: 'Live Streams Primary CDN'}
-                            }).then(function(done) {
-                                winston.info('Live TV stream source created successfully.');
-                                callback(null);
-                            }).catch(function(err) {
-                                winston.error('Error creating Live TV stream source - ', err);
-                                callback(null);
-                            });
                         },
                         function(callback){
                             var baseurl = process.env.NODE_HOST || 'localhost' + ":" + config.port;
@@ -254,70 +147,6 @@ db.connect = function(database, username, password, options) {
                         });
                     }, function(error){
                         winston.info('Default package_types created successfully. Creating device menu table ...');
-                        return null;
-                    });
-                    return null;
-                }).then(function() {
-                    async.forEach(advanced_settings, function(advanced_settings_obj, callback){
-                        db.models['advanced_settings'].upsert(
-                            advanced_settings_obj
-                        ).then(function(done) {
-                            callback(null);
-                            return null;
-                        }).catch(function(err) {
-                            winston.error('Error creating configuration '+advanced_settings_obj.parameter_id+': ',err);
-                            return null;
-                        });
-                    }, function(error){
-                        winston.info('Default configurations created successfully. Creating device menu table ...');
-                        return null;
-                    });
-                    return null;
-                }).then(function() {
-                    async.forEach(email_templates, function(email_templates_obj, callback){
-                        db.models['email_templates'].findOrCreate({
-                            where: {id: email_templates_obj.id}, defaults: email_templates_obj
-                        }).then(function(done) {
-                            callback(null);
-                            return null;
-                        }).catch(function(err) {
-                            winston.error('Error creating configuration '+email_templates_obj.id+': ',err);
-                            return null;
-                        });
-                    }, function(error){
-                        winston.info('Default configurations created successfully. Creating email template table ...');
-                        return null;
-                    });
-                    return null;
-                }).then(function() {
-                async.forEach(html_content, function(html_content_obj, callback){
-                    db.models['html_content'].findOrCreate({
-                        where: {id: html_content_obj.id}, defaults: html_content_obj
-                    }).then(function(done) {
-                        callback(null);
-                        return null;
-                    }).catch(function(err) {
-                        winston.error('Error creating configuration '+html_content_obj.id+': ',err);
-                        return null;
-                    });
-                }, function(error){
-                    winston.info('Default configurations created successfully. Creating html content table ...');
-                    return null;
-                });
-                return null;
-            }).then(function() {
-                    async.forEach(default_device_menu, function(device_menu_obj, callback){
-                        db.models['device_menu'].findOrCreate({
-                            where: {id: device_menu_obj.id}, defaults: device_menu_obj
-                        }).then(function(done) {
-                            callback(null);
-                            return null;
-                        }).catch(function(err) {
-                            winston.error('Error creating menu '+device_menu_obj.description+': ',err);
-                            return null;
-                        });
-                    }, function(error){
-                        winston.info('Default menus created successfully. Creating device api group table ...');
                         return null;
                     });
                     return null;

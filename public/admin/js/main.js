@@ -1,5 +1,5 @@
 'use strict'
-var myApp = angular.module('myApp', ['ng-admin','ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies','dndLists']);
+var myApp = angular.module('myApp', ['ng-admin','ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies','dndLists', 'vcRecaptcha']);
 
 myApp.controller('envVariablesCtrl', ['$scope', '$http','notification', function ($scope, $http,notification) {
     var config = {method: 'GET', url: '../api/env_settings'};
@@ -71,6 +71,38 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
         $scope.displayBanner = $location.$$path === '/dashboard';
     });
 });
+
+myApp.controller('modalController', function($scope, $uibModal) {
+    $scope.openModalImage = function (imageSrc, imageDescription, imageHeight, imageWidth) {
+        $uibModal.open({
+            templateUrl: "./templates/modalImage.html",
+            windowClass: "image-modal",
+            resolve: {
+                imageSrcToUse: function () {
+                    return imageSrc;
+                },
+                imageDescriptionToUse: function () {
+                    return imageDescription;
+                },
+                imageHeight: function () {
+                    return imageHeight;
+                },
+                imageWidth: function() {
+                    return imageWidth;
+                }
+            },
+            controller: [
+                "$scope", "imageSrcToUse", "imageDescriptionToUse", "imageHeight", "imageWidth",
+                function ($scope, imageSrcToUse, imageDescriptionToUse, imageHeight, imageWidth) {
+                    $scope.ImageSrc = imageSrcToUse;
+                    $scope.imageHeight = imageHeight;
+                    $scope.imageWidth = imageWidth;
+                    return $scope.ImageDescription = imageDescriptionToUse;
+                }
+            ]
+        });
+    };
+})
 
 myApp.controller('checkboxController', function($scope) {
     $scope.checkboxModel = {
@@ -292,6 +324,145 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
     });
 });
 
+myApp.controller('expireGraphCtr', function ($scope, Restangular) {
+    $scope.options = {
+        drawPoints: {
+            style: 'circle' // square, circle
+        },
+        shaded: {
+            orientation: 'bottom' // top, bottom
+        },
+        dataAxis: {
+            icons: true
+        },
+        orientation: 'top',
+        start: new Date().toISOString(),
+    };
+
+    $scope.options2 = {
+        drawPoints: {
+            style: 'circle' // square, circle
+        },
+        shaded: {
+            orientation: 'bottom' // top, bottom
+        },
+        dataAxis: {
+            icons: true
+        },
+        orientation: 'top',
+        start: new Date().toISOString(),
+        zoomable: true
+    };
+
+    Restangular.one('reports/expiresubscription')
+        .get()
+        .then(function successCallback(response) {
+            const res = response.data ? response.data : response;
+
+            $scope.options = {
+                drawPoints: {
+                    style: 'circle' // square, circle
+                },
+                shaded: {
+                    orientation: 'bottom' // top, bottom
+                },
+                dataAxis: {
+                    icons: true
+                },
+                orientation: 'top',
+                start: new Date().toISOString(),
+                end: new Date().setDate(
+                  new Date().getDate() + 31
+                ),
+                zoomable: false
+            };
+            const mapData = items => {
+                return items.map(item => {
+                    return {
+                        x: new Date(item.to_date),
+                        y: item.total
+                    }
+                })
+            };
+            $scope.data = {
+                items: mapData(res)
+            };
+        });
+
+    Restangular.one('reports/expiresubscriptionbyday')
+        .get()
+        .then(function successCallback(response) {
+            const res = response.data ? response.data : response;
+
+            $scope.options2 = {
+                drawPoints: {
+                    style: 'circle' // square, circle
+                },
+                shaded: {
+                    orientation: 'bottom' // top, bottom
+                },
+                dataAxis: {
+                    icons: true
+                },
+                orientation: 'top',
+                start: res.length !== 0 ? res[0].date : new Date().toISOString(),
+                end: res.length !== 0 ? res[res.length - 1].date : new Date().setDate(
+                  new Date().getDate() + 31
+                ),
+                zoomable: true
+            };
+
+            const mapData = items => {
+                return items.map(item => {
+                    return {
+                        x: item.to_date,
+                        y: item.total,
+                    }
+                })
+            };
+            $scope.data2 = {
+                items: mapData(res),
+            }
+        });
+
+    Restangular.one('reports/lasttwoyearssales')
+        .get()
+        .then(function successCallback(response) {
+            const res = response.data ? response.data : response;
+
+            $scope.options3 = {
+                drawPoints: {
+                    style: 'circle' // square, circle
+                },
+                shaded: {
+                    orientation: 'bottom' // top, bottom
+                },
+                dataAxis: {
+                    icons: true
+                },
+                orientation: 'top',
+                start: res.length !== 0 ? res[0].date : new Date().toISOString(),
+                end: res.length !== 0 ? res[res.length - 1].date : new Date().setDate(
+                  new Date().getDate() + 31
+                ),
+                zoomable: false
+            };
+
+            const mapData = items => {
+                return items.map(item => {
+                    return {
+                        x: new Date(item.date),
+                        y: item.total,
+                        group: 2
+                    }
+                })
+            };
+            $scope.data3 = {
+                items: mapData(res),
+            }
+        })
+});
+
 myApp.controller('languageCtrl', ['$translate', '$scope','$cookies', function ($translate, $scope,$cookies) {
     $scope.serve_language = function (langKey) {
         $translate.use(langKey);
@@ -329,6 +500,8 @@ myApp.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.preferredLanguage(preferred_language);
     $translateProvider.useCookieStorage(); //remember chosen language
 }]);
+
+
 
 // Forgot Password Controller
 
@@ -441,6 +614,7 @@ myApp.run(['Restangular', '$location', 'notification', function(Restangular, $lo
 myApp.directive('dashboardSummary', require('./dashboard/dashboardSummary'));
 myApp.directive('resellersdashboardSummary', require('./dashboard/dashboard_for_resellers/resellers_dashboardSummary'));
 myApp.directive('graph', require('./dashboard/graphs'));
+myApp.directive('activeDevicesChart', require('./activeDevicesChart/activeDevices'));
 myApp.directive('sendpush', require('./smsbatch/sendpush'));
 myApp.directive('sale', require('./smsbatch/sale'));
 myApp.directive('vod', require('./smsbatch/vod'));
@@ -452,6 +626,7 @@ myApp.directive('invite', require('./smsbatch/invite'));
 myApp.directive('approveInvitation', require('./smsbatch/approveInvitation'));
 myApp.directive('importchannelLogs', require('./import_channels_csv_m3u/see_logs_import_channel'));
 myApp.directive('importvodLogs', require('./import_vod_csv/see_logs_import_vod'));
+myApp.directive('expiration_graphs', require('./sales_by_expiration/expiration_graph.html'));
 
 //myApp.directive('roles', require('./grouprights/radioRoles'));
 
@@ -463,10 +638,11 @@ myApp.config(['$stateProvider', require('./support/support')]);
 myApp.config(['$stateProvider', require('./serverStatus/serverStatus')]);
 myApp.config(['$stateProvider', require('./change-pass/change-password')]);
 myApp.config(['$stateProvider', require('./epgData/epgchart')]);
+myApp.config(['$stateProvider', require('./activeDevicesChart/activeDevices')]);
+myApp.config(['$stateProvider', require('./sales_by_expiration/salesByExpiration')]);
+myApp.config(['$stateProvider', require('./advanced_settings/advancedSettings')]);
 
 myApp.config(['NgAdminConfigurationProvider', function (nga) {
-
-    // App Create
 
 	if (location.protocol == 'http:') {
 		var admin = nga.application('MAGOWARE').baseApiUrl('http://' + location.host + '/api/');
@@ -505,6 +681,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('sales_monthly_expiration'));
     admin.addEntity(nga.entity('sales_by_expiration'));
     admin.addEntity(nga.entity('company_settings'));
+    admin.addEntity(nga.entity('company_settings_list_company_data'));
     admin.addEntity(nga.entity('Settings'));
     admin.addEntity(nga.entity('EmailSettings'));
     admin.addEntity(nga.entity('URL'));
@@ -533,7 +710,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('MySubscription'));
     admin.addEntity(nga.entity('MySales'));
     admin.addEntity(nga.entity('search_customer'));
-    admin.addEntity(nga.entity('AdvancedSettings'));
+    // admin.addEntity(nga.entity('AdvancedSettings'));
     admin.addEntity(nga.entity('Submenu'));
     admin.addEntity(nga.entity('VodEpisode'));
     admin.addEntity(nga.entity('tv_episode_subtitles'));
@@ -549,6 +726,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('tmdbseries'));
     admin.addEntity(nga.entity('import_channel'));
     admin.addEntity(nga.entity('import_vod'));
+    admin.addEntity(nga.entity('subtitlesImport'));
+    admin.addEntity(nga.entity('reports/expiresubscription'));
 
     admin.addEntity(nga.entity('assetsMaster'));
     admin.addEntity(nga.entity('assetsCategory'));
@@ -574,8 +753,9 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./tv_episode_subtitles/config')(nga, admin);
     require('./tv_episode_stream/config')(nga, admin);
     require('./Submenu/config')(nga, admin);
-    require('./AdvancedSettings/config')(nga, admin);
+    // require('./AdvancedSettings/config')(nga, admin);
     require('./company_settings/config')(nga, admin);
+    require('./company_settings_data/config')(nga, admin);
     require('./settings/PlayerSettings/config')(nga, admin);
     require('./settings/ImagesSettings/config')(nga, admin);
     require('./settings/ApiKeys/config')(nga, admin);
@@ -630,6 +810,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./vodStream/config')(nga, admin);
     require('./vodStreamSource/config')(nga, admin);
     require('./vodSubtitles/config')(nga, admin);
+    require('./subtitlesImport/config')(nga, admin);
     require('./paymentTransactions/config')(nga, admin);
 
 

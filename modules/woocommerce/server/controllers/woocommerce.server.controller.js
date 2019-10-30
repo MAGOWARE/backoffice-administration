@@ -27,8 +27,8 @@ exports.woocommerce_order_status_change = function(req,res) {
         //ssl: true,
         wpAPI: true,
         version: 'wc/v1',
-        consumerKey: 'ck_5788e4645d05b03078c879fd1e05d8406cbeae0e', //todo: read from settings
-        consumerSecret: 'cs_779c4486e366c2b8b7c5594c2d30e918935adbbf' //todo: read from settings
+        consumerKey: 'YOUR_CUSTOMER_KEY_HERE', //todo: read from settings
+        consumerSecret: 'YOUR_CUSTOMER_SECRET_HERE' //todo: read from settings
     });
 
 

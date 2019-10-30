@@ -45,7 +45,6 @@
 
     module.exports = {
         "encrypt": function encrypt(data) {
-            winston.info('encrypt data: ' + data);
             if (!data)
                 return 'fail';
 
@@ -61,7 +60,6 @@
             return result;
         },
         "decrypt": function decrypt(data) {
-            winston.info('decrypt data: ' + data);
             if (!data)
                 return 'fail';
 

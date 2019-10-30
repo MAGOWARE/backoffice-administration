@@ -205,7 +205,6 @@ exports.list = function(req, res) {
     if(query.title) qwhere.title = query.title;
     if(query.channel_number) qwhere.channel_number = query.channel_number;
 
-    console.log(query.program_start + ' ' + query.program_end)
     if(query.program_start && query.program_end) {
         // we have interval
         qwhere.program_start = {};
@@ -216,7 +215,6 @@ exports.list = function(req, res) {
     else if(query.program_start) {
         qwhere.program_start = {};
         qwhere.program_start.$gte = new Date(query.program_start);
-        console.log('hour ' + new Date(query.program_start).getHours());
     }
     else if(query.program_end) {
         qwhere.program_end = {}
@@ -325,11 +323,11 @@ exports.save_epg_records = function(req, res){
     if(!req.body.encoding || ((['ascii', 'utf-8', 'ISO-8859-1'].indexOf(''+req.body.encoding+'') >= 0) === false) ) req.body.encoding = 'utf-8'; //valid encoding input or default encoding utf-8
 
     if(req.body.epg_url){
-        //download epg to /public/files/epg
+        //download epg to public/files/temp
         var origin_url = req.body.epg_url;
-        var destination_path = "./public/files/epg/";
-        var epg_filename = "aksi"+Date.now() + origin_url.substring(origin_url.lastIndexOf("."), origin_url.length); //get name of new file
-        console.log(epg_filename);
+        var destination_path = "./public/files/temp/";
+        var epg_filename = "epg"+Date.now() + origin_url.substring(origin_url.lastIndexOf("."), origin_url.length); //get name of new file
+
         var options = {
             directory: destination_path,
             filename: epg_filename
@@ -341,10 +339,10 @@ exports.save_epg_records = function(req, res){
             }
             else{
                 if (req.body.epg_file) {
-                    req.body.epg_file = req.body.epg_file+',/files/epg/'+epg_filename; //append filename to req.body.epg_file
+                    req.body.epg_file = req.body.epg_file+',/files/temp/'+epg_filename; //append filename to req.body.epg_file
                 }
                 else {
-                    req.body.epg_file = '/files/epg/'+epg_filename; //append filename to req.body.epg_file
+                    req.body.epg_file = '/files/temp/'+epg_filename; //append filename to req.body.epg_file
                 }
 
                 start_epg_import();
@@ -386,8 +384,8 @@ exports.save_epg_records = function(req, res){
         }
 
         var epg_files = req.body.epg_file.split(',');
-        console.log("Files " + epg_files.length)
-        console.log(req.body.epg_file);
+        // console.log("Files " + epg_files.length)
+        // console.log(req.body.epg_file);
         async.forEach(epg_files, function(epg_file, callback){
                 if(fileHandler.get_extension(epg_file)=== '.csv'){
                     import_csv(req, res, current_time, epg_file, import_log, callback);
@@ -398,7 +396,7 @@ exports.save_epg_records = function(req, res){
                     import_xmltv(req, res, current_time, epg_file, import_log, callback);
                 }
                 else {
-                    import_log.error_log.push('Incorrect file type for file ' + epg_file);
+                    winston.error('Incorrect file type for file ', epg_file)
                     callback(null);
                 }
         },function(error, result){
@@ -664,7 +662,6 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
         return null;
     }).catch(function(err) {
         winston.error("Finding available channels failed with error: ", err);
-        winston.error(err);
     });
 
     parser.on('programme', function (programme) {

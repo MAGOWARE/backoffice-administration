@@ -1,0 +1,8 @@
+node_modules/
+.vscode/
+package-lock.json
+*.log
+bin/
+public/-1
+public/[0-9]*
+.idea

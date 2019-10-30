@@ -8,7 +8,8 @@ var config = require('../config'),
   chalk = require('chalk'),
   sequelize = require('./sequelize-connect'),
   winston = require('./winston'),
-  redis = require('./redis');
+  redis = require('./redis'),
+  autoDeleteFiles = require('../../custom_functions/autoDeleteFiles');
 
 
 module.exports.init = function init(callback) {
@@ -17,7 +18,7 @@ module.exports.init = function init(callback) {
     //start server redis immediately
     redis.startServer(function(err) {
       if (err) {
-        winston.error(err);
+        winston.error("Error starting redis server",err);
         process.exit(1);
       }
 
@@ -47,7 +48,6 @@ module.exports.start = function start(callback) {
 
     // Start the app by listening on <port>
     app.listen(config.port, function() {
-
       // Logging initialization
       console.log('--------------------------');
       console.log(chalk.green(config.app.title));

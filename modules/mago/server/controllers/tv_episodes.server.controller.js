@@ -36,14 +36,14 @@ exports.create = function(req, res) {
                 return res.jsonp(result);
             }
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error at creating tv episodes, error:",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
         });
         return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at creating tv episodes, error:",err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -92,14 +92,14 @@ exports.update = function(req, res) {
                 }
                 return res.jsonp(result);
             }).catch(function(err) {
-                winston.error(err);
+                winston.error("Error updating attributes at tv episodes, error:",err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
             });
             return null;
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error at finding tv episodes, error:",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -127,7 +127,7 @@ exports.delete = function(req, res) {
     }).then(function (result) {
         return res.json(result);
     }).catch(function (err) {
-        winston.error(err);
+        winston.error("Error at deleting tv episodes, error:", err);
         return res.status(400).send({message: 'Deleting this tv episode item failed : ' + error});
     });
 
@@ -191,7 +191,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at findAndCountAll tv episodes, error: ", err);
         res.jsonp(err);
     });
 
@@ -229,7 +229,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at fetching dataById, tv episodes, error: ", err);
         return next(err);
     });
 
@@ -296,7 +296,7 @@ exports.update_film = function(req, res) {
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
-                        winston.error(error);
+                        winston.error("Error at updating film, tv episodes, error: ", error);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -309,7 +309,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
-        winston.error(error);
+        winston.error("Error at finding film, tv episodes, error: ", error);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });
@@ -321,7 +321,7 @@ exports.update_film = function(req, res) {
 
 function omdbapi(tv_episode_data, callback){
 
-    var api_key = "a421091c"; //todo: dynamic value
+    var api_key = ""; //todo: dynamic value
     var search_params = "";
     if(tv_episode_data.imdb_id) search_params = search_params+'&'+'i='+tv_episode_data.imdb_id;
     else{

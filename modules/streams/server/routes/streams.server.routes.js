@@ -61,6 +61,12 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .post(catchupfunctions.flussonic_catchup_stream);
 
+    //generate token for wowza streaming server
+    app.route('/apiv2/token/generatewowzatoken/*')
+        .all(authpolicy.isAllowed)
+        .get(tokenGenerators.wowza_token_generator)
+        .post(tokenGenerators.wowza_token_generator);
+
 /*=================== encryption api URLs =================== */
 
     app.route('/apiv2/encryption/key1')

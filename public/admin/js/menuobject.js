@@ -172,6 +172,13 @@ export default [
                 "icon":'<span class="fa fa-list fa-fw dashboard_icon"></span>',
                 "link":'/sales_by_expiration/list?search=%7B%22next%22:%2230%22%7D',
                 "group_roles":["admin","finance"]
+            },
+            {
+                "entity":"",
+                "title":"Expiration Graph",
+                "icon":'<span class="fa fa-list fa-fw dashboard_icon"></span>',
+                "link":'/expiresubscription',
+                "group_roles":["admin","finance"]
             }
             ]
     },

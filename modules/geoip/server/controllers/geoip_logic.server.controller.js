@@ -68,7 +68,7 @@ exports.handleDownloadDatabase = function(req, res) {
 
     downloader(url, options, function(err) {
         if (err) {
-            winston.error(err);
+            winston.error("Error downloading geoip database, error: ", err);
             res.send({status: false, message: 'Error downloading'});
             return;
         }
@@ -98,7 +98,7 @@ exports.handleDownloadDatabase = function(req, res) {
     
             move(options.directory + '/' + dbPath, options.directory + '/GeoLite2-City.mmdb', function(err) {
                 if (err) {
-                    winston.error(err);
+                    winston.error("Error moving GeoIP database", err);
                     res.send({status: false, message: 'Error copying'});
                 }
                 else {

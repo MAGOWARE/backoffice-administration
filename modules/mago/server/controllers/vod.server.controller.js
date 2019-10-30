@@ -38,7 +38,7 @@ function link_vod_with_genres(vod_id,array_category_ids, db_model, company_id) {
                         company_id: company_id,
                         is_available: true
                     }, {transaction: t}).catch(function(error){
-                        winston.error(error)
+                        winston.error("Error at executing transaction, error: ",error)
                     })
                 )
             }
@@ -46,11 +46,11 @@ function link_vod_with_genres(vod_id,array_category_ids, db_model, company_id) {
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
-            winston.error(err);
+            winston.error("Error executing transaction, error: ", err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
-        winston.error(err);
+        winston.error("Error deleting existing packages at vod, error: ",err);
         return {status: false, message:'error deleting existing packages'};
     })
 }
@@ -83,12 +83,12 @@ function link_vod_with_packages(item_id, data_array, model_instance, company_id)
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
-            winston.error(err);
+            winston.error("Error at executing transaction at vod, error: ",err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
-        winston.error(err);
-        return {status: false, message:'error deleteting existing packages'};
+        winston.error("Error at deleting existing packages, vod, error: ", err);
+        return {status: false, message:'error deleting existing packages'};
     })
 }
 
@@ -239,12 +239,12 @@ exports.delete = function(req, res) {
             }).then(function (result) {
                 return res.json(result);
             }).catch(function (err) {
-                winston.error(err);
+                winston.error("Error deleting vod item, error: ", err);
                 return res.status(400).send({message: 'Deleting this vod item failed : ' + error});
             });
         }
     }).catch(function (error) {
-        winston.error(error);
+        winston.error("Error searching vod item, error: ", error);
         return res.status(400).send({message: 'Searching for this vod item failed : ' + error});
     });
 
@@ -388,10 +388,10 @@ exports.dataByID = function(req, res, next, id) {
         } else {
             req.vod = result;
             next();
-            return null;
         }
+        return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at vod", err);
         return next(err);
     });
 

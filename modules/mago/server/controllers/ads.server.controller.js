@@ -47,14 +47,13 @@ var dateformat = require('dateformat');
  */
 
 exports.create = function(req, res) {
-
     var title = (req.body.title) ? req.body.title : "";
     var message = (req.body.message) ? req.body.message : "";
     var yOffset = 1;
-    var duration = (req.body.duration) ? parseInt(req.body.duration) : 5000; //default value 5000ms
+    var duration = (req.body.duration) ? req.body.duration.toString() : "5000"; //default value 5000ms
     var link_url = (req.body.link_url) ? req.body.link_url : "";
+    var type = (req.body.type) ? req.body.type : 'textonly';
     var delivery_time = (!req.body.delivery_time) ? 0 : moment(req.body.delivery_time).format('x') - moment(Date.now()).format('x');
-
     if(req.body.xOffset) var xOffset =  req.body.xOffset;
     else return res.status(400).send({ message: "You did not select a position to display the ad" });
 
@@ -92,7 +91,7 @@ exports.create = function(req, res) {
         where.device_active = true;  //ads only sent to logged users
 
         setTimeout(function(){
-            send_ad(where, title, message,  imageGif, xOffset, yOffset, duration, link_url, activity, req.app.locals.backendsettings[req.token.company_id].firebase_key, res);
+            send_ad(where, title, message,  imageGif, xOffset, yOffset, duration, link_url, activity, req.app.locals.backendsettings[req.token.company_id].firebase_key, res, type);
         }, delivery_time);
 
         return res.status(200).send({
@@ -132,7 +131,7 @@ exports.list = function(req, res) {
     });
 };
 
-function send_ad(where, title, message,  imageGif, xOffset, yOffset, duration, link_url, activity, firebase_key, res){
+function send_ad(where, title, message,  imageGif, xOffset, yOffset, duration, link_url, activity, firebase_key, res, type){
     DBDevices.findAll(
         {
             attributes: ['googleappid', 'appid', 'app_version'],
@@ -144,8 +143,10 @@ function send_ad(where, title, message,  imageGif, xOffset, yOffset, duration, l
             var fcm_tokens = [];
             var users = [];
             for(var i=0; i<devices.length; i++){
-                var push_object = new push_msg.CUSTOM_TOAST_PUSH(title, message, '3', imageGif, xOffset, yOffset, duration, link_url, activity);
-                push_msg.send_notification(devices[i].googleappid, firebase_key, devices[i].login_datum.id, push_object, 5, false, true, function(devices){});
+                var push_object = new push_msg.CUSTOM_TOAST_PUSH(title, message, type, imageGif, xOffset, yOffset, duration, link_url, activity);
+                push_msg.send_notification(devices[i].googleappid, firebase_key, devices[i].login_datum.dataValues.username, push_object, 5, true, true, function(devices) {
+                    console.log("We are here at ad callback", devices)
+                });
             }
         }
     });

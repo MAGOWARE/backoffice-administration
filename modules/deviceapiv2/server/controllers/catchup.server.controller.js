@@ -66,9 +66,6 @@ exports.catchup_events =  function(req, res) {
     var day_start = dateFormat(d, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
     var day_end = dateFormat(d, "yyyy-mm-dd 23:59:00");  //end of the day for the user, in server time
 
-    console.log(day_start);
-    console.log(day_end);
-
     models.epg_data.findAll({
         attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
         order: [['program_start', 'ASC']],

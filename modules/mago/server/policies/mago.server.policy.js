@@ -52,7 +52,6 @@ exports.invokeRolesPolicies = function() {
                     });
                 });
             }, function(err) {
-                console.log(JSON.stringify(aclList));
                 acl.allow(aclList);
             });
         });
@@ -66,7 +65,8 @@ exports.updateGroupRights = function(groupId) {
 
                 acl.removeRole(group.code, function(err){
                     if(err) {
-                        resolve(false)
+                        winston.error("Couldn't remove role, error: ", err);
+                        resolve(false);
                         return;
                     }
 
@@ -221,7 +221,7 @@ exports.isApiKeyAllowed = function(req, res, next) {
         }
         return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error at api key is not allowed, error: ",err);
         return res.status(404).json({
             message: 'API key not authorized'
         });

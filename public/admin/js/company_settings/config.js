@@ -6,12 +6,30 @@ export default function (nga, admin) {
 			.title('<h4>Company <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
 			.batchActions([])
 			.fields([
+                nga.field('id', 'number')
+                    .label('ID'),
 				nga.field('company_name', 'string')
 						.label('Company name'),
 				nga.field('locale', 'string')
 						.label('Language'),
+                nga.field('id', 'reference')
+                    .targetEntity(admin.getEntity('company_settings_list_company_data'))
+                    .targetField(nga.field('total_accounts'))
+                    .label('Total Accounts'),
+                nga.field('id', 'reference')
+                    .targetEntity(admin.getEntity('company_settings_list_company_data'))
+                    .targetField(nga.field('total_channels'))
+                    .label('Total Channels'),
+                nga.field('id', 'reference')
+                    .targetEntity(admin.getEntity('company_settings_list_company_data'))
+                    .targetField(nga.field('total_vod'))
+                    .label('Total Vods'),
+                nga.field('id', 'reference')
+                    .targetEntity(admin.getEntity('company_settings_list_company_data'))
+                    .targetField(nga.field('total_assets'))
+                    .label('Total Assets'),
                 nga.field('expire_date', 'date')
-                    .label('Expire Date'),
+                    .label('Expire Date')
 			])
 			.filters([
 				nga.field('q')
@@ -46,6 +64,15 @@ export default function (nga, admin) {
                 nga.field('company_url', 'string')
                     .validation({ required: true })
                     .attributes({ placeholder: 'Company website' }),
+
+                nga.field('email')
+                    .validation({ required: true })
+                    .label('Owner Email')
+                    .template('<div>'+
+                        '<ma-input-field field="field" value="entry.values.email"></ma-input-field>'+
+                        '<small id="emailHelp" class="form-text text-muted">Email address of the owner.</small>'+
+                        '</div>')
+                    .attributes({ placeholder: 'Email' }),
 
                 nga.field('email_address')
                 	.validation({ required: true })

@@ -127,7 +127,7 @@
                 } else {
                     ERROR_CODE = "2202";
                     MESSAGE = "Fail to Decrypt the data";
-                    console.log("[ERROR]: " + ERROR_CODE + "\n[MESSAGE]: " + MESSAGE);
+                    winston.error("[ERROR]: " + ERROR_CODE + "\n[MESSAGE]: " + MESSAGE);
                 }
             }
             /* = -------------------------------------------------------------------------- = */

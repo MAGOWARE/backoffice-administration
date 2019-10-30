@@ -13,10 +13,7 @@ var path = require('path'),
 
 function auth_encrypt(plainText, key) {
   var C = CryptoJS;
-
-    console.log("text = ",plainText, "key=",key);
-
-    plainText = C.enc.Utf8.parse(plainText);
+  plainText = C.enc.Utf8.parse(plainText);
   key = C.enc.Utf8.parse(key);
   var aes = C.algo.AES.createEncryptor(key, {
     mode: C.mode.CBC,
@@ -38,7 +35,7 @@ exports.recaptch_service = function(req, res){
     if(req.body.recaptcha === undefined || req.body.recaptcha === '' || req.body.recaptcha === null ){
         return res.json({"success": false, "msg": "Please select captcha"});
     }
-    var secretKey = "6LfJ3Q4UAAAAAPEp1VLwEN-NRvw8KvskWD8sx0KY";
+    var secretKey = "";
     var verifyUrl = "https://google.com/recaptcha/api/siteverify?secret="+secretKey+"&response="+req.body.recaptcha+"";
 
     request(verifyUrl, function(error, response, body){

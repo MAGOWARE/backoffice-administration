@@ -17,12 +17,13 @@ exports.create = function(req, res) {
     req.body.company_id = req.token.company_id; //save record for this company
     DBModel.create(req.body).then(function(result) {
         if (!result) {
-            return res.status(400).send({message: 'fail create data'});
+            winston.error("Failed to create vod_stream");
+            return res.status(400).send({message: 'Failed to create vod_stream'});
         } else {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Failed to create vod_stream, error: " + err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -48,7 +49,7 @@ exports.update = function(req, res) {
         updateData.updateAttributes(req.body).then(function(result) {
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Failed updating vod_stream attributes, error: " + err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -72,13 +73,13 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Failed deleting vod_stream, error: " + err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
                 });
             }
-            else{
+            else {
                 return res.status(400).send({message: 'Unable to find the Data'});
             }
         } else {
@@ -88,7 +89,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Failed operation at delete vod_stream, error: " + err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -123,7 +124,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Failed operation at list vod_stream, error: " + err);
         res.jsonp(err);
     });
 };
@@ -154,7 +155,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Failed operation at dataById vod_stream, error: " + err);
         return next(err);
     });
 

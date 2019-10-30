@@ -1,11 +1,5 @@
 'use strict';
-//part of customization for mettre
-
-var passport = require('passport'),
-    JwtStrategy = require('passport-jwt').Strategy,
-    ExtractJwt = require('passport-jwt').ExtractJwt;
-
-var path = require('path'),
+const path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     policy = require('../policies/mago.server.policy'),
     customer_account = require(path.resolve('./modules/mago/server/controllers/CustomerAccount.server.controller'));
@@ -27,12 +21,12 @@ module.exports = function(app) {
 
     app.route('/api/CustomerAccount/:customerId')
         .all(policy.Authenticate)
-        .get(customer_account.read);
+        .get(customer_account.dataByID);
 
     app.route('/api/CustomerAccount/:customerId')
         .all(policy.Authenticate)
         .put(customer_account.updateClient);
 
-    app.param('customerId', customer_account.dataByID);
+    // app.param('customerId', customer_account.dataByID);
 
 };

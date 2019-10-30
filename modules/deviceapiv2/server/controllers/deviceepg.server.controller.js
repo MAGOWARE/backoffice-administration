@@ -159,6 +159,153 @@ exports.event =  function(req, res) {
 
 
 
+/**
+* @api {GET} /apiv2/channels/event/:id Channels - 12 hour epg
+* @apiName livetv_12hour_epg
+* @apiGroup DeviceAPI
+*
+* @apiParam {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
+* @apiParam {Number} channelNumber Channel numbers.
+* @apiParam {Number} device_timezone Timezone offset of the device. Values in range of [-12:12]
+*
+*
+* @apiSuccessExample Success-Response:
+*     HTTP/1.1 200 OK
+*     {
+    *       "status_code": 200,
+    *       "error_code": 1,
+    *       "timestamp": 1517479302000, //unix timestamp in milliseconds
+    *       "error_description": 'OK',
+    *       "extra_data": 'OK_DATA',
+    *       "response_object": [
+        *       {
+    *          "channelName": "channel name",
+    *          "id": 1, //-1 for default epgs
+    *          "number": 100, //channel number
+    *          "title": "event title",
+    *          "scheduled": true, //values true/false
+    *          "description": "short event description",
+    *          "shortname": "event short name",
+    *          "programstart": "mm/dd/yyyy HH:MM:ss",
+    *          "programend": "mm/dd/yyyy HH:MM:ss",
+    *          "duration": 1800, //in seconds
+    *          "progress": 20 //value in range [0:100] for current event, <0 for future events
+        *       }, ....
+    *       ]
+*   }
+*/
+exports.event_get = function (req, res) {
+  const client_timezone = req.body.device_timezone; //offset of the client will be added to time - related info
+  const current_human_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss"); //get current time to compare with enddate
+  const interval_end_human = dateFormat((Date.now() + 43200000), "yyyy-mm-dd HH:MM:ss"); //get current time to compare with enddate, in the interval of 12 hours
+  let channel_title = "";
+  const channelNumber = req.params.channelId;
+
+  models.channels.findOne({
+    attributes: ['title'],
+    where: {channel_number: channelNumber, company_id: req.thisuser.company_id}
+  }).then(function (thischannel) {
+    if (thischannel) channel_title = thischannel.title;
+    models.my_channels.findOne({
+      attributes: ['title'],
+      where: {channel_number: channelNumber, company_id: req.thisuser.company_id}
+    }).then(function (user_channel) {
+      if (user_channel) channel_title = user_channel.title;
+      models.epg_data.findAll({
+        attributes: ['id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description'],
+        order: [['program_start', 'ASC']],
+        limit: 6,
+        include: [
+          {
+            model: models.channels, required: true, attributes: ['title', 'channel_number'],
+            where: {channel_number: channelNumber} //limit data only for this channel
+          },
+          {
+            model: models.program_schedule,
+            required: false, //left join
+            attributes: ['id'],
+            where: {login_id: req.thisuser.id}
+          }
+        ],
+        where: Sequelize.and(
+          {program_start: {lte: interval_end_human}, company_id: req.thisuser.company_id},
+          Sequelize.or(
+            Sequelize.and(
+              {program_start: {lte: current_human_time}},
+              {program_end: {gte: current_human_time}}
+            ),
+            Sequelize.and(
+              {program_start: {gte: current_human_time}},
+              {program_end: {lte: interval_end_human}}
+            )
+          )
+        )
+      }).then(function (result) {
+        let raw_result = [];
+        let default_programs = [];
+        result.forEach(function (obj) {
+          let raw_obj = {};
+
+          Object.keys(obj.toJSON()).forEach(function (k) {
+            if (typeof obj[k] == 'object') {
+              Object.keys(obj[k]).forEach(function (j) {
+                const programstart = parseInt(obj.program_start.getTime()) + parseInt((client_timezone) * 3600000);
+                const programend = parseInt(obj.program_end.getTime()) + parseInt((client_timezone) * 3600000);
+
+                raw_obj.channelName = obj[k].title;
+                raw_obj.id = obj.id;
+                raw_obj.number = obj[k].channel_number;
+                raw_obj.title = obj.title;
+                raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
+                raw_obj.description = obj.long_description;
+                raw_obj.shortname = obj.short_description;
+                raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
+                raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
+                raw_obj.duration = obj.duration_seconds;
+                raw_obj.progress = Math.round((Date.now() - obj.program_start.getTime()) * 100 / (obj.program_end.getTime() - obj.program_start.getTime()));
+              });
+            }
+          });
+          raw_result.push(raw_obj);
+        });
+
+        if (result.length < 6) {
+          for (let i = 0; i < 6 - result.length; i++) {
+            let temp_obj = {};
+            temp_obj.channelName = channel_title;
+            temp_obj.id = -1;
+            temp_obj.number = req.body.channelNumber;
+            temp_obj.title = "Program of " + channel_title;
+            temp_obj.scheduled = false;
+            temp_obj.description = "Program of " + channel_title;
+            temp_obj.shortname = "Program of " + channel_title;
+            temp_obj.programstart = '01/01/1970 00:00:00';
+            temp_obj.programend = '01/01/1970 00:00:00';
+            temp_obj.duration = 0;
+            temp_obj.progress = 0;
+            raw_result.push(temp_obj);
+          }
+        }
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
+      }).catch(function (error) {
+        winston.error("Getting the next 6 events failed with error: ", error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+      });
+      return null;
+    }).catch(function (error) {
+      winston.error("Getting the list of the client's personal channels failed with error: ", error);
+      response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+    return null;
+  }).catch(function (error) {
+    winston.error("Getting the list of channels failed with error: ", error);
+    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+  });
+
+};
+
+
+
 //RETURNS 12 hours of future Epg for a given channel - GET METHOD
 /**
  * @api {GET} /apiv2/channels/event Channels - 12 hour epg

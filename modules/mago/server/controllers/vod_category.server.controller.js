@@ -23,7 +23,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error creating vod category, error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -64,7 +64,7 @@ exports.update = function(req, res) {
             }
             res.json(result);
         }).catch(function(err) {
-            winston.error(err);
+            winston.error("Error updating vod category, error: ",err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -86,7 +86,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error deleting vod category, error: ", err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });

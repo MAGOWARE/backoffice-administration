@@ -7,7 +7,8 @@ var path = require('path'),
     advanced_settings_DBMmodel = db.advanced_settings,
     async = require('async'),
     combo_DBMmodel = db.combo,
-    redis = require(path.resolve('./config/lib/redis'))
+    redis = require(path.resolve('./config/lib/redis')),
+    settings = require(path.resolve('./custom_functions/settings'))
 
 
 /**
@@ -16,12 +17,13 @@ var path = require('path'),
 
 //todo: advanced_Settgins duhet hequr dhe kaluar ne redis
 module.exports = function(app,   db) {
+    settings.init(app);
     app.locals.backendsettings = {};
 
     let subscriber = redis.client.duplicate();
     subscriber.on('message', function(channel, message) {
-        console.log('event:company_settings_updated' + channel + ' ' + message);
-        redis.client.hgetall(message + ':company_settings', function(err, company_settings) {
+        redis.client.get(message + ':company_settings', function(err, raw_company_settings) {
+            let company_settings = JSON.parse(raw_company_settings);
             if(!app.locals.backendsettings[message].already_updated) {
                 let expire_date = new Date(company_settings.expire_date);
                 delete company_settings.expire_date;
@@ -43,13 +45,13 @@ module.exports = function(app,   db) {
         for(let i = 0; i < results.length; i++) {
             let settingsId = results[i].id + ":company_settings";
             app.locals.backendsettings[results[i].id] = results[i];
-            redis.client.hmset(settingsId, results[i].dataValues)
+            let settingsRaw = JSON.stringify(results[i].toJSON())
+            redis.client.set(settingsId, settingsRaw);
         }
 
-        advanced_settings_DBMmodel.findAll({
-            raw: true
-        }).then(function (advancedsettings_results) {
-            app.locals.advancedsettings = advancedsettings_results;
+        return settings.loadAdvancedSettings()
+        .then(function () {
+            winston.info("Advanced settings loaded")
             //find if transactional vod is active, and it's set duration
             combo_DBMmodel.findAll({
                 attributes: ['duration', 'company_id'],
@@ -65,10 +67,10 @@ module.exports = function(app,   db) {
             });
             return null;
 
-        }).catch(function(error) {
-            winston.error('error reading database settings: ',error);
+        }).catch(function(err) {
+            winston.error("Loading advanced settings failed with error: " + err);
+            process.exit(1);
         });
-        return null;
     }).catch(function(error) {
         winston.error('error reading database settings: ',error);
     });

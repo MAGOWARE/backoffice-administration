@@ -17,14 +17,10 @@ export default function (nga, admin) {
                 .isDetailLink(false)
 				.label('Stream Source'),
 			nga.field('url', 'string')
-				// .map(function truncate(value) {
-                 // 	if (!value) {
-                 //            return '';
-                 //      	}
-                 //            return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                 //      	})
 				.label('Url'),
-			nga.field('token', 'boolean')
+            nga.field('stream_type', 'string')
+                .label('Stream Type'),
+            nga.field('token', 'boolean')
 				.label('Token'),
 			nga.field('encryption', 'boolean')
 				.label('Encryption'),
@@ -74,13 +70,34 @@ export default function (nga, admin) {
                 .label('Stream Source *'),
             nga.field('url', 'string')
                 .attributes({ placeholder: 'Movie Stream Url' })
-                .validation({validator: function(value) {
-                        if(value === null || value === ''){
-                            throw new Error('Please Select Url');
-                        }
-                    }
-                })
                 .label('Url *'),
+            // nga.field('stream_mode', 'choice')
+            //     .attributes({ placeholder: 'Select Stream Mode from dropdown list' })
+            //     .choices([
+            //         { value: 'hls', label: 'hls' },
+            //         { value: 'mpegd', label: 'mpegd' }
+            //     ])
+            //     .validation({validator: function(value) {
+            //             if(value === null || value === ''){
+            //                 throw new Error('Please Select Stream mode');
+            //             }
+            //         }
+            //     })
+            //     .label('Stream Type *'),
+            // nga.field('stream_type', 'choice')
+            //     .attributes({ placeholder: 'Select Stream Type from dropdown list' })
+            //     .choices([
+            //         { value: 'vr', label: 'vr' },
+            //         { value: '360', label: '360' }
+            //     ])
+            //     .validation({validator: function(value) {
+            //             if(value === null || value === ''){
+            //                 throw new Error('Please Select Stream type');
+            //             }
+            //         }
+            //     })
+            //
+            //     .label('Stream Type *'),
             nga.field('stream_resolution', 'choices')
                 .attributes({ placeholder: 'Select screen types where this stream should play' })
                 .choices([
@@ -114,6 +131,35 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Stream Format *'),
+
+            // nga.field('stream_mode', 'choice')
+            //     .attributes({ placeholder: 'Select Stream Mode from dropdown list' })
+            //     .choices([
+            //         { value: 'hls', label: 'hls' },
+            //         { value: 'mpegd', label: 'mpegd' }
+            //     ])
+            //     .validation({validator: function(value) {
+            //             if(value === null || value === ''){
+            //                 throw new Error('Please Select Stream mode');
+            //             }
+            //         }
+            //     })
+            //     .label('Stream Mode *'),
+
+            nga.field('stream_type', 'choice')
+                .attributes({ placeholder: 'Select Stream Type from dropdown list' })
+                .choices([
+                    { value: 'vr', label: 'Virtual Reality (VR)' },
+                    { value: '360', label: '360° Video' },
+                    { value: 'regular', label: 'Regular' }
+                ])
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Stream type');
+                        }
+                    }
+                })
+                .label('Stream Type *'),
             nga.field('token', 'boolean')
                 .attributes({ placeholder: 'Token' })
                 .validation({ required: true })

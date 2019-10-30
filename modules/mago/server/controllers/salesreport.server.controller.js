@@ -202,14 +202,14 @@ exports.annul = function(req, res) {
                 callback(null);
                 return null;
             }).catch(function(error){
-                winston.error("Setting sale as inactive failed with error: ", error);
+                winston.error("Setting sale as inactive failed at salesreport,  error: ", error);
                 response = {status: 400, message: 'Subscription canceled, could not annul sale record'}
                 callback(true, response);
             });
         }]
     }, function(err, results) {
         if(err) {
-            winston.error("Annuling sale failed with error: ", err);
+            winston.error("Annuling sale failed at salesreport,  error: ", err);
             return res.status(400).send({
                 message: 'Unable to annul this sale'
             });
@@ -252,7 +252,7 @@ exports.delete = function(req, res) {
 
                 }
             }).catch(function(error) {
-                winston.error(error);
+                winston.error("Error updating subscription at salesreport, error: ",error);
                 return res.status(400).send({
                     message: 'Unable to annul this sale'
                 });
@@ -265,15 +265,14 @@ exports.delete = function(req, res) {
         });
     });
 
-    DBModel.destroy(
-
-    ).then(function(result) {
+    DBModel.destroy()
+    .then(function(result) {
         if (result) {
             if (result && (result.company_id === req.token.company_id)) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error(err);
+                    winston.error("Error deleting sales report, error: ",err);
                     return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
                 });
             }
@@ -286,7 +285,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
-        winston.error(err);
+        winston.error("Error deleting sales report item, error:", err);
         return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
     });
 };
@@ -709,7 +708,7 @@ exports.invoice = function(req, res) {
             });
         }
         catch(error){
-            winston.error(error)
+            winston.error("Error on operations with invoice sales reports, error: ",error)
         }
     }
     else {

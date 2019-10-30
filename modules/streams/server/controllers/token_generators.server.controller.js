@@ -148,18 +148,19 @@ function mysha1( data ) {
 //temp hdnts
 
 exports.akamai_token_v2_generator_hdnts = function(req,res) {
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].akamai;
     var config = {
         algorithm : 'SHA256',
         acl : '*',
-        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
-        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
+        window : tokenConfig.window,
+        key : tokenConfig.key,
         //ip: getClientIp(req),
         ip: req.ip.replace('::ffff:', ''),
         startTime:0,
         url:'',
         session:'',
         data:req.auth_obj.username,
-        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        salt: tokenConfig.salt,
         delimeter:'~',
         escape_early:false,
         name:'hdnts'
@@ -174,18 +175,19 @@ exports.akamai_token_v2_generator_hdnts = function(req,res) {
 
 
 exports.akamai_token_v2_generator = function(req,res) {
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].akamai;
     var config = {
         algorithm : 'SHA256',
         acl : '*',
-        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
-        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
+        window : tokenConfig.window,
+        key : tokenConfig.key,
         //ip: getClientIp(req),
         ip: req.ip.replace('::ffff:', ''),
         startTime:0,
         url:'',
         session:'',
         data:req.auth_obj.username,
-        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        salt: tokenConfig.salt,
         delimeter:'~',
         escape_early:false,
         name:'__token__'
@@ -199,18 +201,19 @@ exports.akamai_token_v2_generator = function(req,res) {
 
 //returns the token as aditional query paramter
 exports.akamai_token_v2_generator_extraquery = function(req,res) {
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].akamai;
     var config = {
         algorithm : 'SHA256',
         acl : '*',
-        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
-        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
+        window : tokenConfig.window,
+        key : tokenConfig.key,
         //ip: getClientIp(req),
         ip: req.ip.replace('::ffff:', ''),
         startTime:0,
         url:'',
         session:'',
         data:req.auth_obj.username,
-        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        salt: tokenConfig.salt,
         delimeter:'~',
         escape_early:false,
         name:'__token__'
@@ -224,18 +227,19 @@ exports.akamai_token_v2_generator_extraquery = function(req,res) {
 
 
 exports.catchup_akamai_token_v2_generator = function(req,res) {
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].akamai;
     var config = {
         algorithm : 'SHA256',
         acl : '*',
-        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
-        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
+        window : tokenConfig.window,
+        key : tokenConfig.key,
         //ip: getClientIp(req),
         ip: req.ip.replace('::ffff:', ''),
         startTime:0,
         url:'',
         session:'',
         data:req.auth_obj.username,
-        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        salt: tokenConfig.salt,
         delimeter:'~',
         escape_early:false,
         name:'token'
@@ -248,14 +252,16 @@ exports.catchup_akamai_token_v2_generator = function(req,res) {
 };
 
 exports.flussonic_token_generator =  function(req, res) {
-    var token_key = req.app.locals.streamtokens.FLUSSONIC.TOKEN_KEY; //server side only
-    var password = req.query.password || req.app.locals.streamtokens.FLUSSONIC.PASSWORD; //Can be sent as query parameter
-    var salt = req.query.salt || req.app.locals.streamtokens.FLUSSONIC.SALT; //Can be sent as query parameter
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].flussonic;
+
+    var token_key = tokenConfig.key; //server side only
+    var password = req.query.password || tokenConfig.password; //Can be sent as query parameter
+    var salt = req.query.salt || tokenConfig.salt; //Can be sent as query parameter
 
     var stream_name = req.params[0];
     var ip = req.query.ip || req.ip.replace('::ffff:', '');
     var starttime = req.query.starttime || Date.now()/1000|0;
-    var endtime = req.query.endtime || (Date.now()/1000|0) + req.app.locals.streamtokens.FLUSSONIC.WINDOW;;
+    var endtime = req.query.endtime || (Date.now()/1000|0) + tokenConfig.window;
 
     var tohash = stream_name + ip + starttime + endtime + token_key + salt;
 
@@ -301,18 +307,16 @@ exports.flussonic_token__remote =  function(req, res) {
  */
 
 exports.nimble_token_generator =  function(req, res) {
-
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].nimble_token;
     var today = (new Date()).format("UTC:m/d/yyyy h:MM:ss TT");
     var ip = req.ip.replace('::ffff:', ''); //req.connection.remoteAddress;
-    var key = "123456789";
-    var validminutes = 10; //todo: tynamic from backend
-    var str2hash = ip + key + today + validminutes;
+    var str2hash = ip + tokenConfig.key + today + tokenConfig.window;
 
     var md5sum = crypto.createHash('md5');
         md5sum.update(str2hash, 'ascii');
     var base64hash = md5sum.digest('base64');
 
-    var urlsignature = "server_time=" + today  + "&hash_value=" + base64hash + "&validminutes=" + validminutes;
+    var urlsignature = "server_time=" + today  + "&hash_value=" + base64hash + "&validminutes=" + tokenConfig.window;
 
     var base64urlsignature = new Buffer(urlsignature).toString('base64'); //todo: new buffer eshte depricated dhe duhet zevendesuar.
 
@@ -332,23 +336,67 @@ exports.handleGenerateTokenJson = function(req, res) {
 }
 
 function generateECToken(req) {
-    const expireAt = Date.now() + 9001;
-    const config = req.app.locals.streamtokens.EDGE_CAST;
+    let config = req.app.locals.advanced_settings[req.thisuser.company_id].verizon;
+    let expireAt = Date.now() + config.window * 1000;
     let ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
     ip = ip.replace('::ffff:', '');
 
-    const paramString = 'ec_expire=' + expireAt + 
-                        '&ec_proto_allow=' + config.PROTO_ALLOWED +
+    let paramString = 'ec_expire=' + expireAt + 
+                        '&ec_proto_allow=' + config.proto_allowed +
                         '&ec_clientip=' + ip;
                         
-    const token = ectoken.encrypt(config.KEY, paramString);
+    let token = ectoken.encrypt(config.key, paramString);
     return token;
 }
 
 exports.nimble_drm_key = function(req, res) {
-    var key = req.app.locals.streamtokens.NIMBLE.DRM_KEY;
+    var key = req.app.locals.advanced_settings[req.thisuser.company_id].nimble_drm.key;
 
     var content = Buffer.from(key, 'hex');
     res.setHeader('Content-Type', 'binary/octet-stream');
     res.end(content);
+};
+
+// Generate wowza HASH Token.
+exports.wowza_token_generator = function (req, res) {
+    var tokenConfig = req.app.locals.advanced_settings[req.thisuser.company_id].wowza;
+
+    // The shared secret as generated in our Wowza application (Playback security tab) - use your own
+    var sharedSecret = '6e94c7a77220aea1';
+    //content path coming as query parameter, path=
+    var contentPath = req.query.path;
+
+    // The Hash Query Parameter Prefix as set in Wowza application
+    var customSecureTokenPrefix = 'wowzatoken';
+    // A custom paramater to add pepper and salt to security - use your own
+    //var customParam = 'pepperandsalt';
+    // date time start
+    var startTime = Date.now()/ 1000 | 0 ; //'1440081611';
+    startTime = startTime - 300;
+    // duration in secconds, valid for 3 hrs
+    var endTime = startTime + tokenConfig.window; //'1511704011';
+    var toHash;
+    toHash = contentPath + '?' +
+        tokenConfig.shared_secret + '&' +
+        //customSecureTokenPrefix + 'CustomParameter=' + customParam + '&' +
+        customSecureTokenPrefix + 'endtime=' + endTime + '&' +
+        customSecureTokenPrefix + 'starttime=' + startTime;
+
+    var hash = crypto.createHash('sha256').
+    update(toHash, "utf8").
+    digest('base64');
+
+    hash = hash.replace(/\//g, '_');
+    hash = hash.replace(/\+/g, '-');
+
+    var token = "?wowzatokenstarttime=" + startTime + "&wowzatokenendtime=" + endTime + "&wowzatokenhash=" + hash;
+
+    var thisresponse = new responses.OK();
+    thisresponse.extra_data = token;
+
+    res.send(thisresponse);
+
 }
+
+
+

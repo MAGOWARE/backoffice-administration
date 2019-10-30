@@ -24,7 +24,7 @@ exports.create = function(req, res) {
       return res.jsonp(result);
     }
   }).catch(function(err) {
-    winston.error(err);
+    winston.error("Error at creating system menu instance, error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -49,7 +49,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
       res.json(result);
     }).catch(function(err) {
-      winston.error(err);
+      winston.error("Error at updating system menu, error: ", err);
       return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
       });
@@ -72,7 +72,7 @@ exports.delete = function(req, res) {
         result.destroy().then(function() {
           return res.json(result);
         }).catch(function(err) {
-          winston.error(err);
+          winston.error("Error at system menu delete, error: ",err);
           return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
           });
@@ -87,7 +87,7 @@ exports.delete = function(req, res) {
       });
     }
   }).catch(function(err) {
-    winston.error(err);
+    winston.error("Error at system menu delete, error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -139,7 +139,7 @@ exports.list = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
-    winston.error(err);
+    winston.error("Error at listing system menu, error: ",err);
     res.jsonp(err);
   });
 };
@@ -170,7 +170,7 @@ exports.list1 = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
-    winston.error(err);
+    winston.error("Error at systemmenu list1, error: ", err);
     res.jsonp(err);
   });
 
@@ -197,7 +197,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
-    winston.error(err);
+    winston.error("Error at fetching dataById at systemmenu, error: ",err);
     return next(err);
   });
 

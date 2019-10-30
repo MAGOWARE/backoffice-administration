@@ -70,6 +70,15 @@ export default function (nga, admin) {
                 .validation({required: true})
                 .attributes({ placeholder: 'Select from dropdown list filter values' })
                 .label('Display'),
+          nga.field('type', 'choice')
+            .choices([
+              { value: 'textonly', label: 'Text Only' },
+              { value: 'imageonly', label: 'Image only' },
+              { value: 'imageandtext', label: 'Image and Text' }
+            ])
+            .validation({required: true})
+            .attributes({ placeholder: 'Select from dropdown list filter values' })
+            .label('Ad Type'),
 
             nga.field('title', 'string')
                 .attributes({ placeholder: 'Title' })
@@ -87,16 +96,12 @@ export default function (nga, admin) {
                     { value: '1', label: 'Top' },
                     { value: '2', label: 'Center' },
                     { value: '3', label: 'Bottom' }
-                ]).validation({ required: true })
-                .attributes({ placeholder: 'Select from dropdown list filter values' })
+                ]).attributes({ placeholder: 'Select from dropdown list filter values' })
                 .label('Position'),
 
             nga.field('imageGif', 'string')
-                .validation({required: true})
                 .attributes({ placeholder: 'Image link' })
                 .label('Image link'),
-
-
             nga.field('duration', 'number')
                 .template('<div>'+
                     '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>'+

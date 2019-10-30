@@ -25,7 +25,7 @@ exports.create = function(req, res) {
             return null;
         }
     }).catch(function(err) {
-        winston.error("Creating email template failed with error: ", err);
+        winston.error("Creating email template failed with error: " + err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -52,7 +52,7 @@ exports.update = function(req, res) {
             res.json(result);
             return null;
         }).catch(function(err) {
-            winston.error("Updating email template failed with error: ", err);
+            winston.error("Updating email template failed with error: " + err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
@@ -75,7 +75,7 @@ exports.delete = function(req, res) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
-                    winston.error("Deleting email template failed with error: ", err);
+                    winston.error("Deleting email template failed with error: " + err);
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
@@ -91,7 +91,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
-        winston.error("Finding email template failed with error: ", err);
+        winston.error("Finding email template failed with error: " + err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -132,7 +132,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
-        winston.error("getting email template list failed with error: ", err);
+        winston.error("Getting email template list failed with error: " + err);
         res.jsonp(err);
     });
 };
@@ -164,7 +164,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
-        winston.error("Getting email template data failed with error: ", err);
+        winston.error("Getting email template data failed with error: " + err);
         return next(err);
     });
 

@@ -1,4 +1,4 @@
-
+import modalImage from '../../templates/modalTemplate.html'
 import edit_button from '../edit_button.html';
 
 export default function (nga, admin) {
@@ -11,7 +11,7 @@ export default function (nga, admin) {
 		.batchActions([])
 		.fields([
 			nga.field('icon_url', 'file')
-                .template('<img src="{{ entry.values.icon_url }}" height="42" width="45" />')
+                .template(modalImage)
                 .cssClasses('hidden-xs')
 					.label('Icon'),
 			nga.field('title', 'string')

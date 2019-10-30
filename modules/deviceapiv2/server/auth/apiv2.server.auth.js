@@ -106,12 +106,11 @@ exports.emptyCredentials = function(req, res, next) {
  */
 
 exports.isAllowed = function(req, res, next) {
+    let COMPANY_ID = req.get('company_id') || 1;
 
-    //IF COMPANY ID IS MISSING, THEN ASSIGN THE DEFAULT ONE: company_id = 1
-    let COMPANY_ID = 1;
-    if(req.headers.company_id) COMPANY_ID = req.headers.company_id * 1;
-
-
+    if(req.body.isFromCompanyList) {
+        COMPANY_ID = req.body.company_id;
+    }
 
     if(req.body.auth){  //serach for auth
         var auth = decodeURIComponent(req.body.auth);
@@ -286,11 +285,8 @@ function parse_plain_auth(auth){
 
 //verifies if token/auth is valid
 exports.isAuthTokenValid = function(req, res, next) {
-
     //IF COMPANY ID IS MISSING, THEN ASSIGN THE DEFAULT ONE: company_id = 1
-    let COMPANY_ID = 1;
-    if(req.headers.company_id) COMPANY_ID = req.headers.company_id * 1;
-
+    let COMPANY_ID = req.get('company_id') || 1;
 
     if(req.body.auth){  //serach for auth parameter on post data
         //auth is in header, as an object with all parameters

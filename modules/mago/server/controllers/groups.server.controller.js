@@ -13,7 +13,7 @@ var path = require('path'),
  * Create
  */
 exports.create = function(req, res) {
-    if(req.token.role !== 'superadmin') req.body.company_id = req.token.company_id; //save record for this company
+    req.body.company_id = req.token.company_id; //save record for this company
 
     DBModel.create(req.body).then(function(result) {
         if (!result) {
@@ -33,7 +33,7 @@ exports.create = function(req, res) {
  * Show current
  */
 exports.read = function(req, res) {
-    if( (req.users.company_id === req.token.company_id) || (req.token.role === 'superadmin') ) res.json(req.users);
+    if( (req.users.company_id === req.token.company_id) || (req.token.company_id === -1) ) res.json(req.users);
     else return res.status(404).send({message: 'No data with that identifier has been found'});
 };
 
@@ -43,7 +43,7 @@ exports.read = function(req, res) {
 exports.update = function(req, res) {
     var updateData = req.users;
 
-    if( (req.users.company_id === req.token.company_id) || (req.token.role === 'superadmin') ){
+    if( (req.users.company_id === req.token.company_id) || (req.token.company_id === -1) ){
         updateData.updateAttributes(req.body).then(function(result) {
             res.json(result);
         }).catch(function(err) {
@@ -66,7 +66,7 @@ exports.delete = function(req, res) {
 
     DBModel.findById(deleteData.id).then(function(result) {
         if (result) {
-            if ( (result && (result.company_id === req.token.company_id) ) || (req.token.role === 'superadmin') ) {
+            if ( (result && (result.company_id === req.token.company_id) ) || (req.token.company_id === -1) ) {
                 result.destroy().then(function() {
                     return res.json(result);
                 }).catch(function(err) {
@@ -98,29 +98,33 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-  var query = req.query;
-  var offset_start = parseInt(query._start);
-  var records_limit = query._end - query._start;
+  const query = req.query;
+  const offset_start = parseInt(query._start);
+  const records_limit = query._end - query._start;
 
-    var where_condition = (req.token.role !== 'superadmin') ? {company_id: req.token.company_id, code: {$notIn: ['superadmin', 'admin']}} : {};
+  const where = {company_id: req.token.company_id};
 
-    DBModel.findAndCountAll({
-        where: where_condition,
-        include: []
-    }).then(function(results) {
-        if (!results) {
-            return res.status(404).send({
-                message: 'No data found'
-            });
-        } else {
+  if (query.filter_reserved_groups === 'true') {
+    where.code = {$notIn: ['superadmin', 'admin']}
+  }
 
-      res.setHeader("X-Total-Count", results.count);            
-            res.json(results.rows);
-        }
-    }).catch(function(err) {
-        winston.error("Getting group list failed with error: ", err);
-        res.jsonp(err);
-    });
+  DBModel.findAndCountAll({
+    where: where,
+    include: []
+  }).then(function (results) {
+    if (!results) {
+      return res.status(404).send({
+        message: 'No data found'
+      });
+    } else {
+
+      res.setHeader("X-Total-Count", results.count);
+      res.json(results.rows);
+    }
+  }).catch(function (err) {
+    winston.error("Getting group list failed with error: ", err);
+    res.jsonp(err);
+  });
 };
 
 /**

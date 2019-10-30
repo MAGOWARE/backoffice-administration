@@ -36,7 +36,7 @@ export default function (nga, admin) {
             // 	.label('App Group Name'),
 
         ])
-        .listActions(['edit'])
+        .listActions([])
         .exportFields([
             app_gr.listView().fields(),
         ]);
@@ -61,13 +61,6 @@ export default function (nga, admin) {
             nga.field('template')
                 .label('')
                 .template(edit_button),
-        ]);
-
-    app_gr.editionView()
-        .title('<h4>App Group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
-        .actions(['list'])
-        .fields([
-            app_gr.creationView().fields(),
         ]);
 
 

@@ -12,7 +12,7 @@ exports.sendInvite = function(req, user, useRootMail) {
         user.resetpasswordtoken = token;
         user.resetpasswordexpires = Date.now() + 3600000; 
         user.save().then(function() {
-            let mailSettings = !useRootMail ? user.company_id : 1
+            let mailSettings = !useRootMail ? user.company_id : -1
 
             var smtpConfig = {
                 host: (req.app.locals.backendsettings[mailSettings].smtp_host) ? req.app.locals.backendsettings[mailSettings].smtp_host.split(':')[0] : 'smtp.gmail.com',
@@ -32,10 +32,10 @@ exports.sendInvite = function(req, user, useRootMail) {
                 let htmlTemplate = null;
                 if (!template) {
                     //nedd to have invite default template
-                    htmlTemplate = 'email: ' + user.email + '</br> link ' + link;
+                    htmlTemplate = 'email: ' + user.email + '</br> confirmation link:  ' + link;
                 } else {
                     const htmlContent = template.content;
-                    htmlTemplate = htmlContent.replace('{{email}}', user.email).replace('{{link}}', link);
+                    htmlTemplate = htmlContent.replace('{{email}}', user.email).replace('{{link}}', link).replace(/{{appName}}/g, req.app.locals.backendsettings[user.company_id].company_name).replace('{{url}}', link);
                 }
     
                 let mailOptions = {
@@ -46,7 +46,7 @@ exports.sendInvite = function(req, user, useRootMail) {
                 }
                 smtpTransport.sendMail(mailOptions, function(err) {
                     if (err) {
-                        winston.error('Error sendind invitation: ', err);
+                        winston.error('Error sending invitation: ', err);
                         reject(err)
                     }
                     else {

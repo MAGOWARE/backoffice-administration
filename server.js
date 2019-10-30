@@ -72,7 +72,7 @@ async.waterfall([
 
                 fs.writeFile(dbfile, configfile, function(err) {
                     if(err) {
-                        return console.log(err);
+                        return winston.error("Failed saving database config file, error: " + err)
                     }
                     console.log("Configuration file saved !");
                     callback(null);
@@ -81,7 +81,7 @@ async.waterfall([
             });
         }
         else {
-            callback(null);
+          callback(null);
         }
     },
 

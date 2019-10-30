@@ -26,6 +26,12 @@ orm.connect(config.db.database, config.db.username, config.db.password, {
   storage: config.db.storage,
   logging: config.db.enableSequelizeLog ? winston.verbose : false,
   dialectOptions: {
+    supportBigNumbers: true,
     ssl: config.db.ssl ? config.db.ssl : false
+  },
+  pool: {
+    minConnections: 0,
+    maxConnections: 5,
+    maxIdleTime: 10000
   }
 });

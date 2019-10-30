@@ -25,6 +25,8 @@ var path = require('path'),
  * @apiHeader {String} authorization Token string acquired from login api.
  * @apiParam {Number} login_id  Mandatory field login_id.
  * @apiParam {Number} combo_id  Mandatory field combo_id.
+ * @apiParam {Number} value  Mandatory field value
+ * @apiParam {Number} duration  Mandatory field duration
  * @apiParam {String} start_date  Mandatory field start_date.
  *
  * @apiSuccess (200) {String} message Record created successfuly

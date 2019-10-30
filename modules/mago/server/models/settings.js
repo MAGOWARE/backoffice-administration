@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
     var Settings = sequelize.define('settings', {
         id: {
             type: DataTypes.INTEGER(11),
@@ -139,7 +139,7 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(45),
             defaultValue: "MAGOWARE",
             allowNull: false
-        },		
+        },
         vodlastchange :{
             type: DataTypes.BIGINT(13),
             defaultValue: 0,
@@ -150,7 +150,7 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: 0,
             allowNull: false
         },
-        menulastchange :{
+        menulastchange: {
             type: DataTypes.BIGINT(13),
             defaultValue: 0,
             allowNull: false
@@ -164,20 +164,28 @@ module.exports = function(sequelize, DataTypes) {
         appleteamid: {
             type: DataTypes.STRING
         },
-        applecertificate:{
+        applecertificate: {
             type: DataTypes.STRING
         },
-        akamai_token_key:{
+        akamai_token_key: {
             type: DataTypes.STRING,
             defaultValue: "akamai_token_key",
             allowNull: false
         },
-        flussonic_token_key:{
+        flussonic_token_key: {
             type: DataTypes.STRING,
             defaultValue: "flussonic_token_key",
             allowNull: false
         },
-        asset_limitations:{
+        vast_ad_url: {
+            type: DataTypes.STRING(255),
+            allowNull: true
+        },
+        vast_ad_format: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        },
+        asset_limitations: {
             type: DataTypes.STRING,
             defaultValue: '{"client_limit":5,"channel_limit":20,"vod_limit":20}',
             allowNull: false,
@@ -185,7 +193,7 @@ module.exports = function(sequelize, DataTypes) {
                 try {
                     return JSON.parse(this.getDataValue('asset_limitations'));
                 } catch (e) {
-                    return {"client_limit":5,"channel_limit":20,"vod_limit":20};
+                    return {"client_limit": 5, "channel_limit": 20, "vod_limit": 20};
                 }
             },
             set: function (value) {
@@ -204,11 +212,11 @@ module.exports = function(sequelize, DataTypes) {
         }
     }, {
         tableName: 'settings',
-        associate: function(models) {
+        associate: function (models) {
         }
     });
 
-    Settings.beforeUpdate(function(settings, options) {
+    Settings.beforeUpdate(function (settings, options) {
         if (settings.changed('new_encryption_key')) {
             settings.set('old_encryption_key', settings['_previousDataValues'].new_encryption_key); //save previous key to to old key, before the value is lost
             settings.set('key_transition', true); //since keys were exchanged, set key transition to true regardless of user input

@@ -4,9 +4,9 @@ var path = require('path'),
     response = require(path.resolve("./config/responses.js"));
 var winston = require("winston");
 
-const keyStr = "31313131313131313131313131313131";
+const keyStr = "";
 
-const secure_key = "njekey2keyIIIkey"; //server side only
+const secure_key = ""; //server side only
 const token_valid_time = 96000; //time window for valid tokens
 
 function generate_sha1( data ) {
@@ -23,8 +23,6 @@ exports.generate_internal_hash_token = function(req,res) {
         let username = req.auth_obj.username;
         let tohash = secure_key + ip + starttime + username;
         let token = "?token=" + generate_sha1(tohash) + "~" + ip + "~" + starttime + "~" + username;
-
-        winston.info("reqtok:",ip," ",token);
 
             var theresponse = {
                 status_code: 200,
@@ -66,13 +64,7 @@ exports.generate_internal_key = function(req,res) {
                 let thishashvalue = generate_sha1(secure_key + ip + queryobject[2] + username);
                 let tmptoken = "?token=" + thishashvalue + "~" + ip + "~" + queryobject[2] + "~" + queryobject[3];
 
-                winston.info("reqkey:",ip," ",tmptoken);
-
                 if(thishashvalue === queryobject[0]) {
-                    winston.info(thishashvalue);
-                    winston.info(queryobject[0]);
-                    winston.info('dif = ', (timenow - queryobject[2]));
-
                     req.auth_obj.username = username;
                     req.track_object.el = JSON.stringify(req.auth_obj);
                     req.track_object.ev = timenow - queryobject[2];

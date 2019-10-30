@@ -28,7 +28,7 @@ function mkdir_recursive(basepath, custompath){
         fullpath = fullpath + custompath.split('/')[i]+'/';
         if (!fs.existsSync(fullpath)) {
             mkdirp(fullpath, function(err){
-                winston.error('error creating path: ',err);
+                winston.error('Error creating path at common controller, error: ', err);
             });
         }
     }
@@ -46,7 +46,7 @@ function copyFile(sourcePath, destPath, cb, moveFlag){
     source.on('end', function() {
         if (moveFlag)
             fs.unlink(sourcePath,function (err) {
-                winston.error('error deleting file: ',err);
+                winston.error('Error deleting file at common controller, error: ', err);
             });
         cb();
     });
@@ -60,7 +60,7 @@ function deleteFile(filePath)
     {
         var Path=path.resolve('./public'+filePath[i]);
         fs.unlink(Path,function (err) {
-            winston.error('error deleting file: ',err);
+            winston.error('Error deleting file at common controller, error: ', err);
         });
     }
 }
@@ -118,7 +118,7 @@ function  find_the_delete (new_files,old_file,index)
 }
 
 
-
+//todo remove if not required
 function updateFile (prev_val,target_paths,delete_files,delete_on)
 {
     var file_name=[],changed_name=[],full_name,file_delete=[],source_path,target_path;
@@ -162,11 +162,11 @@ function updateFile (prev_val,target_paths,delete_files,delete_on)
    //for all the files uploaded, change the path on update
     for (var i=0;i<file_name.length;i++)
     {
-        source_path=path.resolve('./public/files/tempfiles/'+ file_name[i]);
+        source_path=path.resolve('./public/files/temp/'+ file_name[i]);
         target_path=path.resolve('./public'+changed_name[i]);
         copyOnUpdate(source_path, target_path,  function(err){
             //todo: do sth on error?
-            winston.error('error function copyOnUpdate: ',err);
+            winston.error('Error "copyOnUpdate" function error: ' ,err);
         })
     }
     //delete the old files of the new-updated ones
@@ -176,21 +176,34 @@ function updateFile (prev_val,target_paths,delete_files,delete_on)
 
 function uploadFile (req, res){
 
+    const tempFolders = [
+        'epg'
+    ]
+    
     /* get request and upload file informations */
     var tomodel = req.params.model;
     var tofield = req.params.field;
     var existingfile = path.resolve('./public'+req.app.locals.backendsettings[req.token.company_id][tofield]);
     var fileName= req.files.file.name;
-     var fileExtension = get_file_extention(fileName);
+    var fileExtension = get_file_extention(fileName);
     var tempPath = req.files.file.path;
-    var tempDirPath = path.resolve('./public/files/'+tomodel);
 
-
+    var tempDirPath = null;
+    var tempDirRelativePath = null;
+    if(tempFolders.indexOf(tomodel) == -1) {
+        tempDirRelativePath = '/' + req.token.company_id + '/files/' + tomodel;
+        tempDirPath = path.resolve('./public' + tempDirRelativePath);
+    }
+    else {
+        tempDirRelativePath = '/files/temp';
+        tempDirPath = path.resolve('./public' + tempDirRelativePath);
+    }
+    
     if(fileExtension === '.apk'){
-        var uploadLinkPath = '/files/' + tomodel + '/' + fileName.replace(fileExtension, '').replace(/\W/g, '')+fileExtension; //apk file allows alphanumeric characters and the underscore. append timestamp to ensure uniqueness
+        var uploadLinkPath = tempDirRelativePath + '/' + fileName.replace(fileExtension, '').replace(/\W/g, '')+fileExtension; //apk file allows alphanumeric characters and the underscore. append timestamp to ensure uniqueness
     }
     else{
-        var uploadLinkPath = '/files/' + tomodel + '/' + Date.now() + fileName.replace(fileExtension, '').replace(/[^0-9a-z]/gi, '')+fileExtension; //other file types allow only alphanumeric characters. append timestamp to ensure uniqueness
+        var uploadLinkPath =  tempDirRelativePath + '/' + Date.now() + fileName.replace(fileExtension, '').replace(/[^0-9a-z]/gi, '')+fileExtension; //other file types allow only alphanumeric characters. append timestamp to ensure uniqueness
     }
 
     var targetPath = path.resolve('./public' + uploadLinkPath);
@@ -232,7 +245,7 @@ function uploadEpgFile (filepath){
     var fileName= filepath.name;
     var fileExtension = get_file_extention(fileName);
 
-    var tempDirPath = path.resolve('./public/files/tempfiles');
+    var tempDirPath = path.resolve('./public/files/temp');
     var uploadLinkPath = tempDirPath +'/'+ fileName.replace(fileExtension, '')+Date.now()+fileExtension;// create unique filename
     fs.writeFile(uploadLinkPath, filepath, function (err) {
         //todo: do sth on error?
@@ -248,7 +261,7 @@ function uploadMultiFile(req, res){
         tempFileList.push({tempPath: req.files.file[key].path, extension: get_file_extention(req.files.file[key].name)})
     }
     if (tempFileList.length>0){
-        var tempDirPath = path.resolve('./public/tempfiles');
+        var tempDirPath = path.resolve('./public/files/temp');
         var uploadLinkList = [];
         makeDirectory(tempDirPath, function(){
             var moveFiles = function(err, index){

@@ -12,10 +12,10 @@ var path = require('path'),
     customerFunctions = require(path.resolve('./custom_functions/customer_functions.js')),
     responses = require(path.resolve("./config/responses.js")),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    Sequelize = require('sequelize'),
     db_t = require(path.resolve('./config/lib/sequelize')),
     DBModel = db.login_data;
 var db_t = require(path.resolve('./config/lib/sequelize'));
-
 
 
 /**
@@ -95,8 +95,40 @@ exports.list = function(req, res) {
     else if (query.q) {
         qwhere.$or = {};
         qwhere.$or.username = {};
-        qwhere.$or.username.$like = '%' + query.q + '%'; //partial search
+        qwhere.$or.username.$like = '%' + query.q + '%'; //partial search        
     }
+
+    var customer_data_where = {};
+    var emailFilter = req.query['customer_datum.email'];
+    var nameFilter = req.query['customer_datum.firstname'];
+
+
+    if (emailFilter) {
+        customer_data_where = {$or: {email: {$like: '%' + emailFilter + '%'}}};
+    }
+
+
+
+    if (nameFilter) {
+        customer_data_where = {
+            $or: {
+                //db.sequelize.fn("concat",
+
+                where: Sequelize.where(Sequelize.fn("CONCAT", Sequelize.col("firstname")," ", Sequelize.col("lastname")), {
+                    like: '%' + nameFilter + '%'
+                })
+            }
+        }
+    }
+
+    //
+    // if (nameFilter) {
+    //     customer_data_where = {
+    //         $or: {
+    //             firstname : {$like: '%' + nameFilter + '%'}
+    //         }
+    //     };
+    // }
 
     //start building where
     final_where.where = qwhere;
@@ -105,7 +137,7 @@ exports.list = function(req, res) {
         if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
     }
     if(query._orderBy) final_where.order = [[query._orderBy, query._orderDir]];
-    final_where.include = [{model:db.customer_data,required:true}];
+    final_where.include = [{model:db.customer_data,required:true, where: customer_data_where}];
     //end build final where
 
     final_where.where.company_id = req.token.company_id; //return only records for this company
@@ -133,13 +165,13 @@ exports.list = function(req, res) {
 /**
  * middleware
  */
-exports.dataByID = function(req, res, next, id) {
+exports.dataByID = function(req, res) {
+    const id = req.params.customerId;
+
     DBModel.findOne({
         where: {
-            $or: {
-                id: id,
-                username: id
-            }
+            id: id,
+            company_id: req.token.company_id
         },
         include: [{model: db.customer_data}]
     }).then(function(result) {
@@ -149,11 +181,11 @@ exports.dataByID = function(req, res, next, id) {
             });
         } else {
             req.loginData = result;
-            next();
+            res.json(result);
             return null;
         }
     }).catch(function(err) {
-        return next(err);
+        return winston.error("Error at fetching by id, customer account", err);
     });
 
 };
