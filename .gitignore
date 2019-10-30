@@ -5,3 +5,4 @@ package-lock.json
 bin/
 public/-1
 public/[0-9]*
+.idea
