@@ -2,11 +2,11 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.changeColumn('subscription', 'customer_username', {
+    return queryInterface.changeColumn('login_data', 'username', {
       type: Sequelize.STRING,
       allowNull: false
     }).catch(function (err) {
-      winston.error('Changing column customer_username failed with error message: ', err.message);
+      winston.error('Changing column username failed with error message: ', err.message);
     });
   },
 

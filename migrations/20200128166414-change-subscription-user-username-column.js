@@ -6,7 +6,7 @@ module.exports = {
       type: Sequelize.STRING,
       allowNull: false
     }).catch(function (err) {
-      winston.error('Dropping column city failed with error message: ', err.message);
+      winston.error('Changing column user_username failed with error message: ', err.message);
     });
   },
 
