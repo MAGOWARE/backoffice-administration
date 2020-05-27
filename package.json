@@ -78,7 +78,7 @@
     "redis-server": "git+https://github.com/eduardhasanaj2/node-redis-server.git",
     "request": "^2.79.0",
     "rimraf": "^2.7.0",
-    "sequelize": "^3.35.1",
+    "sequelize": "^5.21.11",
     "sequelize-cli": "^4.1.1",
     "serve-favicon": "^2.3.2",
     "socket.io": "^2.2.0",
